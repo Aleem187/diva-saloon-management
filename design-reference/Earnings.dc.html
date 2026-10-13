@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My earnings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+<style>
+body{margin:0;background:#F4F3F6;color:#1C1724;font-family:'Figtree',system-ui,sans-serif;font-size:14px;line-height:1.45}
+*{box-sizing:border-box}
+.disp{font-family:'Sora',sans-serif}
+.app{display:flex;flex-wrap:wrap;min-height:100vh;width:100%}
+.side{flex:1 1 252px;background:#1C1724;color:#EDE8F0;padding:22px 14px;display:flex;flex-direction:column;gap:22px}
+.main{flex:999 1 560px;min-width:0;display:flex;flex-direction:column}
+.brand{display:flex;gap:12px;align-items:center;padding:0 8px}
+.logo{width:40px;height:40px;border-radius:12px;background:#F3E8F0;color:#5A2350;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:700;font-size:16px;flex:none}
+.bname{font-family:'Sora',sans-serif;font-weight:600;font-size:15px;color:#fff;margin:0}
+.btype{font-size:12px;color:#B7AEC2;margin:0}
+.navg{display:flex;flex-direction:column;gap:2px}
+.navh{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#A79EB3;padding:0 10px;margin:0 0 6px;font-weight:600}
+.nav{display:flex;align-items:center;gap:10px;width:100%;min-height:40px;padding:8px 10px;border-radius:10px;border:0;background:transparent;color:#D9D2E0;font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.nav:hover{background:#2C2436;color:#fff}
+.nav.on{background:#F3E8F0;color:#4E1E43;font-weight:600}
+.ndot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.55;flex:none}
+.user{display:flex;gap:10px;align-items:center;padding:0 6px;margin-top:auto}
+.av{width:36px;height:36px;border-radius:50%;background:#3F6B5C;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 32px;background:#fff;border-bottom:1px solid #E4E1E8}
+.wrap{padding:26px 32px 56px;width:100%;max-width:1320px}
+h1{font-family:'Sora',sans-serif;font-size:28px;margin:0 0 4px;font-weight:600;letter-spacing:-.015em}
+.sub{color:#6B6475;margin:0 0 18px}
+.tabs{display:flex;gap:2px;border-bottom:1px solid #E1DDE6;overflow-x:auto;margin-bottom:22px}
+.tab{appearance:none;border:0;background:none;font:inherit;font-weight:500;color:#6B6475;padding:12px 14px;min-height:46px;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap}
+.tab:hover{color:#1C1724}
+.tab.on{color:#6B2C5C;border-bottom-color:#6B2C5C;font-weight:600}
+.card{background:#fff;border:1px solid #E4E1E8;border-radius:14px;padding:20px;min-width:0}
+.h3{font-family:'Sora',sans-serif;font-size:16px;font-weight:600;margin:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:10px;border:1px solid #6B2C5C;background:#6B2C5C;color:#fff;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn.ghost{background:#fff;color:#5A2350;border-color:#D8CFDD}
+.btn.sm{min-height:36px;padding:0 12px;font-size:13px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.stack{display:flex;flex-direction:column;gap:16px}
+.muted{color:#6B6475}
+.small{font-size:13px}
+.r{text-align:right}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;width:max-content}
+.p-sage{background:#E3F0EB;color:#245647}.p-amber{background:#FBF0DC;color:#7A4710}.p-grey{background:#EEECF1;color:#4C4556}
+.seg{display:inline-flex;background:#EEECF1;border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;font:inherit;font-weight:600;font-size:13px;color:#4C4556;padding:0 12px;min-height:36px;border-radius:8px;cursor:pointer}
+.seg button.on{background:#fff;color:#5A2350;box-shadow:0 1px 2px rgba(28,23,36,.12)}
+.sk{border-radius:12px;background:linear-gradient(90deg,#ECE9EF 0%,#F6F4F8 50%,#ECE9EF 100%);background-size:200% 100%;animation:sh 1s linear infinite}
+@keyframes sh{from{background-position:200% 0}to{background-position:-200% 0}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:16px}
+.big{background:#1C1724;color:#fff;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:8px}
+.big .v{font-family:'Sora',sans-serif;font-size:38px;font-weight:700;line-height:1.1}
+.big .l{color:#D9D2E0;font-size:13px}
+.kpi{background:#fff;border:1px solid #E4E1E8;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:6px}
+.kpi .v{font-family:'Sora',sans-serif;font-size:28px;font-weight:600}
+.meter{height:8px;border-radius:99px;background:#EEECF1;overflow:hidden}
+.meter div{height:100%;background:#2F6F5E;border-radius:99px}
+.chart{display:flex;align-items:flex-end;gap:10px;height:200px;border-bottom:1px solid #E4E1E8;background:repeating-linear-gradient(to top,transparent 0 49px,#F0EEF2 49px 50px)}
+.col{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;border:0;background:none;padding:0;cursor:pointer;gap:0}
+.col span{display:block;width:100%;max-width:46px}
+.col .s{background:#6B2C5C;border-radius:0}
+.col .c{background:#C48BB4;border-radius:6px 6px 0 0}
+.col.on .s{background:#4E1E43}.col.on .c{background:#A86A98}
+.col.pend .c,.col.pend .s{opacity:.55}
+.xl{display:flex;gap:10px;margin-top:6px}
+.xl span{flex:1;text-align:center;font-size:12px;color:#6B6475}
+.legend{display:flex;gap:14px;font-size:12px;color:#4C4556;flex-wrap:wrap}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.li{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F0EEF2}
+.li:last-child{border-bottom:0}
+.split{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+.splitmain{flex:999 1 520px;min-width:0}
+.panel{flex:1 1 320px;background:#fff;border:1px solid #E4E1E8;border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:10px}
+.per{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr auto;gap:12px;align-items:center;width:100%;padding:14px 16px;border:0;border-bottom:1px solid #F0EEF2;background:#fff;font:inherit;text-align:left;cursor:pointer;color:inherit;min-width:600px}
+.per:last-child{border-bottom:0}
+.per.on{background:#FAF5F9;box-shadow:inset 3px 0 0 #6B2C5C}
+.tbox{overflow-x:auto;border:1px solid #E4E1E8;border-radius:14px;background:#fff}
+.tr{display:grid;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid #F0EEF2}
+.tr:last-child{border-bottom:0}
+.th{font-size:12px;font-weight:600;color:#6B6475;text-transform:uppercase;letter-spacing:.05em;background:#FAF9FB}
+.tr.foot{background:#FAF9FB;font-weight:700}
+.slip{border:1px dashed #D8D3DE;border-radius:12px;padding:16px;background:#FAF9FB}
+.note{background:#FBF0DC;color:#6A3D0C;border-radius:12px;padding:12px 14px;font-size:13px}
+</style>
+</helmet>
+<div class="app">
+<aside class="side" aria-label="Main navigation">
+<div class="brand"><div class="logo" aria-hidden="true">VR</div><div><p class="bname">Velvet Room Salon</p><p class="btype">Hair &amp; beauty salon</p></div></div>
+<nav class="navg" aria-label="Front desk"><p class="navh">Front desk</p>
+<button class="nav"><span class="ndot"></span>Overview</button>
+<button class="nav"><span class="ndot"></span>Calendar</button>
+</nav>
+<nav class="navg" aria-label="You"><p class="navh">You</p>
+<button class="nav on" aria-current="page"><span class="ndot"></span>My earnings</button>
+<button class="nav"><span class="ndot"></span>My account</button>
+</nav>
+<div class="user"><div class="av" aria-hidden="true">SM</div><div><div style="font-weight: 600; color: #fff">Sana Malik</div><div style="font-size: 12px; color: #B7AEC2">Therapist</div></div></div>
+</aside>
+
+<main class="main">
+<div class="top"><span class="muted small">Mon 12 Oct 2026 · Signed in as Sana Malik</span><span class="muted small">Only you and the owner can see this page</span></div>
+<div class="wrap">
+<h1>My earnings</h1>
+<p class="sub">What you've been paid, what's pending, and the work behind it</p>
+
+<div class="tabs" role="tablist" aria-label="Sections">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="3"><button role="tab" class="{{t.cls}}" aria-selected="{{t.sel}}" onClick="{{t.go}}">{{t.label}}</button></sc-for>
+</div>
+
+<sc-if value="{{loading}}" hint-placeholder-val="{{ false }}">
+<div class="stack" aria-live="polite"><span class="sr">Loading…</span><div class="hero"><div class="sk" style="height: 140px"></div><div class="sk" style="height: 140px"></div><div class="sk" style="height: 140px"></div></div><div class="sk" style="height: 280px"></div></div>
+</sc-if>
+
+<!-- SUMMARY -->
+<sc-if value="{{t_summary}}" hint-placeholder-val="{{ true }}">
+<div class="hero">
+<div class="big"><span class="l">Pending · 1 – 30 Sep 2026</span><span class="v">$1,518.00</span><span class="l">Draft — the owner hasn't marked it paid yet</span></div>
+<div class="kpi"><span class="muted small">Paid so far in 2026</span><span class="v">$11,935.05</span><span class="muted small">8 pay periods</span></div>
+<div class="kpi"><span class="muted small">October so far (estimate)</span><span class="v">{{octTxt}}</span><div class="meter" aria-hidden="true"><div style="width: 39%"></div></div><span class="muted small">12 of 31 days · 26 services · $1,215 revenue</span></div>
+</div>
+<div class="split">
+<div class="splitmain card">
+<div class="row between" style="margin-bottom: 4px"><h2 class="h3">Monthly earnings</h2><div class="legend"><span><i style="background: #6B2C5C"></i>Salary</span><span><i style="background: #C48BB4"></i>Commission</span></div></div>
+<p class="muted small" style="margin: 4px 0 12px" aria-live="polite"><strong style="color: #1C1724">{{hov.m}}</strong> · salary {{hov.s}} · commission {{hov.c}} · total <strong style="color: #1C1724">{{hov.t}}</strong> <span class="{{hov.pcls}}">{{hov.st}}</span></p>
+<div class="chart">
+<sc-for list="{{months}}" as="m" hint-placeholder-count="9"><button class="{{m.cls}}" onMouseEnter="{{m.hover}}" onFocus="{{m.hover}}" onClick="{{m.hover}}" aria-label="{{m.aria}}"><span class="c" style="height: {{m.ch}}%"></span><span class="s" style="height: {{m.sh}}%"></span></button></sc-for>
+</div>
+<div class="xl"><sc-for list="{{months}}" as="m" hint-placeholder-count="9"><span>{{m.lbl}}</span></sc-for></div>
+</div>
+<aside class="panel">
+<h2 class="h3">How you're paid</h2>
+<div class="li"><span class="muted">Arrangement</span><span>Salary + commission</span></div>
+<div class="li"><span class="muted">Monthly salary</span><span>$900.00</span></div>
+<div class="li"><span class="muted">Commission</span><span>15% of service revenue</span></div>
+<div class="li"><span class="muted">Paid</span><span>Monthly, after the owner approves</span></div>
+<p class="muted small" style="margin: 6px 0 0">Questions about your pay? Ask the salon owner — only they can change your arrangement.</p>
+</aside>
+</div>
+</sc-if>
+
+<!-- HISTORY -->
+<sc-if value="{{t_history}}" hint-placeholder-val="{{ false }}">
+<div class="split">
+<div class="splitmain">
+<div class="tbox">
+<div class="per th" style="cursor: default; font-size: 12px">Period<span class="r">Salary</span><span class="r">Commission</span><span class="r">Total</span><span>Status</span></div>
+<sc-for list="{{periods}}" as="p" hint-placeholder-count="5"><button class="{{p.cls}}" onClick="{{p.pick}}" aria-pressed="{{p.pressed}}"><strong>{{p.label}}</strong><span class="r">{{p.s}}</span><span class="r">{{p.c}}</span><strong class="r">{{p.t}}</strong><span class="{{p.pcls}}">{{p.st}}</span></button></sc-for>
+</div>
+</div>
+<aside class="panel" aria-label="Payslip">
+<div class="row between"><h2 class="h3">Payslip</h2><span class="{{slip.pcls}}">{{slip.st}}</span></div>
+<span class="muted small">{{slip.label}} · {{slip.when}}</span>
+<div class="slip">
+<div class="li" style="padding-top: 0"><span>Monthly salary</span><span>{{slip.s}}</span></div>
+<div class="li"><span>Commission · 15% of {{slip.rev}}</span><span>{{slip.c}}</span></div>
+<div class="li"><span class="muted">Services performed</span><span>{{slip.n}}</span></div>
+<div class="li"><strong>Total</strong><strong class="disp" style="font-size: 20px">{{slip.t}}</strong></div>
+</div>
+<sc-if value="{{slip.pending}}" hint-placeholder-val="{{ false }}"><div class="note">This period is still a draft. Amounts can change until the owner marks it paid.</div></sc-if>
+<button class="btn ghost">Download payslip (PDF)</button>
+</aside>
+</div>
+</sc-if>
+
+<!-- RECENT -->
+<sc-if value="{{t_recent}}" hint-placeholder-val="{{ false }}">
+<div class="row between" style="margin-bottom: 14px">
+<div class="seg" role="group" aria-label="Period"><sc-for list="{{ranges}}" as="o" hint-placeholder-count="3"><button class="{{o.cls}}" onClick="{{o.go}}" aria-pressed="{{o.sel}}">{{o.label}}</button></sc-for></div>
+<span class="muted small">{{recentSum}}</span>
+</div>
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1fr 1.4fr 1.6fr 1fr 1fr; min-width: 620px">Date<span>Customer</span><span>Service</span><span class="r">Revenue</span><span class="r">Your commission</span></div>
+<sc-for list="{{recent}}" as="r" hint-placeholder-count="6"><div class="tr" style="grid-template-columns: 1fr 1.4fr 1.6fr 1fr 1fr; min-width: 620px"><span class="muted">{{r.date}}</span><span>{{r.cust}}</span><span>{{r.svc}}</span><span class="r">{{r.rev}}</span><strong class="r" style="color: #245647">{{r.com}}</strong></div></sc-for>
+<div class="tr foot" style="grid-template-columns: 1fr 1.4fr 1.6fr 1fr 1fr; min-width: 620px"><span>Total</span><span></span><span>{{recentN}} services</span><span class="r">{{recentRev}}</span><span class="r" style="color: #245647">{{recentCom}}</span></div>
+</div>
+</sc-if>
+
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tab: 'summary', loading: false, hov: 8, per: 'sep', range: 'week' };
+  }
+  componentWillUnmount() { clearTimeout(this.tm); }
+  setTab(t) {
+    if (t === this.state.tab) return;
+    this.setState({ tab: t, loading: true });
+    clearTimeout(this.tm);
+    this.tm = setTimeout(() => this.setState({ loading: false }), 380);
+  }
+  renderVals() {
+    const s = this.state;
+    const v = {};
+    const m = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const REV = [['Jan', 3720], ['Feb', 3410], ['Mar', 3980], ['Apr', 3850], ['May', 4210], ['Jun', 4040], ['Jul', 3987], ['Aug', 4370], ['Sep', 4120]];
+    const rows = REV.map(([mo, rev], i) => ({ mo, rev, sal: 900, com: rev * 0.15, tot: 900 + rev * 0.15, pending: i === REV.length - 1 }));
+    const mx = Math.max(...rows.map((r) => r.tot));
+    v.months = rows.map((r, i) => ({ lbl: r.mo, sh: Math.round(r.sal / mx * 92), ch: Math.round(r.com / mx * 92), cls: 'col' + (i === s.hov ? ' on' : '') + (r.pending ? ' pend' : ''), aria: r.mo + ' 2026: ' + m(r.tot) + (r.pending ? ', pending' : ', paid'), hover: () => this.setState({ hov: i }) }));
+    const H = rows[s.hov];
+    v.hov = { m: H.mo + ' 2026', s: m(H.sal), c: m(H.com), t: m(H.tot), st: H.pending ? 'Pending' : 'Paid', pcls: H.pending ? 'pill p-amber' : 'pill p-sage' };
+    v.octTxt = m(900 * 12 / 31 + 1215 * 0.15);
+
+    const P = [...rows].reverse().map((r, i) => ({ id: r.mo.toLowerCase(), label: '1 – ' + (['Feb'].includes(r.mo) ? 28 : ['Apr', 'Jun', 'Sep'].includes(r.mo) ? 30 : 31) + ' ' + r.mo + ' 2026', ...r, n: Math.round(r.rev / 36) }));
+    v.periods = P.map((p) => ({ label: p.label, s: m(p.sal), c: m(p.com), t: m(p.tot), st: p.pending ? 'Pending' : 'Paid', pcls: p.pending ? 'pill p-amber' : 'pill p-sage', cls: p.id === s.per ? 'per on' : 'per', pressed: p.id === s.per ? 'true' : 'false', pick: () => this.setState({ per: p.id }) }));
+    const S = P.find((p) => p.id === s.per) || P[0];
+    v.slip = { label: S.label, when: S.pending ? 'generated 1 Oct' : 'paid on the 2nd of the following month', st: S.pending ? 'Pending' : 'Paid', pcls: S.pending ? 'pill p-amber' : 'pill p-sage', s: m(S.sal), c: m(S.com), t: m(S.tot), rev: m(S.rev), n: S.n, pending: S.pending };
+
+    const ALL = [
+      ['12 Oct', 'Hiba Kamal', 'Cut', 45], ['12 Oct', 'Mehwish Raza', 'Cut & blow-dry', 70], ['10 Oct', 'Rania Ali', 'Blow-dry', 25], ['10 Oct', 'Sara Mirza', 'Cut & style', 45],
+      ['9 Oct', 'Kinza Rauf', 'Blow-dry', 25], ['8 Oct', 'Maira Hassan', 'Cut & style', 45], ['7 Oct', 'Anum Zaidi', 'Blow-dry', 25], ['6 Oct', 'Eman Tariq', 'Cut & style', 45],
+      ['3 Oct', 'Zara Butt', 'Cut & style', 45], ['2 Oct', 'Alina Farooq', 'Blow-dry', 25], ['1 Oct', 'Sobia Latif', 'Cut', 45], ['29 Sep', 'Hania Asif', 'Cut & style', 45]
+    ];
+    const cut = s.range === 'week' ? 5 : s.range === 'month' ? 11 : 12;
+    const R = ALL.slice(0, cut);
+    v.ranges = [['week', 'This week'], ['month', 'This month'], ['30', 'Last 30 days']].map(([id, label]) => ({ label, cls: s.range === id ? 'on' : '', sel: s.range === id ? 'true' : 'false', go: () => this.setState({ range: id }) }));
+    v.recent = R.map(([date, cust, svc, rev]) => ({ date, cust, svc, rev: m(rev), com: m(rev * 0.15) }));
+    const tr = R.reduce((t, x) => t + x[3], 0);
+    v.recentN = R.length; v.recentRev = m(tr); v.recentCom = m(tr * 0.15);
+    v.recentSum = 'Showing ' + R.length + ' services · ' + m(tr * 0.15) + ' commission';
+
+    const TT = [['summary', 'Summary'], ['history', 'Payroll history'], ['recent', 'Recent services']];
+    v.tabs = TT.map(([id, label]) => ({ label, cls: s.tab === id ? 'tab on' : 'tab', sel: s.tab === id ? 'true' : 'false', go: () => this.setTab(id) }));
+    TT.forEach(([id]) => { v['t_' + id] = s.tab === id && !s.loading; });
+    v.loading = s.loading;
+    return v;
+  }
+}
+</script>
+</body>
+</html>

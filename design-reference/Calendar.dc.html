@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Calendar and appointments</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+<style>
+body{margin:0;background:#F4F3F6;color:#1C1724;font-family:'Figtree',system-ui,sans-serif;font-size:14px;line-height:1.45}
+*{box-sizing:border-box}
+a{color:#6B2C5C}a:hover{color:#4E1E43}
+.disp{font-family:'Sora',sans-serif}
+.app{display:flex;flex-wrap:wrap;min-height:100vh;width:100%}
+.side{flex:1 1 252px;background:#1C1724;color:#EDE8F0;padding:22px 14px;display:flex;flex-direction:column;gap:22px}
+.main{flex:999 1 560px;min-width:0;display:flex;flex-direction:column}
+.brand{display:flex;gap:12px;align-items:center;padding:0 8px}
+.logo{width:40px;height:40px;border-radius:12px;background:#F3E8F0;color:#5A2350;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:700;font-size:16px;flex:none}
+.bname{font-family:'Sora',sans-serif;font-weight:600;font-size:15px;color:#fff;margin:0}
+.btype{font-size:12px;color:#B7AEC2;margin:0}
+.navg{display:flex;flex-direction:column;gap:2px}
+.navh{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#A79EB3;padding:0 10px;margin:0 0 6px;font-weight:600}
+.nav{display:flex;align-items:center;gap:10px;width:100%;min-height:40px;padding:8px 10px;border-radius:10px;border:0;background:transparent;color:#D9D2E0;font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.nav:hover{background:#2C2436;color:#fff}
+.nav.on{background:#F3E8F0;color:#4E1E43;font-weight:600}
+.ndot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.55;flex:none}
+.user{display:flex;gap:10px;align-items:center;padding:0 6px;margin-top:auto}
+.av{width:36px;height:36px;border-radius:50%;background:#3F6B5C;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 32px;background:#fff;border-bottom:1px solid #E4E1E8}
+.wrap{padding:26px 32px 56px;width:100%;max-width:1320px}
+.ph{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;margin-bottom:18px}
+.crumb{font-size:13px;color:#6B6475;display:flex;gap:6px;align-items:center;margin-bottom:4px}
+.crumb button{background:none;border:0;padding:0;font:inherit;color:#6B2C5C;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+h1{font-family:'Sora',sans-serif;font-size:28px;margin:0 0 4px;font-weight:600;letter-spacing:-.015em}
+.sub{color:#6B6475;margin:0}
+.tabs{display:flex;gap:2px;border-bottom:1px solid #E1DDE6;overflow-x:auto;margin-bottom:22px}
+.tab{appearance:none;border:0;background:none;font:inherit;font-weight:500;color:#6B6475;padding:12px 14px;min-height:46px;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap;display:flex;gap:8px;align-items:center}
+.tab:hover{color:#1C1724}
+.tab.on{color:#6B2C5C;border-bottom-color:#6B2C5C;font-weight:600}
+.cnt{font-size:11px;font-weight:700;background:#EEECF1;color:#4C4556;border-radius:99px;padding:1px 7px}
+.card{background:#fff;border:1px solid #E4E1E8;border-radius:14px;padding:20px;min-width:0}
+.h3{font-family:'Sora',sans-serif;font-size:16px;font-weight:600;margin:0 0 14px}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:#fff;border:1px solid #E4E1E8;border-radius:14px;padding:14px 16px}
+.kl{font-size:12px;color:#6B6475}
+.kv{font-family:'Sora',sans-serif;font-size:22px;font-weight:600;margin-top:4px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:10px;border:1px solid #6B2C5C;background:#6B2C5C;color:#fff;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn:hover{background:#56224A}
+.btn.ghost{background:#fff;color:#5A2350;border-color:#D8CFDD}
+.btn.ghost:hover{background:#FAF5F9}
+.btn.danger{background:#fff;color:#A3312B;border-color:#EAC3BF}
+.btn.sage{background:#2F6F5E;border-color:#2F6F5E}
+.btn.sm{min-height:36px;padding:0 12px;font-size:13px}
+.btn.icon{width:36px;padding:0}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.stack{display:flex;flex-direction:column;gap:16px}
+.muted{color:#6B6475}
+.small{font-size:13px}
+.tbox{overflow-x:auto;border:1px solid #E4E1E8;border-radius:14px;background:#fff}
+.tr{display:grid;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid #F0EEF2}
+.tr:last-child{border-bottom:0}
+.th{font-size:12px;font-weight:600;color:#6B6475;text-transform:uppercase;letter-spacing:.05em;background:#FAF9FB}
+.lnk{background:none;border:0;padding:0;font:inherit;font-weight:600;color:#1C1724;cursor:pointer;text-align:left;min-height:32px}
+.lnk:hover{color:#6B2C5C;text-decoration:underline;text-underline-offset:3px}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;width:max-content}
+.p-plum{background:#F3E8F0;color:#5A2350}.p-sage{background:#E3F0EB;color:#245647}.p-amber{background:#FBF0DC;color:#7A4710}.p-red{background:#FBE6E4;color:#8E2A25}.p-grey{background:#EEECF1;color:#4C4556}
+.field{display:flex;flex-direction:column;gap:6px}
+label{font-size:13px;font-weight:600}
+input,select,textarea{font:inherit;min-height:44px;padding:10px 12px;border:1px solid #D8D3DE;border-radius:10px;background:#fff;color:#1C1724;width:100%}
+textarea{min-height:92px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid #C48BB4;outline-offset:1px;border-color:#6B2C5C}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.full{grid-column:1/-1}
+.li{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid #F0EEF2}
+.li:last-child{border-bottom:0}
+.seg{display:inline-flex;background:#EEECF1;border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;font:inherit;font-weight:600;font-size:13px;color:#4C4556;padding:0 12px;min-height:36px;border-radius:8px;cursor:pointer}
+.seg button.on{background:#fff;color:#5A2350;box-shadow:0 1px 2px rgba(28,23,36,.12)}
+.sk{border-radius:12px;background:linear-gradient(90deg,#ECE9EF 0%,#F6F4F8 50%,#ECE9EF 100%);background-size:200% 100%;animation:sh 1s linear infinite}
+@keyframes sh{from{background-position:200% 0}to{background-position:-200% 0}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.split{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+.splitmain{flex:999 1 620px;min-width:0}
+.panel{flex:1 1 300px;background:#fff;border:1px solid #E4E1E8;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.cal{display:grid;grid-template-columns:56px repeat(4,minmax(140px,1fr));min-width:660px}
+.calh{padding:10px;font-weight:600;border-bottom:1px solid #E4E1E8;display:flex;gap:8px;align-items:center;font-size:13px}
+.col{position:relative;height:660px;border-left:1px solid #F0EEF2;background:repeating-linear-gradient(#fff 0 59px,#F0EEF2 59px 60px)}
+.hrs{position:relative;height:660px}
+.hrs div{height:60px;font-size:11px;color:#6B6475;padding:4px 8px 0 0;text-align:right}
+.now{position:absolute;left:0;right:0;height:2px;background:#C0392B;z-index:2}
+.now::before{content:'';position:absolute;left:-5px;top:-4px;width:10px;height:10px;border-radius:50%;background:#C0392B}
+.blk{position:absolute;left:6px;right:6px;border-radius:10px;padding:6px 8px;border:0;text-align:left;font:inherit;font-size:12px;cursor:pointer;overflow:hidden;display:flex;flex-direction:column;gap:2px;z-index:1}
+.blk:hover{filter:brightness(.97)}
+.blk.sel{outline:2px solid #1C1724;outline-offset:1px}
+.b-plum{background:#F3E8F0;color:#4E1E43;box-shadow:inset 3px 0 0 #6B2C5C}
+.b-sage{background:#E3F0EB;color:#1E4A3D;box-shadow:inset 3px 0 0 #2F6F5E}
+.b-amber{background:#FBF0DC;color:#6A3D0C;box-shadow:inset 3px 0 0 #B7741F}
+.b-red{background:#FBE6E4;color:#7E241F;box-shadow:inset 3px 0 0 #A3312B}
+.b-grey{background:#EEECF1;color:#4C4556;box-shadow:inset 3px 0 0 #8A8296}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:#4C4556}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.wk{display:grid;grid-template-columns:repeat(7,minmax(120px,1fr));gap:10px;min-width:880px}
+.wkd{background:#fff;border:1px solid #E4E1E8;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:300px}
+.wkd.today{border-color:#6B2C5C;box-shadow:inset 0 3px 0 #6B2C5C}
+.chip{border:0;text-align:left;font:inherit;font-size:12px;border-radius:8px;padding:6px 8px;cursor:pointer;display:flex;flex-direction:column}
+.load{height:6px;border-radius:99px;background:#EEECF1;overflow:hidden}
+.load div{height:100%;background:#C48BB4}
+.tl{display:flex;flex-direction:column;gap:0}
+.tli{display:flex;gap:12px;padding-bottom:14px;position:relative}
+.tli b{width:12px;height:12px;border-radius:50%;background:#6B2C5C;margin-top:4px;flex:none}
+.tli.off b{background:#D8D3DE}
+.qty{display:inline-flex;align-items:center;border:1px solid #D8D3DE;border-radius:10px;overflow:hidden}
+.qty button{width:36px;min-height:36px;border:0;background:#FAF9FB;font:inherit;font-size:16px;cursor:pointer;color:#1C1724}
+.qty span{min-width:30px;text-align:center;font-weight:600}
+.slot{border:1px solid #D8D3DE;background:#fff;border-radius:10px;min-height:40px;padding:0 12px;font:inherit;font-weight:600;cursor:pointer}
+.slot.on{background:#6B2C5C;border-color:#6B2C5C;color:#fff}
+.slot:disabled{color:#B5AEBE;background:#F6F5F8;text-decoration:line-through;cursor:not-allowed}
+.note{background:#FBF0DC;color:#6A3D0C;border-radius:12px;padding:12px 14px;font-size:13px}
+.ok{background:#E3F0EB;color:#1E4A3D;border-radius:12px;padding:12px 14px;font-size:13px}
+</style>
+</helmet>
+<div class="app">
+<aside class="side" aria-label="Main navigation">
+<div class="brand"><div class="logo" aria-hidden="true">VR</div><div><p class="bname">Velvet Room Salon</p><p class="btype">Hair &amp; beauty salon</p></div></div>
+<nav class="navg" aria-label="Front desk"><p class="navh">Front desk</p>
+<button class="nav"><span class="ndot"></span>Overview</button>
+<button class="nav on" aria-current="page" onClick="{{goCal}}"><span class="ndot"></span>Calendar</button>
+<button class="nav"><span class="ndot"></span>Customers</button>
+<button class="nav"><span class="ndot"></span>Point of sale</button>
+</nav>
+<nav class="navg" aria-label="Business"><p class="navh">Business</p>
+<button class="nav"><span class="ndot"></span>Services &amp; pricing</button>
+<button class="nav"><span class="ndot"></span>Payroll</button>
+<button class="nav"><span class="ndot"></span>Reports</button>
+<button class="nav"><span class="ndot"></span>Team</button>
+<button class="nav"><span class="ndot"></span>Audit log</button>
+<button class="nav"><span class="ndot"></span>Settings</button>
+</nav>
+<nav class="navg" aria-label="You"><p class="navh">You</p>
+<button class="nav"><span class="ndot"></span>My earnings</button>
+<button class="nav"><span class="ndot"></span>My account</button>
+</nav>
+<div class="user"><div class="av" aria-hidden="true">BA</div><div><div style="font-weight: 600; color: #fff">Bilal Ahmed</div><div style="font-size: 12px; color: #B7AEC2">Front desk</div></div></div>
+</aside>
+
+<main class="main">
+<div class="top">
+<span class="muted small">Mon 12 Oct 2026 · 14:05 · Asia/Karachi</span>
+<div class="row"><button class="btn sm" onClick="{{goBook}}">New booking</button></div>
+</div>
+<div class="wrap">
+<div class="ph">
+<div>
+<sc-if value="{{isAppt}}" hint-placeholder-val="{{ false }}"><div class="crumb"><button onClick="{{goCal}}">Calendar</button><span aria-hidden="true">/</span><span>Appointment</span></div></sc-if>
+<h1>{{title}}</h1>
+<p class="sub">{{sub}}</p>
+</div>
+<div class="row">
+<sc-if value="{{isCal}}" hint-placeholder-val="{{ true }}">
+<label class="sr" for="fstaff">Team member</label>
+<select id="fstaff" style="width: auto" onChange="{{onStaff}}"><option value="all">All team members</option><option value="Sana">Sana</option><option value="Hira">Hira</option><option value="Maria">Maria</option><option value="Zoya">Zoya</option></select>
+</sc-if>
+<sc-if value="{{isAppt}}" hint-placeholder-val="{{ false }}"><span class="{{selA.pcls}}">{{selA.status}}</span><button class="btn sm" onClick="{{goPay}}">Take payment</button></sc-if>
+</div>
+</div>
+
+<div class="tabs" role="tablist" aria-label="Sections">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="4"><button role="tab" class="{{t.cls}}" aria-selected="{{t.sel}}" onClick="{{t.go}}">{{t.label}}<sc-if value="{{t.hasCnt}}" hint-placeholder-val="{{ false }}"><span class="cnt">{{t.cnt}}</span></sc-if></button></sc-for>
+</div>
+
+<sc-if value="{{loading}}" hint-placeholder-val="{{ false }}">
+<div class="stack" aria-live="polite"><span class="sr">Loading…</span><div class="kpis"><div class="sk" style="height: 74px"></div><div class="sk" style="height: 74px"></div><div class="sk" style="height: 74px"></div></div><div class="sk" style="height: 420px"></div></div>
+</sc-if>
+
+<!-- DAY -->
+<sc-if value="{{t_day}}" hint-placeholder-val="{{ true }}">
+<div class="kpis">
+<div class="kpi"><div class="kl">Booked today</div><div class="kv">{{dayCount}}</div></div>
+<div class="kpi"><div class="kl">Checked in now</div><div class="kv">1</div></div>
+<div class="kpi"><div class="kl">Still to arrive</div><div class="kv">5</div></div>
+<div class="kpi"><div class="kl">Booked value</div><div class="kv">$842</div></div>
+</div>
+<div class="row between" style="margin-bottom: 14px">
+<div class="row"><button class="btn ghost sm icon" aria-label="Previous day">‹</button><button class="btn ghost sm">Today</button><button class="btn ghost sm icon" aria-label="Next day">›</button><span class="disp" style="font-weight: 600; font-size: 16px">Monday, 12 October</span></div>
+<div class="seg" role="group" aria-label="Range presets"><button class="on">Today</button><button>Tomorrow</button><button>This week</button><button>Next 7 days</button></div>
+</div>
+<div class="split">
+<div class="splitmain">
+<div class="tbox">
+<div class="cal">
+<div class="calh"></div>
+<sc-for list="{{cols}}" as="s" hint-placeholder-count="4"><div class="calh"><div class="av" style="width: 28px; height: 28px; font-size: 11px">{{s.ini}}</div><div><div>{{s.name}}</div><div class="muted" style="font-weight: 500; font-size: 11px">{{s.load}}</div></div></div></sc-for>
+<div class="hrs"><sc-for list="{{hours}}" as="h" hint-placeholder-count="11"><div>{{h}}</div></sc-for></div>
+<sc-for list="{{cols}}" as="s" hint-placeholder-count="4">
+<div class="col">
+<div class="now" style="top: 305px" aria-hidden="true"></div>
+<sc-for list="{{s.blocks}}" as="b" hint-placeholder-count="3">
+<button class="{{b.cls}}" style="top: {{b.top}}px; height: {{b.h}}px" onClick="{{b.pick}}" aria-pressed="{{b.pressed}}"><strong>{{b.client}}</strong><span>{{b.time}} · {{b.service}}</span></button>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</div>
+<div class="legend" style="margin-top: 12px"><span><i style="background: #FBF0DC; box-shadow: inset 3px 0 0 #B7741F"></i>Confirmed</span><span><i style="background: #F3E8F0; box-shadow: inset 3px 0 0 #6B2C5C"></i>Checked in</span><span><i style="background: #E3F0EB; box-shadow: inset 3px 0 0 #2F6F5E"></i>Completed</span><span><i style="background: #FBE6E4; box-shadow: inset 3px 0 0 #A3312B"></i>No-show</span><span><i style="background: #EEECF1; box-shadow: inset 3px 0 0 #8A8296"></i>Cancelled</span><span><i style="background: #C0392B; height: 2px; border-radius: 0"></i>Now</span></div>
+</div>
+<aside class="panel" aria-label="Selected appointment">
+<div class="row between"><span class="{{selA.pcls}}">{{selA.status}}</span><span class="muted small">{{selA.ref}}</span></div>
+<div><div class="disp" style="font-size: 20px; font-weight: 600">{{selA.client}}</div><div class="muted small">{{selA.phone}}</div></div>
+<div class="li" style="padding-top: 0"><span class="muted">When</span><span>{{selA.time}} – {{selA.end}}</span></div>
+<div class="li"><span class="muted">With</span><span>{{selA.staff}}</span></div>
+<div class="li"><span class="muted">Service</span><span>{{selA.service}}</span></div>
+<div class="li"><span class="muted">Quoted</span><strong>{{selA.price}}</strong></div>
+<div class="li"><span class="muted">Balance</span><span>{{selA.balance}}</span></div>
+<div class="row" style="gap: 8px"><button class="btn sage sm">Check in</button><button class="btn ghost sm">Reschedule</button></div>
+<button class="btn" onClick="{{goAppt}}">Open appointment</button>
+</aside>
+</div>
+</sc-if>
+
+<!-- WEEK -->
+<sc-if value="{{t_week}}" hint-placeholder-val="{{ false }}">
+<div class="row between" style="margin-bottom: 14px">
+<div class="row"><button class="btn ghost sm icon" aria-label="Previous week">‹</button><button class="btn ghost sm">This week</button><button class="btn ghost sm icon" aria-label="Next week">›</button><span class="disp" style="font-weight: 600; font-size: 16px">12 – 18 October 2026</span></div>
+<span class="muted small">Bar shows how full each day is</span>
+</div>
+<div style="overflow-x: auto"><div class="wk">
+<sc-for list="{{week}}" as="d" hint-placeholder-count="7">
+<div class="{{d.cls}}">
+<div class="row between"><strong>{{d.day}}</strong><span class="muted small">{{d.count}}</span></div>
+<div class="load" aria-hidden="true"><div style="width: {{d.fill}}%"></div></div>
+<sc-for list="{{d.items}}" as="c" hint-placeholder-count="3"><button class="{{c.cls}}" onClick="{{c.pick}}"><strong>{{c.time}} · {{c.client}}</strong><span>{{c.service}}</span></button></sc-for>
+<sc-if value="{{d.more}}" hint-placeholder-val="{{ false }}"><button class="lnk small" style="color: #6B2C5C" onClick="{{d.open}}">+{{d.moreN}} more</button></sc-if>
+<sc-if value="{{d.closed}}" hint-placeholder-val="{{ false }}"><p class="muted small" style="margin: auto 0">Closed</p></sc-if>
+</div>
+</sc-for>
+</div></div>
+</sc-if>
+
+<!-- AGENDA -->
+<sc-if value="{{t_agenda}}" hint-placeholder-val="{{ false }}">
+<div class="row" style="margin-bottom: 14px">
+<div class="seg" role="group" aria-label="Range"><button class="on">Next 7 days</button><button>This month</button><button>Custom</button></div>
+<div class="seg" role="group" aria-label="Status filter"><sc-for list="{{statusOpts}}" as="o" hint-placeholder-count="4"><button class="{{o.cls}}" onClick="{{o.go}}" aria-pressed="{{o.sel}}">{{o.label}}</button></sc-for></div>
+</div>
+<div class="stack">
+<sc-for list="{{agenda}}" as="d" hint-placeholder-count="3">
+<div><div class="row between" style="margin-bottom: 8px"><h2 class="h3" style="margin: 0">{{d.label}}</h2><span class="muted small">{{d.n}}</span></div>
+<div class="tbox">
+<sc-for list="{{d.items}}" as="a" hint-placeholder-count="3">
+<div class="tr" style="grid-template-columns: 110px 1.4fr 1.6fr 1fr 90px 120px; min-width: 720px"><span class="disp" style="font-weight: 600">{{a.time}}</span><button class="lnk" onClick="{{a.open}}">{{a.client}}</button><span class="muted">{{a.service}}</span><span>{{a.staff}}</span><span>{{a.price}}</span><span class="{{a.pcls}}">{{a.status}}</span></div>
+</sc-for>
+<sc-if value="{{d.empty}}" hint-placeholder-val="{{ false }}"><div class="tr muted">No appointments match this filter.</div></sc-if>
+</div></div>
+</sc-for>
+</div>
+</sc-if>
+
+<!-- NEW BOOKING -->
+<sc-if value="{{t_book}}" hint-placeholder-val="{{ false }}">
+<div class="split">
+<div class="splitmain stack">
+<div class="card"><h2 class="h3">1 · Customer</h2>
+<div class="row"><div style="flex: 1 1 260px"><label class="sr" for="bk-c">Customer</label><input id="bk-c" placeholder="Search by phone or name" /></div><button class="btn ghost sm">New customer</button></div>
+</div>
+<div class="card"><h2 class="h3">2 · Services</h2>
+<sc-for list="{{bookLines}}" as="l" hint-placeholder-count="2">
+<div class="li"><div><strong>{{l.name}}</strong><div class="muted small">{{l.dur}} · {{l.unit}}</div></div><div class="row" style="flex-wrap: nowrap"><div class="qty"><button onClick="{{l.dec}}" aria-label="Decrease">−</button><span>{{l.qty}}</span><button onClick="{{l.inc}}" aria-label="Increase">+</button></div><span style="min-width: 64px; text-align: right">{{l.total}}</span></div></div>
+</sc-for>
+<div class="field" style="margin-top: 12px"><label for="bk-add">Add a service</label><select id="bk-add"><option>Choose a service…</option><option>Full colour — $95</option><option>Hydrating facial — $70</option><option>Gel manicure — $35</option></select></div>
+</div>
+<div class="card"><h2 class="h3">3 · Team member, date &amp; time</h2>
+<div class="form">
+<div class="field"><label for="bk-t">Team member</label><select id="bk-t"><option>Sana Malik</option><option>Hira Shah</option><option>Maria Khan</option><option>Zoya Ali</option></select></div>
+<div class="field"><label for="bk-d">Date</label><input id="bk-d" type="date" /></div>
+</div>
+<p class="small" style="font-weight: 600; margin: 16px 0 8px">Available times · Tue 13 Oct with Sana</p>
+<div class="row" style="gap: 8px"><sc-for list="{{slots}}" as="t" hint-placeholder-count="8"><button class="{{t.cls}}" onClick="{{t.go}}" disabled="{{t.off}}" aria-pressed="{{t.sel}}">{{t.time}}</button></sc-for></div>
+</div>
+<div class="card"><h2 class="h3">4 · Notes</h2><label class="sr" for="bk-n">Notes</label><textarea id="bk-n" placeholder="Allergies, preferences, anything the team should know"></textarea></div>
+</div>
+<aside class="panel" aria-label="Booking summary">
+<h2 class="h3" style="margin: 0">Summary</h2>
+<div class="li" style="padding-top: 0"><span class="muted">When</span><span>Tue 13 Oct · {{slotPick}}</span></div>
+<div class="li"><span class="muted">With</span><span>Sana Malik</span></div>
+<div class="li"><span class="muted">Duration</span><span>{{bookDur}}</span></div>
+<div class="li"><span class="muted">Subtotal</span><span>{{bookSub}}</span></div>
+<div class="field"><label for="bk-disc">Discount</label><input id="bk-disc" placeholder="$0.00 or %" /></div>
+<div class="li"><strong>Quoted total</strong><span class="disp" style="font-size: 24px; font-weight: 600">{{bookSub}}</span></div>
+<button class="btn">Book appointment</button>
+<button class="btn ghost">Clear form</button>
+</aside>
+</div>
+</sc-if>
+
+<!-- APPOINTMENT: SUMMARY -->
+<sc-if value="{{a_summary}}" hint-placeholder-val="{{ false }}">
+<div class="g2">
+<div class="card"><h2 class="h3">Booking summary</h2>
+<div class="li"><span class="muted">Customer</span><span class="lnk" style="min-height: 0">{{selA.client}}</span></div>
+<div class="li"><span class="muted">Phone</span><span>{{selA.phone}}</span></div>
+<div class="li"><span class="muted">Date &amp; time</span><span>Mon 12 Oct · {{selA.time}} – {{selA.end}}</span></div>
+<div class="li"><span class="muted">Team member</span><span>{{selA.staff}}</span></div>
+<div class="li"><span class="muted">Status</span><span class="{{selA.pcls}}">{{selA.status}}</span></div>
+<div class="li"><span class="muted">Booked by</span><span>Bilal · 10 Oct, 16:02</span></div>
+</div>
+<div class="stack">
+<div class="card"><h2 class="h3">Notes</h2><p style="margin: 0">Prefers a lighter finish. Sensitive scalp — patch test done 2 Oct.</p></div>
+<div class="card"><h2 class="h3">Status history</h2>
+<div class="tl"><div class="tli"><b></b><div><strong>Booked</strong><div class="muted small">10 Oct, 16:02 · Bilal</div></div></div><div class="tli"><b></b><div><strong>Reminder sent</strong><div class="muted small">11 Oct, 10:00 · automatic</div></div></div><div class="tli off"><b></b><div><strong>Check in</strong><div class="muted small">Waiting</div></div></div></div>
+</div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{a_services}}" hint-placeholder-val="{{ false }}">
+<div class="ok" style="margin-bottom: 14px">Services and price can still be changed because no payment has been taken.</div>
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 2fr 1fr 120px 1fr; min-width: 560px">Service<span>Performer</span><span>Qty</span><span style="text-align: right">Price</span></div>
+<div class="tr" style="grid-template-columns: 2fr 1fr 120px 1fr; min-width: 560px"><strong>{{selA.service}}</strong><span>{{selA.staff}}</span><div class="qty"><button aria-label="Decrease">−</button><span>1</span><button aria-label="Increase">+</button></div><span style="text-align: right">{{selA.price}}</span></div>
+<div class="tr" style="grid-template-columns: 2fr 1fr 120px 1fr; min-width: 560px"><span class="muted">Discount</span><span></span><span></span><span style="text-align: right">$0.00</span></div>
+<div class="tr" style="grid-template-columns: 2fr 1fr 120px 1fr; min-width: 560px"><strong>Quoted price</strong><span></span><span></span><strong class="disp" style="text-align: right; font-size: 18px">{{selA.price}}</strong></div>
+</div>
+<div class="row" style="margin-top: 14px"><button class="btn ghost">Add service</button><button class="btn">Save changes</button></div>
+</sc-if>
+<sc-if value="{{a_payments}}" hint-placeholder-val="{{ false }}">
+<div class="kpis"><div class="kpi"><div class="kl">Quoted</div><div class="kv">{{selA.price}}</div></div><div class="kpi"><div class="kl">Paid</div><div class="kv">{{selA.paid}}</div></div><div class="kpi"><div class="kl">Balance due</div><div class="kv" style="color: #8E2A25">{{selA.balance}}</div></div></div>
+<div class="g2">
+<div class="card"><h2 class="h3">Payment history</h2>
+<sc-if value="{{selA.hasDeposit}}" hint-placeholder-val="{{ false }}"><div class="li"><div><strong>Deposit · Card</strong><div class="muted small">10 Oct, 16:05 · Bilal</div></div><span>$20.00</span></div></sc-if>
+<sc-if value="{{selA.noDeposit}}" hint-placeholder-val="{{ true }}"><p class="muted" style="margin: 0">No payments yet.</p></sc-if>
+</div>
+<div class="card"><h2 class="h3">Take payment</h2>
+<div class="form"><div class="field"><label for="tp-a">Amount</label><input id="tp-a" placeholder="{{selA.balance}}" /></div><div class="field"><label for="tp-m">Method</label><select id="tp-m"><option>Card</option><option>Cash</option><option>Bank transfer</option></select></div></div>
+<div class="row" style="margin-top: 14px"><button class="btn">Record payment</button><button class="btn danger">Refund…</button></div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{a_actions}}" hint-placeholder-val="{{ false }}">
+<div class="g3">
+<div class="card"><h2 class="h3">Check in</h2><p class="muted small">Mark the customer as arrived.</p><button class="btn sage">Check in</button></div>
+<div class="card"><h2 class="h3">Complete</h2><p class="muted small">Close the appointment and open the till.</p><button class="btn">Complete &amp; checkout</button></div>
+<div class="card"><h2 class="h3">Reschedule</h2><p class="muted small">Move to another time or team member.</p><button class="btn ghost">Reschedule</button></div>
+<div class="card"><h2 class="h3">No-show or cancel</h2><p class="muted small">Both are recorded in the audit log.</p><div class="row"><button class="btn ghost">No-show</button><button class="btn danger">Cancel</button></div></div>
+</div>
+</sc-if>
+
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { page: 'cal', tab: 'day', loading: false, sel: 'a5', staff: 'all', status: 'all', slot: '11:00', qty: { cut: 1, blow: 1 } };
+  }
+  componentWillUnmount() { clearTimeout(this.tm); }
+  nav(page, tab) {
+    this.setState({ page, tab, loading: true });
+    clearTimeout(this.tm);
+    this.tm = setTimeout(() => this.setState({ loading: false }), 380);
+  }
+  renderVals() {
+    const s = this.state;
+    const v = {};
+    const PC = { Confirmed: 'pill p-amber', 'Checked in': 'pill p-plum', Completed: 'pill p-sage', 'No-show': 'pill p-red', Cancelled: 'pill p-grey' };
+    const BC = { Confirmed: 'amber', 'Checked in': 'plum', Completed: 'sage', 'No-show': 'red', Cancelled: 'grey' };
+    const A = [
+      ['a1', 'Sana', '09:30', 60, 'Hiba Kamal', 'Cut', 'Completed', 45, '+92 301 7712345'],
+      ['a2', 'Sana', '11:00', 90, 'Mehwish Raza', 'Cut & blow-dry', 'Completed', 70, '+92 300 1234567'],
+      ['a3', 'Sana', '14:30', 60, 'Sara Mirza', 'Cut & style', 'Confirmed', 45, '+92 321 9981230'],
+      ['a4', 'Sana', '16:30', 45, 'Rania Ali', 'Blow-dry', 'Confirmed', 25, '+92 333 4410098'],
+      ['a5', 'Hira', '13:30', 120, 'Rabia Iqbal', 'Full colour', 'Checked in', 95, '+92 321 5550192'],
+      ['a6', 'Hira', '09:30', 150, 'Sadia Noor', 'Balayage', 'Completed', 140, '+92 345 1200987'],
+      ['a7', 'Hira', '16:30', 60, 'Kinza Rauf', 'Toner refresh', 'Confirmed', 40, '+92 300 7765432'],
+      ['a8', 'Maria', '10:30', 45, 'Iqra Javed', 'Chemical peel', 'Completed', 64, '+92 322 4401287'],
+      ['a9', 'Maria', '12:30', 30, 'Laiba Shah', 'Brow shape', 'No-show', 20, '+92 311 2233445'],
+      ['a10', 'Maria', '15:15', 60, 'Noor Fatima', 'Hydrating facial', 'Confirmed', 70, '+92 333 8881204'],
+      ['a11', 'Zoya', '11:00', 45, 'Areeba Khan', 'Gel manicure', 'Completed', 35, '+92 300 6655443'],
+      ['a12', 'Zoya', '13:00', 60, 'Hania Asif', 'Pedicure', 'Cancelled', 40, '+92 345 8877665'],
+      ['a13', 'Zoya', '16:00', 45, 'Amna Tariq', 'Gel manicure', 'Confirmed', 35, '+92 345 2209981']
+    ].map(([id, staff, time, dur, client, service, status, price, phone]) => {
+      const [h, m] = time.split(':').map(Number);
+      const e = h * 60 + m + dur;
+      const end = String(Math.floor(e / 60)).padStart(2, '0') + ':' + String(e % 60).padStart(2, '0');
+      const paidN = status === 'Completed' ? price : (id === 'a3' || id === 'a5' ? 20 : 0);
+      return { id, staff, time, dur, client, service, status, phone, end, startMin: (h - 9) * 60 + m, priceN: price, price: '$' + price.toFixed(2), paid: '$' + paidN.toFixed(2), balance: '$' + (price - paidN).toFixed(2), hasDeposit: paidN > 0 && paidN < price, noDeposit: !(paidN > 0 && paidN < price), pcls: PC[status], ref: '#AP-' + (2100 + Number(id.slice(1))) };
+    });
+    const sel = A.find((a) => a.id === s.sel) || A[0];
+    v.selA = { ...sel, staff: sel.staff + (sel.staff === 'Sana' ? ' Malik' : sel.staff === 'Hira' ? ' Shah' : sel.staff === 'Maria' ? ' Khan' : ' Ali') };
+
+    const isCal = s.page === 'cal';
+    v.isCal = isCal; v.isAppt = !isCal; v.loading = s.loading;
+    const CT = [['day', 'Day', '13'], ['week', 'Week', ''], ['agenda', 'Agenda', ''], ['book', 'New booking', '']];
+    const AT = [['summary', 'Summary', ''], ['services', 'Services & price', ''], ['payments', 'Payments', ''], ['actions', 'Actions', '']];
+    const T = isCal ? CT : AT;
+    v.tabs = T.map(([id, label, cnt]) => ({ label, cnt, hasCnt: !!cnt, cls: s.tab === id ? 'tab on' : 'tab', sel: s.tab === id ? 'true' : 'false', go: () => { if (s.tab !== id) this.nav(s.page, id); } }));
+    CT.forEach(([id]) => { v['t_' + id] = isCal && s.tab === id && !s.loading; });
+    AT.forEach(([id]) => { v['a_' + id] = !isCal && s.tab === id && !s.loading; });
+    v.title = isCal ? 'Calendar' : sel.client + ' · ' + sel.time;
+    v.sub = isCal ? 'Appointments across your team' : 'Mon 12 Oct 2026 · ' + sel.time + ' – ' + sel.end + ' with ' + v.selA.staff;
+
+    v.goCal = () => this.nav('cal', 'day');
+    v.goBook = () => this.nav('cal', 'book');
+    v.goAppt = () => this.nav('appt', 'summary');
+    v.goPay = () => this.nav('appt', 'payments');
+    v.onStaff = (e) => this.setState({ staff: e.target.value });
+
+    v.hours = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
+    const staffList = [['Sana', 'SM'], ['Hira', 'HS'], ['Maria', 'MK'], ['Zoya', 'ZA']].filter(([n]) => s.staff === 'all' || s.staff === n);
+    v.cols = staffList.map(([name, ini]) => {
+      const mine = A.filter((a) => a.staff === name);
+      const mins = mine.filter((a) => a.status !== 'Cancelled').reduce((t, a) => t + a.dur, 0);
+      return {
+        name, ini, load: mine.length + ' appts · ' + Math.round(mins / 6) + '% booked',
+        blocks: mine.map((a) => ({ top: a.startMin + 2, h: a.dur - 4, client: a.client, service: a.service, time: a.time, pressed: a.id === s.sel ? 'true' : 'false', cls: 'blk b-' + BC[a.status] + (a.id === s.sel ? ' sel' : ''), pick: () => this.setState({ sel: a.id }) }))
+      };
+    });
+    v.dayCount = A.filter((a) => a.status !== 'Cancelled').length;
+
+    const openA = (id) => () => { this.setState({ sel: id }); this.nav('appt', 'summary'); };
+    const ch = (time, client, service, st, id) => ({ time, client, service, cls: 'chip b-' + BC[st], pick: openA(id || 'a3') });
+    v.week = [
+      { day: 'Mon 12', count: '13', fill: 78, cls: 'wkd today', items: [ch('09:30', 'Hiba K.', 'Cut', 'Completed', 'a1'), ch('13:30', 'Rabia I.', 'Full colour', 'Checked in', 'a5'), ch('14:30', 'Sara M.', 'Cut & style', 'Confirmed', 'a3')], more: true, moreN: 10 },
+      { day: 'Tue 13', count: '11', fill: 66, cls: 'wkd', items: [ch('11:00', 'Mehwish R.', 'Cut & style', 'Confirmed'), ch('13:30', 'Sara M.', 'Facial', 'Confirmed')], more: true, moreN: 9 },
+      { day: 'Wed 14', count: '9', fill: 52, cls: 'wkd', items: [ch('10:30', 'Iqra J.', 'Chemical peel', 'Confirmed'), ch('15:00', 'Hania A.', 'Manicure', 'Cancelled')], more: true, moreN: 7 },
+      { day: 'Thu 15', count: '12', fill: 71, cls: 'wkd', items: [ch('12:00', 'Zara B.', 'Balayage', 'Confirmed'), ch('17:00', 'Mahnoor S.', 'Blow-dry', 'Confirmed')], more: true, moreN: 10 },
+      { day: 'Fri 16', count: '16', fill: 90, cls: 'wkd', items: [ch('11:00', 'Kinza R.', 'Toner', 'Confirmed'), ch('14:00', 'Alina F.', 'Full colour', 'Confirmed'), ch('16:30', 'Eman T.', 'Facial', 'Confirmed')], more: true, moreN: 13 },
+      { day: 'Sat 17', count: '19', fill: 98, cls: 'wkd', items: [ch('10:00', 'Maira H.', 'Cut', 'Confirmed'), ch('13:00', 'Anum Z.', 'Gel manicure', 'Confirmed'), ch('15:30', 'Sobia L.', 'Brow shape', 'Confirmed')], more: true, moreN: 16 },
+      { day: 'Sun 18', count: '—', fill: 0, cls: 'wkd', items: [], more: false, moreN: 0, closed: true }
+    ].map((d) => ({ ...d, closed: !!d.closed, open: () => this.nav('cal', 'day') }));
+
+    v.statusOpts = [['all', 'All'], ['Confirmed', 'Confirmed'], ['Completed', 'Completed'], ['No-show', 'No-show']].map(([id, label]) => ({ label, cls: s.status === id ? 'on' : '', sel: s.status === id ? 'true' : 'false', go: () => this.setState({ status: id }) }));
+    const flt = (list) => list.filter((a) => s.status === 'all' || a.status === s.status);
+    const mk = (a) => ({ ...a, open: openA(a.id) });
+    const later = [
+      { id: 'a3', time: '11:00', client: 'Mehwish Raza', service: 'Cut & style, blow-dry', staff: 'Sana', price: '$70.00', status: 'Confirmed' },
+      { id: 'a10', time: '13:30', client: 'Sara Mirza', service: 'Hydrating facial', staff: 'Maria', price: '$70.00', status: 'Confirmed' }
+    ];
+    const wed = [
+      { id: 'a8', time: '10:30', client: 'Iqra Javed', service: 'Chemical peel', staff: 'Maria', price: '$64.00', status: 'Confirmed' },
+      { id: 'a12', time: '15:00', client: 'Hania Asif', service: 'Gel manicure', staff: 'Zoya', price: '$35.00', status: 'Cancelled' }
+    ];
+    const today = flt(A.map((a) => ({ id: a.id, time: a.time + ' – ' + a.end, client: a.client, service: a.service, staff: a.staff, price: a.price, status: a.status })).sort((x, y) => x.time.localeCompare(y.time)));
+    const t2 = flt(later), t3 = flt(wed);
+    v.agenda = [
+      { label: 'Today · Mon 12 Oct', items: today.map((a) => ({ ...mk(a), pcls: PC[a.status] })), n: today.length + ' appointments', empty: today.length === 0 },
+      { label: 'Tomorrow · Tue 13 Oct', items: t2.map((a) => ({ ...mk(a), time: a.time, pcls: PC[a.status] })), n: t2.length + ' shown', empty: t2.length === 0 },
+      { label: 'Wed 14 Oct', items: t3.map((a) => ({ ...mk(a), pcls: PC[a.status] })), n: t3.length + ' shown', empty: t3.length === 0 }
+    ];
+
+    const svc = [['cut', "Women's cut & style", 45, 60], ['blow', 'Blow-dry', 25, 30]];
+    const setQ = (id, d) => { const q = { ...this.state.qty }; q[id] = Math.max(0, (q[id] || 0) + d); this.setState({ qty: q }); };
+    v.bookLines = svc.map(([id, name, p, d]) => ({ name, dur: d + ' min', unit: '$' + p + ' each', qty: s.qty[id], total: '$' + (p * s.qty[id]).toFixed(2), inc: () => setQ(id, 1), dec: () => setQ(id, -1) }));
+    const sub = svc.reduce((t, [id, , p]) => t + p * s.qty[id], 0);
+    const dur = svc.reduce((t, [id, , , d]) => t + d * s.qty[id], 0);
+    v.bookSub = '$' + sub.toFixed(2);
+    v.bookDur = Math.floor(dur / 60) + 'h ' + (dur % 60) + 'm';
+    const taken = ['12:00', '14:30', '16:30'];
+    v.slots = ['10:00', '10:30', '11:00', '11:30', '12:00', '13:00', '13:30', '14:30', '15:30', '16:30', '17:00', '18:00'].map((t) => ({ time: t, off: taken.includes(t), sel: s.slot === t ? 'true' : 'false', cls: s.slot === t ? 'slot on' : 'slot', go: () => this.setState({ slot: t }) }));
+    v.slotPick = s.slot;
+    return v;
+  }
+}
+</script>
+</body>
+</html>

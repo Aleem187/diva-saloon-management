@@ -1,0 +1,1291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Salon dashboard</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&amp;family=Figtree:wght@400;500;600;700&amp;family=Playfair+Display:wght@500;600;700&amp;family=DM+Serif+Display&amp;family=Poppins:wght@500;600;700&amp;family=Nunito+Sans:wght@400;600;700&amp;family=Lato:wght@400;700&amp;family=Source+Sans+3:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F3F6;color:#1C1724;font-family:'Figtree',system-ui,sans-serif;font-size:14px;line-height:1.45}
+*{box-sizing:border-box}
+a{color:#6B2C5C}a:hover{color:#4E1E43}
+.disp{font-family:'Sora',sans-serif}
+.app{display:flex;flex-wrap:wrap;min-height:100vh;width:100%}
+.side{flex:1 1 252px;background:#1C1724;color:#EDE8F0;padding:22px 14px;display:flex;flex-direction:column;gap:22px}
+.main{flex:999 1 560px;min-width:0;display:flex;flex-direction:column}
+.brand{display:flex;gap:12px;align-items:center;padding:0 8px}
+.logo{width:40px;height:40px;border-radius:12px;background:#F3E8F0;color:#5A2350;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:700;font-size:16px;flex:none}
+.bname{font-family:'Sora',sans-serif;font-weight:600;font-size:15px;color:#fff;margin:0}
+.btype{font-size:12px;color:#B7AEC2;margin:0}
+.navg{display:flex;flex-direction:column;gap:2px}
+.navh{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#A79EB3;padding:0 10px;margin:0 0 6px;font-weight:600}
+.nav{display:flex;align-items:center;gap:10px;width:100%;min-height:40px;padding:8px 10px;border-radius:10px;border:0;background:transparent;color:#D9D2E0;font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.nav:hover{background:#2C2436;color:#fff}
+.nav.on{background:#F3E8F0;color:#4E1E43;font-weight:600}
+.ndot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.55;flex:none}
+.subbox{margin-top:auto;background:#2A2233;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.meter{height:6px;border-radius:99px;background:#463C52;overflow:hidden}
+.meter>div{height:100%;background:#E6B8D6;border-radius:99px}
+.user{display:flex;gap:10px;align-items:center;padding:0 6px}
+.av{width:36px;height:36px;border-radius:50%;background:#3F6B5C;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none}
+.av.lg{width:56px;height:56px;font-size:18px;background:#6B2C5C}
+.signout{margin-left:auto;background:transparent;border:1px solid #4A4056;color:#EDE8F0;border-radius:8px;min-height:36px;padding:0 10px;font:inherit;font-size:12px;cursor:pointer}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 32px;background:#fff;border-bottom:1px solid #E4E1E8}
+.search{flex:1 1 260px;max-width:420px;position:relative}
+.search input{width:100%;padding-left:38px}
+.search svg{position:absolute;left:12px;top:13px}
+.wrap{padding:26px 32px 56px;width:100%;max-width:1280px}
+.ph{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;margin-bottom:18px}
+.crumb{font-size:13px;color:#6B6475;display:flex;gap:6px;align-items:center;margin-bottom:4px}
+.crumb button{background:none;border:0;padding:0;font:inherit;color:#6B2C5C;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+h1{font-family:'Sora',sans-serif;font-size:28px;margin:0 0 4px;font-weight:600;letter-spacing:-.015em}
+.sub{color:#6B6475;margin:0}
+.tabs{display:flex;gap:2px;border-bottom:1px solid #E1DDE6;overflow-x:auto;margin-bottom:24px}
+.tab{appearance:none;border:0;background:none;font:inherit;font-weight:500;color:#6B6475;padding:12px 14px;min-height:46px;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap}
+.tab:hover{color:#1C1724}
+.tab.on{color:#6B2C5C;border-bottom-color:#6B2C5C;font-weight:600}
+.card{background:#fff;border:1px solid #E4E1E8;border-radius:14px;padding:20px;min-width:0}
+.h3{font-family:'Sora',sans-serif;font-size:16px;font-weight:600;margin:0 0 14px}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-bottom:16px}
+.kl{font-size:13px;color:#6B6475}
+.kv{font-family:'Sora',sans-serif;font-size:26px;font-weight:600;margin-top:6px;letter-spacing:-.01em}
+.kd{font-size:12px;color:#245647;margin-top:4px;font-weight:600}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:10px;border:1px solid #6B2C5C;background:#6B2C5C;color:#fff;font:inherit;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn:hover{background:#56224A}
+.btn.ghost{background:#fff;color:#5A2350;border-color:#D8CFDD}
+.btn.ghost:hover{background:#FAF5F9}
+.btn.danger{background:#fff;color:#A3312B;border-color:#EAC3BF}
+.btn.sage{background:#2F6F5E;border-color:#2F6F5E}
+.btn.sm{min-height:36px;padding:0 12px;font-size:13px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.stack{display:flex;flex-direction:column;gap:16px}
+.muted{color:#6B6475}
+.small{font-size:13px}
+.tbox{overflow-x:auto;border:1px solid #E4E1E8;border-radius:14px;background:#fff}
+.tr{display:grid;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid #F0EEF2}
+.tr:last-child{border-bottom:0}
+.th{font-size:12px;font-weight:600;color:#6B6475;text-transform:uppercase;letter-spacing:.05em;background:#FAF9FB;border-radius:14px 14px 0 0}
+.lnk{background:none;border:0;padding:0;font:inherit;font-weight:600;color:#1C1724;cursor:pointer;text-align:left;min-height:32px}
+.lnk:hover{color:#6B2C5C;text-decoration:underline;text-underline-offset:3px}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;width:max-content}
+.p-plum{background:#F3E8F0;color:#5A2350}.p-sage{background:#E3F0EB;color:#245647}.p-amber{background:#FBF0DC;color:#7A4710}.p-red{background:#FBE6E4;color:#8E2A25}.p-grey{background:#EEECF1;color:#4C4556}
+.field{display:flex;flex-direction:column;gap:6px}
+label{font-size:13px;font-weight:600}
+input,select,textarea{font:inherit;min-height:44px;padding:10px 12px;border:1px solid #D8D3DE;border-radius:10px;background:#fff;color:#1C1724;width:100%}
+textarea{min-height:92px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid #C48BB4;outline-offset:1px;border-color:#6B2C5C}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.full{grid-column:1/-1}
+.chk{display:flex;gap:10px;align-items:flex-start;font-weight:500;font-size:14px}
+.chk input{width:20px;min-height:20px;height:20px;margin:2px 0 0;accent-color:#6B2C5C;flex:none}
+.li{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #F0EEF2}
+.li:last-child{border-bottom:0}
+.seg{display:inline-flex;background:#EEECF1;border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;font:inherit;font-weight:600;font-size:13px;color:#4C4556;padding:0 12px;min-height:36px;border-radius:8px;cursor:pointer}
+.seg button.on{background:#fff;color:#5A2350;box-shadow:0 1px 2px rgba(28,23,36,.12)}
+.sk{border-radius:12px;background:linear-gradient(90deg,#ECE9EF 0%,#F6F4F8 50%,#ECE9EF 100%);background-size:200% 100%;animation:sh 1s linear infinite}
+@keyframes sh{from{background-position:200% 0}to{background-position:-200% 0}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.cal{display:grid;grid-template-columns:56px repeat(4,minmax(150px,1fr));min-width:700px}
+.calh{padding:10px;font-weight:600;border-bottom:1px solid #E4E1E8;display:flex;gap:8px;align-items:center}
+.col{position:relative;height:540px;border-left:1px solid #F0EEF2;background:repeating-linear-gradient(#fff 0 59px,#F0EEF2 59px 60px)}
+.hrs{position:relative;height:540px}
+.hrs div{height:60px;font-size:11px;color:#6B6475;padding:4px 8px 0 0;text-align:right}
+.blk{position:absolute;left:6px;right:6px;border-radius:10px;padding:6px 8px;border:0;text-align:left;font:inherit;font-size:12px;cursor:pointer;overflow:hidden;display:flex;flex-direction:column;gap:2px}
+.b-plum{background:#F3E8F0;color:#4E1E43;box-shadow:inset 3px 0 0 #6B2C5C}
+.b-sage{background:#E3F0EB;color:#1E4A3D;box-shadow:inset 3px 0 0 #2F6F5E}
+.b-amber{background:#FBF0DC;color:#6A3D0C;box-shadow:inset 3px 0 0 #B7741F}
+.b-grey{background:#EEECF1;color:#4C4556;box-shadow:inset 3px 0 0 #8A8296}
+.wk{display:grid;grid-template-columns:repeat(7,minmax(120px,1fr));gap:10px;min-width:880px}
+.wkd{background:#fff;border:1px solid #E4E1E8;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:260px}
+.chip{border:0;text-align:left;font:inherit;font-size:12px;border-radius:8px;padding:6px 8px;cursor:pointer}
+.bars{display:flex;align-items:flex-end;gap:8px;height:220px;padding-top:10px;border-bottom:1px solid #E4E1E8}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:100%}
+.bar div{width:100%;max-width:34px;background:#6B2C5C;border-radius:6px 6px 0 0}
+.bar.alt div{background:#C48BB4}
+.blab{display:flex;gap:8px;margin-top:6px}
+.blab span{flex:1;text-align:center;font-size:11px;color:#6B6475}
+.hb{display:flex;flex-direction:column;gap:12px}
+.hbr{display:grid;grid-template-columns:150px 1fr 80px;gap:10px;align-items:center;font-size:13px}
+.hbt{height:10px;background:#F0EEF2;border-radius:99px;overflow:hidden}
+.hbt div{height:100%;background:#2F6F5E;border-radius:99px}
+.heat{display:grid;grid-template-columns:44px repeat(12,minmax(34px,1fr));gap:4px;min-width:560px}
+.hc{height:34px;border-radius:6px}
+.hl{font-size:11px;color:#6B6475;display:flex;align-items:center;justify-content:center}
+.sig{height:110px;border:1.5px dashed #C9C2D1;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#6B6475;background:#FAF9FB}
+.rcpt{max-width:440px;margin:0 auto;background:#fff;border:1px solid #E4E1E8;border-radius:14px;padding:28px;font-size:14px}
+.rl{display:flex;justify-content:space-between;gap:12px;padding:6px 0}
+.dash{border-top:1px dashed #D8D3DE;margin:12px 0}
+.svc{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;padding:12px;border:1px solid #E4E1E8;border-radius:12px;background:#fff;font:inherit;text-align:left;cursor:pointer;min-height:56px}
+.svc:hover{border-color:#C48BB4;background:#FCF8FB}
+.qty{display:inline-flex;align-items:center;border:1px solid #D8D3DE;border-radius:10px;overflow:hidden}
+.qty button{width:36px;min-height:36px;border:0;background:#FAF9FB;font:inherit;font-size:16px;cursor:pointer;color:#1C1724}
+.qty span{min-width:30px;text-align:center;font-weight:600}
+.tot{font-family:'Sora',sans-serif;font-size:28px;font-weight:600}
+.note{background:#FBF0DC;color:#6A3D0C;border-radius:12px;padding:12px 14px;font-size:13px}
+.ok{background:#E3F0EB;color:#1E4A3D;border-radius:12px;padding:12px 14px;font-size:13px}
+.perm{text-align:center;font-size:13px}
+/* ---- themable layer (Settings > Appearance) ---- */
+.app{--accent:#6B2C5C;--accent-d:#4E1E43;--soft:#F3E8F0;--side:#1C1724;--fh:'Sora';--fb:'Figtree';font-family:var(--fb),system-ui,sans-serif}
+.th-sage{--accent:#2F6F5E;--accent-d:#1E4A3D;--soft:#E3F0EB;--side:#14231E}
+.th-ocean{--accent:#1F5F8B;--accent-d:#154468;--soft:#E1EEF7;--side:#0F1C26}
+.th-rose{--accent:#A8335A;--accent-d:#7E2343;--soft:#FBE7EE;--side:#261219}
+.th-terra{--accent:#A4522D;--accent-d:#7A3B1F;--soft:#FBEDE5;--side:#24160F}
+.th-midnight{--accent:#3D3A8C;--accent-d:#2B2967;--soft:#E9E8F7;--side:#13122A}
+.fh-playfair{--fh:'Playfair Display'}.fh-dmserif{--fh:'DM Serif Display'}.fh-poppins{--fh:'Poppins'}
+.fb-nunito{--fb:'Nunito Sans'}.fb-lato{--fb:'Lato'}.fb-source{--fb:'Source Sans 3'}
+.sz-s{font-size:13px}.sz-m{font-size:14px}.sz-l{font-size:15.5px}
+.app .side{background:var(--side)}
+.app .logo{background:var(--soft);color:var(--accent-d)}
+.app .nav.on{background:var(--soft);color:var(--accent-d)}
+.app .tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.app .btn{background:var(--accent);border-color:var(--accent)}
+.app .btn:hover{background:var(--accent-d)}
+.app .btn.ghost{background:#fff;color:var(--accent);border-color:#D8CFDD}
+.app .btn.danger{background:#fff;color:#A3312B;border-color:#EAC3BF}
+.app .btn.sage{background:#2F6F5E;border-color:#2F6F5E}
+.app .av.lg{background:var(--accent)}
+.app .bar div{background:var(--accent)}
+.app .crumb button,.app a{color:var(--accent)}
+.app .disp,.app h1,.app .h3,.app .bname,.app .logo,.app .kv,.app .tot{font-family:var(--fh),sans-serif}
+.themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.theme{display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid #E4E1E8;border-radius:14px;background:#fff;font:inherit;text-align:left;cursor:pointer;color:#1C1724;position:relative}
+.theme.on{border-color:#1C1724;box-shadow:inset 0 0 0 1px #1C1724}
+.sws{display:flex;height:40px;border-radius:10px;overflow:hidden}
+.sws span{flex:1}
+.tick{position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;background:#1C1724;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center}
+.fonts{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.fontb{display:flex;flex-direction:column;gap:4px;padding:14px;border:1px solid #E4E1E8;border-radius:12px;background:#fff;font:inherit;text-align:left;cursor:pointer;color:#1C1724;min-height:84px}
+.fontb.on{border-color:var(--accent);background:var(--soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.lbl{font-size:13px;font-weight:600;margin:18px 0 8px}
+.billhead{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:18px}
+.plan{background:var(--side);color:#fff;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:6px}
+.plan .v{font-family:var(--fh),sans-serif;font-size:30px;font-weight:700}
+.plan .l{color:#D9D2E0;font-size:13px}
+.balc{background:#fff;border:1px solid #E4E1E8;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px}
+.balc .v{font-family:var(--fh),sans-serif;font-size:30px;font-weight:700;color:#245647}
+.quick{display:flex;gap:8px;flex-wrap:wrap}
+.quick button{border:1px solid #D8D3DE;background:#fff;border-radius:8px;min-height:36px;padding:0 14px;font:inherit;font-weight:600;cursor:pointer}
+.quick button.on{border-color:var(--accent);background:var(--soft);color:var(--accent-d)}
+.subtabs{display:flex;gap:4px;margin-bottom:18px;border-bottom:1px solid #EEECF1;overflow-x:auto}
+.subtab{border:0;background:none;font:inherit;font-weight:600;font-size:14px;color:#4C4556;padding:10px 12px;min-height:44px;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap}
+.subtab.on{color:var(--accent-d);border-bottom-color:var(--accent)}
+.tr.pend{background:#FFFBF4}
+.bcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.pm{background:#fff;border:1px solid #E4E1E8;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.pm.def{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.brandbox{width:52px;height:34px;border-radius:6px;background:#1C1724;color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center}
+.brandbox.mc{background:#8A3B12}
+.brandbox.bl{background:#2F6F5E}
+.dc{background:#fff;border:1px solid #E4E1E8;border-left:4px solid #A996E6;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.dc.off{border-left-color:#D8D3DE}
+.dc .r2{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px}
+.pct{font-family:var(--fh),sans-serif;font-size:20px;font-weight:700}
+</style>
+</helmet>
+<div class="{{appCls}}">
+
+<aside class="side" aria-label="Main navigation">
+<div class="brand">
+<div class="logo" aria-hidden="true">VR</div>
+<div>
+<p class="bname">Velvet Room Salon</p>
+<p class="btype">Hair &amp; beauty salon</p>
+</div>
+</div>
+<sc-for list="{{nav}}" as="g" hint-placeholder-count="3">
+<nav class="navg" aria-label="{{g.name}}">
+<p class="navh">{{g.name}}</p>
+<sc-for list="{{g.items}}" as="it" hint-placeholder-count="4">
+<button class="{{it.cls}}" onClick="{{it.go}}" aria-current="{{it.cur}}"><span class="ndot"></span>{{it.label}}</button>
+</sc-for>
+</nav>
+</sc-for>
+<div class="subbox">
+<div class="row between"><span style="font-size: 13px; font-weight: 600; color: #fff">Free trial</span><span class="pill p-plum">9 days left</span></div>
+<div class="meter" aria-hidden="true"><div style="width: 36%"></div></div>
+<span style="font-size: 12px; color: #B7AEC2">$20/month after 26 Oct</span>
+</div>
+<div class="user">
+<div class="av" aria-hidden="true">{{initials}}</div>
+<div style="min-width: 0">
+<div style="font-weight: 600; color: #fff; font-size: 14px">{{userName}}</div>
+<div style="font-size: 12px; color: #B7AEC2">{{roleLabel}}</div>
+</div>
+<button class="signout">Sign out</button>
+</div>
+</aside>
+
+<main class="main">
+<div class="top">
+<div class="search">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6475" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+<label class="sr" for="gsearch">Search customers</label>
+<input id="gsearch" type="search" placeholder="Search customers by name or phone">
+</div>
+<div class="row">
+<span class="muted small">Mon 12 Oct 2026 · Asia/Karachi · USD</span>
+<button class="btn sm" onClick="{{go_book}}">New booking</button>
+<button class="btn ghost sm" onClick="{{go_till}}">Open till</button>
+</div>
+</div>
+
+<div class="wrap">
+<div class="ph">
+<div>
+<sc-if value="{{hasParent}}" hint-placeholder-val="{{ false }}">
+<div class="crumb"><button onClick="{{goParent}}">{{parentLabel}}</button><span aria-hidden="true">/</span><span>{{pageLabel}}</span></div>
+</sc-if>
+<h1>{{pageTitle}}</h1>
+<p class="sub">{{pageSub}}</p>
+</div>
+<div class="row">
+<sc-if value="{{p_customer}}" hint-placeholder-val="{{ false }}"><span class="pill p-sage">Loyalty balance $12.40</span><button class="btn sm" onClick="{{go_till}}">Start sale</button></sc-if>
+<sc-if value="{{p_appt}}" hint-placeholder-val="{{ false }}"><span class="pill p-amber">Confirmed · unpaid</span><button class="btn sm" onClick="{{go_apptpay}}">Take payment</button></sc-if>
+<sc-if value="{{p_receipt}}" hint-placeholder-val="{{ false }}"><span class="pill p-sage">Issued</span><button class="btn ghost sm">Print</button></sc-if>
+<sc-if value="{{p_reports}}" hint-placeholder-val="{{ false }}">
+<label class="sr" for="rrange">Date range</label>
+<select id="rrange" style="width: auto"><option>Last 30 days</option><option>This month</option><option>Last month</option><option>This year</option><option>Custom range…</option></select>
+<div class="seg" role="group" aria-label="Group by"><button>Day</button><button class="on">Week</button><button>Month</button></div>
+</sc-if>
+</div>
+</div>
+
+<div class="tabs" role="tablist" aria-label="{{pageLabel}} sections">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="4">
+<button role="tab" class="{{t.cls}}" aria-selected="{{t.sel}}" onClick="{{t.go}}">{{t.label}}</button>
+</sc-for>
+</div>
+
+<sc-if value="{{loading}}" hint-placeholder-val="{{ false }}">
+<div class="stack" aria-live="polite"><span class="sr">Loading…</span>
+<div class="kpis"><div class="sk" style="height: 96px"></div><div class="sk" style="height: 96px"></div><div class="sk" style="height: 96px"></div></div>
+<div class="sk" style="height: 260px"></div>
+</div>
+</sc-if>
+
+<!-- ============ OVERVIEW ============ -->
+<sc-if value="{{overview_summary}}" hint-placeholder-val="{{ true }}">
+<div class="kpis">
+<div class="card"><div class="kl">Appointments today</div><div class="kv">14</div><div class="kd">3 still to arrive</div></div>
+<div class="card"><div class="kl">Takings today</div><div class="kv">$1,284</div><div class="kd">9 receipts issued</div></div>
+<div class="card"><div class="kl">Active team</div><div class="kv">6</div><div class="kd" style="color: #6B6475">4 on shift now</div></div>
+<div class="card"><div class="kl">New customers this week</div><div class="kv">11</div><div class="kd">+3 vs last week</div></div>
+</div>
+<div class="g2">
+<div class="card">
+<div class="row between" style="margin-bottom: 6px"><h2 class="h3" style="margin: 0">Up next</h2><button class="btn ghost sm" onClick="{{go_cal}}">Open calendar</button></div>
+<sc-for list="{{agendaToday}}" as="a" hint-placeholder-count="4">
+<div class="li"><div class="row" style="gap: 14px"><span class="disp" style="font-weight: 600; width: 52px">{{a.time}}</span><div><button class="lnk" onClick="{{a.go}}">{{a.client}}</button><div class="muted small">{{a.service}} · {{a.staff}}</div></div></div><span class="{{a.pcls}}">{{a.status}}</span></div>
+</sc-for>
+</div>
+<div class="stack">
+<div class="card"><h2 class="h3">Your salon</h2>
+<div class="li"><span class="muted">Timezone</span><span>Asia/Karachi (UTC+5)</span></div>
+<div class="li"><span class="muted">Currency</span><span>USD ($)</span></div>
+<div class="li"><span class="muted">Opening today</span><span>10:00 – 20:00</span></div>
+<div class="li"><span class="muted">Signed in as</span><span>{{roleLabel}}</span></div>
+</div>
+<div class="note">You're on a free trial — 9 of 14 days left. Billing setup arrives in a coming release.</div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{overview_trial}}" hint-placeholder-val="{{ false }}">
+<div class="g2">
+<div class="card">
+<h2 class="h3">Trial countdown</h2>
+<div class="row" style="align-items: baseline; gap: 8px"><span class="disp" style="font-size: 48px; font-weight: 600">9</span><span class="muted">days remaining of 14</span></div>
+<div class="meter" style="background: #EEECF1; margin: 14px 0" aria-hidden="true"><div style="width: 36%; background: #6B2C5C"></div></div>
+<p class="muted small" style="margin: 0">Trial started 12 Oct 2026 · ends 26 Oct 2026</p>
+</div>
+<div class="card">
+<h2 class="h3">Plan</h2>
+<div class="row" style="align-items: baseline; gap: 6px"><span class="disp" style="font-size: 36px; font-weight: 600">$20</span><span class="muted">/ month per salon</span></div>
+<ul style="margin: 14px 0; padding-left: 18px; line-height: 1.9"><li>Unlimited team members and bookings</li><li>POS, loyalty, payroll and reports</li><li>Consent and intake records</li></ul>
+<span class="pill p-amber">Billing &amp; access gating — planned</span>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{overview_access}}" hint-placeholder-val="{{ false }}">
+<div class="g2">
+<div class="card"><h2 class="h3">What you can do</h2>
+<p class="muted" style="margin-top: 0">Your role is <strong>{{roleLabel}}</strong>. The menu only shows the modules assigned to this role, and each page also checks access before loading.</p>
+<sc-for list="{{accessList}}" as="m" hint-placeholder-count="5"><div class="li"><span>{{m.name}}</span><span class="{{m.pcls}}">{{m.level}}</span></div></sc-for>
+</div>
+<div class="card"><h2 class="h3">Need more access?</h2><p class="muted" style="margin-top: 0">Ask the salon owner to change your role or add modules from Team › Roles &amp; permissions.</p><div class="note">Some pages are restricted for your role. You'll see a notice if you open one.</div></div>
+</div>
+</sc-if>
+<sc-if value="{{overview_build}}" hint-placeholder-val="{{ false }}">
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 2fr 3fr 1fr">Phase<span>Includes</span><span>Status</span></div>
+<sc-for list="{{phases}}" as="f" hint-placeholder-count="6">
+<div class="tr" style="grid-template-columns: 2fr 3fr 1fr"><strong>{{f.name}}</strong><span class="muted">{{f.inc}}</span><span class="{{f.pcls}}">{{f.status}}</span></div>
+</sc-for>
+</div>
+</sc-if>
+
+<!-- ============ CALENDAR ============ -->
+<sc-if value="{{calendar_day}}" hint-placeholder-val="{{ false }}">
+<div class="row between" style="margin-bottom: 14px">
+<div class="row"><button class="btn ghost sm" aria-label="Previous day">‹</button><button class="btn ghost sm">Today</button><button class="btn ghost sm" aria-label="Next day">›</button><span class="disp" style="font-weight: 600; font-size: 16px">Monday, 12 October</span></div>
+<div class="seg" role="group" aria-label="Range presets"><button class="on">Today</button><button>Tomorrow</button><button>This week</button><button>Next 7 days</button></div>
+</div>
+<div class="tbox">
+<div class="cal">
+<div class="calh"></div>
+<sc-for list="{{staffCols}}" as="s" hint-placeholder-count="4"><div class="calh"><div class="av" style="width: 28px; height: 28px; font-size: 11px">{{s.ini}}</div>{{s.name}}</div></sc-for>
+<div class="hrs"><sc-for list="{{hours}}" as="h" hint-placeholder-count="9"><div>{{h}}</div></sc-for></div>
+<sc-for list="{{staffCols}}" as="s" hint-placeholder-count="4">
+<div class="col">
+<sc-for list="{{s.blocks}}" as="b" hint-placeholder-count="3">
+<button class="{{b.cls}}" style="top: {{b.top}}px; height: {{b.h}}px" onClick="{{b.go}}"><strong>{{b.client}}</strong><span>{{b.time}} · {{b.service}}</span></button>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{calendar_week}}" hint-placeholder-val="{{ false }}">
+<div class="row between" style="margin-bottom: 14px">
+<div class="row"><button class="btn ghost sm" aria-label="Previous week">‹</button><button class="btn ghost sm">This week</button><button class="btn ghost sm" aria-label="Next week">›</button><span class="disp" style="font-weight: 600; font-size: 16px">12 – 18 October 2026</span></div>
+<label class="sr" for="wkstaff">Team member</label><select id="wkstaff" style="width: auto"><option>All team members</option><option>Sana</option><option>Hira</option><option>Maria</option><option>Zoya</option></select>
+</div>
+<div style="overflow-x: auto"><div class="wk">
+<sc-for list="{{week}}" as="d" hint-placeholder-count="7">
+<div class="wkd"><div class="row between"><strong>{{d.day}}</strong><span class="muted small">{{d.count}}</span></div>
+<sc-for list="{{d.items}}" as="c" hint-placeholder-count="3"><button class="{{c.cls}}" onClick="{{c.go}}"><strong>{{c.time}}</strong> {{c.client}}</button></sc-for>
+</div>
+</sc-for>
+</div></div>
+</sc-if>
+<sc-if value="{{calendar_agenda}}" hint-placeholder-val="{{ false }}">
+<div class="row" style="margin-bottom: 14px"><div class="seg" role="group" aria-label="Range"><button class="on">Next 7 days</button><button>This month</button><button>Custom</button></div><label class="sr" for="agst">Status</label><select id="agst" style="width: auto"><option>All statuses</option><option>Confirmed</option><option>Checked in</option><option>Completed</option><option>No-show</option><option>Cancelled</option></select></div>
+<div class="stack">
+<sc-for list="{{agendaDays}}" as="d" hint-placeholder-count="3">
+<div><h2 class="h3" style="margin-bottom: 8px">{{d.label}}</h2>
+<div class="tbox"><sc-for list="{{d.items}}" as="a" hint-placeholder-count="3">
+<div class="tr" style="grid-template-columns: 90px 1.4fr 1.6fr 1fr 120px; min-width: 640px"><span class="disp" style="font-weight: 600">{{a.time}}</span><button class="lnk" onClick="{{a.go}}">{{a.client}}</button><span class="muted">{{a.service}}</span><span>{{a.staff}}</span><span class="{{a.pcls}}">{{a.status}}</span></div>
+</sc-for></div></div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{calendar_book}}" hint-placeholder-val="{{ false }}">
+<div class="g2" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr))">
+<div class="card"><h2 class="h3">Booking details</h2>
+<div class="form">
+<div class="field full"><label for="bk-c">Customer</label><input id="bk-c" placeholder="Search by phone or name"></div>
+<div class="field"><label for="bk-t">Team member</label><select id="bk-t"><option>Sana Malik</option><option>Hira Shah</option><option>Maria Khan</option><option>Zoya Ali</option></select></div>
+<div class="field"><label for="bk-d">Date</label><input id="bk-d" type="date"></div>
+<div class="field"><label for="bk-s">Start time</label><input id="bk-s" type="time"></div>
+<div class="field"><label for="bk-svc">Service</label><select id="bk-svc"><option>Women's cut &amp; style — $45</option><option>Blow-dry — $25</option><option>Full colour — $95</option><option>Hydrating facial — $70</option></select></div>
+<div class="field"><label for="bk-q">Quantity</label><input id="bk-q" type="number" min="1" placeholder="1"></div>
+<div class="field full"><label for="bk-n">Notes</label><textarea id="bk-n" placeholder="Allergies, preferences, anything the team should know"></textarea></div>
+</div></div>
+<div class="card"><h2 class="h3">Price</h2>
+<div class="li"><span>Women's cut &amp; style × 1</span><span>$45.00</span></div>
+<div class="li"><span>Blow-dry × 1</span><span>$25.00</span></div>
+<div class="field" style="margin: 14px 0"><label for="bk-disc">Discount</label><input id="bk-disc" placeholder="$0.00 or %"></div>
+<div class="li"><strong>Quoted total</strong><span class="disp" style="font-size: 22px; font-weight: 600">$70.00</span></div>
+<div class="row" style="margin-top: 16px"><button class="btn">Book appointment</button><button class="btn ghost">Clear</button></div>
+</div>
+</div>
+</sc-if>
+
+<!-- ============ APPOINTMENT DETAIL ============ -->
+<sc-if value="{{appt_summary}}" hint-placeholder-val="{{ false }}">
+<div class="g2">
+<div class="card"><h2 class="h3">Booking summary</h2>
+<div class="li"><span class="muted">Customer</span><button class="lnk" onClick="{{go_customer}}">Mehwish Raza</button></div>
+<div class="li"><span class="muted">Date &amp; time</span><span>Tue 13 Oct · 11:00 – 12:30</span></div>
+<div class="li"><span class="muted">Team member</span><span>Sana Malik</span></div>
+<div class="li"><span class="muted">Status</span><span class="pill p-amber">Confirmed</span></div>
+<div class="li"><span class="muted">Booked by</span><span>Ayesha · 10 Oct, 16:02</span></div>
+</div>
+<div class="card"><h2 class="h3">Notes</h2><p style="margin: 0">Prefers a lighter blow-dry finish. Sensitive scalp — patch test done 2 Oct.</p></div>
+</div>
+</sc-if>
+<sc-if value="{{appt_services}}" hint-placeholder-val="{{ false }}">
+<div class="ok" style="margin-bottom: 14px">Services and price can still be edited because no payment has been taken.</div>
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 2fr 1fr 120px 1fr; min-width: 560px">Service<span>Performer</span><span>Qty</span><span style="text-align: right">Price</span></div>
+<div class="tr" style="grid-template-columns: 2fr 1fr 120px 1fr; min-width: 560px"><strong>Women's cut &amp; style</strong><span>Sana</span><div class="qty"><button aria-label="Decrease">−</button><span>1</span><button aria-label="Increase">+</button></div><span style="text-align: right">$45.00</span></div>
+<div class="tr" style="grid-template-columns: 2fr 1fr 120px 1fr; min-width: 560px"><strong>Blow-dry</strong><span>Sana</span><div class="qty"><button aria-label="Decrease">−</button><span>1</span><button aria-label="Increase">+</button></div><span style="text-align: right">$25.00</span></div>
+<div class="tr" style="grid-template-columns: 2fr 1fr 120px 1fr; min-width: 560px"><span class="muted">Discount</span><span></span><span></span><span style="text-align: right">−$5.00</span></div>
+<div class="tr" style="grid-template-columns: 2fr 1fr 120px 1fr; min-width: 560px"><strong>Quoted price</strong><span></span><span></span><strong class="disp" style="text-align: right; font-size: 18px">$65.00</strong></div>
+</div>
+<div class="row" style="margin-top: 14px"><button class="btn ghost">Add service</button><button class="btn">Save changes</button></div>
+</sc-if>
+<sc-if value="{{appt_payments}}" hint-placeholder-val="{{ false }}">
+<div class="kpis"><div class="card"><div class="kl">Quoted</div><div class="kv">$65.00</div></div><div class="card"><div class="kl">Paid</div><div class="kv">$20.00</div><div class="kd">Deposit</div></div><div class="card"><div class="kl">Balance due</div><div class="kv" style="color: #8E2A25">$45.00</div></div></div>
+<div class="g2">
+<div class="card"><h2 class="h3">Payment history</h2>
+<div class="li"><div><strong>Deposit · Card</strong><div class="muted small">10 Oct, 16:05 · Ayesha</div></div><span>$20.00</span></div>
+</div>
+<div class="card"><h2 class="h3">Take payment</h2>
+<div class="form"><div class="field"><label for="tp-a">Amount</label><input id="tp-a" placeholder="$45.00"></div><div class="field"><label for="tp-m">Method</label><select id="tp-m"><option>Card</option><option>Cash</option><option>Bank transfer</option></select></div></div>
+<div class="row" style="margin-top: 14px"><button class="btn">Record payment</button><button class="btn danger">Refund…</button></div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{appt_actions}}" hint-placeholder-val="{{ false }}">
+<div class="g3">
+<div class="card"><h2 class="h3">Check in</h2><p class="muted small">Mark the customer as arrived.</p><button class="btn sage">Check in</button></div>
+<div class="card"><h2 class="h3">Complete</h2><p class="muted small">Close the appointment and go to the till.</p><button class="btn" onClick="{{go_till}}">Complete &amp; checkout</button></div>
+<div class="card"><h2 class="h3">Reschedule</h2><p class="muted small">Move to another time or team member.</p><button class="btn ghost">Reschedule</button></div>
+<div class="card"><h2 class="h3">No-show or cancel</h2><p class="muted small">Recorded in the audit log.</p><div class="row"><button class="btn ghost">No-show</button><button class="btn danger">Cancel</button></div></div>
+</div>
+</sc-if>
+
+<!-- ============ CUSTOMERS ============ -->
+<sc-if value="{{customers_directory}}" hint-placeholder-val="{{ false }}">
+<div class="row" style="margin-bottom: 14px"><div style="flex: 1 1 280px; max-width: 420px"><label class="sr" for="cs">Search</label><input id="cs" type="search" placeholder="Search by phone or name"></div><div class="seg" role="group" aria-label="List"><button class="on">Recent</button><button>All</button></div></div>
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1.6fr 1.2fr 1fr 1fr 1fr; min-width: 680px">Name<span>Phone</span><span>Last visit</span><span>Visits</span><span>Loyalty</span></div>
+<sc-for list="{{customers}}" as="c" hint-placeholder-count="6">
+<div class="tr" style="grid-template-columns: 1.6fr 1.2fr 1fr 1fr 1fr; min-width: 680px"><button class="lnk" onClick="{{c.go}}">{{c.name}}</button><span class="muted">{{c.phone}}</span><span>{{c.last}}</span><span>{{c.visits}}</span><span>{{c.pts}}</span></div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{customers_add}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="max-width: 760px"><h2 class="h3">New customer</h2>
+<div class="form">
+<div class="field"><label for="nc-f">Full name</label><input id="nc-f" placeholder="Full name"></div>
+<div class="field"><label for="nc-p">Phone</label><input id="nc-p" type="tel" placeholder="+92 3xx xxxxxxx"></div>
+<div class="field"><label for="nc-e">Email (optional)</label><input id="nc-e" type="email" placeholder="name@example.com"></div>
+<div class="field"><label for="nc-b">Birthday (optional)</label><input id="nc-b" type="date"></div>
+<div class="field full"><label for="nc-n">Notes</label><textarea id="nc-n" placeholder="Preferences or allergies"></textarea></div>
+</div>
+<div class="row" style="margin-top: 16px"><button class="btn">Save customer</button><button class="btn ghost">Save &amp; book</button></div>
+</div>
+</sc-if>
+
+<!-- ============ CUSTOMER PROFILE ============ -->
+<sc-if value="{{customer_profile}}" hint-placeholder-val="{{ false }}">
+<div class="g2">
+<div class="card"><div class="row" style="margin-bottom: 16px"><div class="av lg" aria-hidden="true">MR</div><div><div class="disp" style="font-weight: 600; font-size: 18px">Mehwish Raza</div><div class="muted small">23 visits · last on 2 Oct 2026</div></div></div>
+<div class="form">
+<div class="field"><label for="cp-n">Name</label><input id="cp-n" placeholder="Mehwish Raza"></div>
+<div class="field"><label for="cp-p">Phone</label><input id="cp-p" placeholder="+92 300 1234567"></div>
+<div class="field"><label for="cp-e">Email</label><input id="cp-e" placeholder="mehwish@example.com"></div>
+<div class="field"><label for="cp-b">Birthday</label><input id="cp-b" type="date"></div>
+<div class="field full"><label for="cp-no">Notes</label><textarea id="cp-no" placeholder="Prefers a lighter blow-dry finish."></textarea></div>
+</div>
+<div class="row" style="margin-top: 14px"><button class="btn">Save details</button></div>
+</div>
+<div class="stack">
+<div class="kpis" style="margin: 0"><div class="card"><div class="kl">Lifetime spend</div><div class="kv">$1,842</div></div><div class="card"><div class="kl">Loyalty balance</div><div class="kv">$12.40</div></div></div>
+<div class="card"><h2 class="h3">Upcoming</h2><div class="li"><div><button class="lnk" onClick="{{go_appt}}">Tue 13 Oct · 11:00</button><div class="muted small">Cut &amp; style, blow-dry · Sana</div></div><span class="pill p-amber">Confirmed</span></div></div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{customer_loyalty}}" hint-placeholder-val="{{ false }}">
+<div class="kpis"><div class="card"><div class="kl">Balance</div><div class="kv">$12.40</div></div><div class="card"><div class="kl">Earned (all time)</div><div class="kv">$92.10</div></div><div class="card"><div class="kl">Redeemed</div><div class="kv">$79.70</div></div></div>
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1fr 2fr 1fr 1fr; min-width: 560px">Date<span>Entry</span><span>Change</span><span>Balance</span></div>
+<sc-for list="{{ledger}}" as="l" hint-placeholder-count="5"><div class="tr" style="grid-template-columns: 1fr 2fr 1fr 1fr; min-width: 560px"><span class="muted">{{l.date}}</span><span>{{l.what}}</span><span class="{{l.pcls}}">{{l.amt}}</span><span>{{l.bal}}</span></div></sc-for>
+</div>
+</sc-if>
+<sc-if value="{{customer_receipts}}" hint-placeholder-val="{{ false }}">
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1fr 1fr 2fr 1fr 1fr; min-width: 640px">Receipt<span>Date</span><span>Items</span><span>Total</span><span>Status</span></div>
+<sc-for list="{{custReceipts}}" as="r" hint-placeholder-count="4"><div class="tr" style="grid-template-columns: 1fr 1fr 2fr 1fr 1fr; min-width: 640px"><button class="lnk" onClick="{{r.go}}">{{r.no}}</button><span class="muted">{{r.date}}</span><span>{{r.items}}</span><strong>{{r.total}}</strong><span class="{{r.pcls}}">{{r.status}}</span></div></sc-for>
+</div>
+</sc-if>
+<sc-if value="{{customer_visits}}" hint-placeholder-val="{{ false }}">
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1fr 2fr 1fr 1fr; min-width: 560px">Date<span>Services</span><span>Team member</span><span>Outcome</span></div>
+<sc-for list="{{visits}}" as="v" hint-placeholder-count="5"><div class="tr" style="grid-template-columns: 1fr 2fr 1fr 1fr; min-width: 560px"><span>{{v.date}}</span><span>{{v.svc}}</span><span>{{v.staff}}</span><span class="{{v.pcls}}">{{v.status}}</span></div></sc-for>
+</div>
+</sc-if>
+<sc-if value="{{customer_consent}}" hint-placeholder-val="{{ false }}">
+<div class="g2" style="grid-template-columns: minmax(240px, 1fr) minmax(320px, 2fr)">
+<div class="card"><h2 class="h3">Records</h2>
+<div class="li"><div><strong>Chemical peel consent</strong><div class="muted small">2 Oct 2026 · Hira</div></div><span class="pill p-sage">Signed</span></div>
+<div class="li"><div><strong>Medical intake</strong><div class="muted small">14 Mar 2025 · Ayesha</div></div><span class="pill p-sage">Signed</span></div>
+<div class="li"><div><strong>Hair colour patch test</strong><div class="muted small">2 Mar 2025 · Sana</div></div><span class="pill p-sage">Signed</span></div>
+</div>
+<div class="card"><div class="row between"><h2 class="h3" style="margin: 0">Chemical peel consent</h2><span class="muted small">Template v3</span></div>
+<div style="margin-top: 12px">
+<div class="li"><span>I have disclosed all medications and skin conditions.</span><span class="pill p-sage">Agreed</span></div>
+<div class="li"><span>I understand redness may last up to 48 hours.</span><span class="pill p-sage">Agreed</span></div>
+<div class="li"><span>Currently pregnant or breastfeeding?</span><strong>No</strong></div>
+<div class="li"><span>Attachments</span><a href="#">skin-photo-before.jpg</a></div>
+</div>
+<p class="small" style="font-weight: 600; margin: 14px 0 6px">Signature</p>
+<div class="sig" style="font-family: 'Sora', sans-serif; font-style: italic; font-size: 26px; color: #1C1724">Mehwish R.</div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{customer_newconsent}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="max-width: 760px"><h2 class="h3">Collect consent</h2>
+<div class="field" style="margin-bottom: 16px"><label for="ncs-t">Template</label><select id="ncs-t"><option>Chemical peel consent</option><option>Medical intake</option><option>Hair colour patch test</option><option>Laser hair removal</option></select></div>
+<div class="stack" style="gap: 12px">
+<label class="chk"><input type="checkbox">I have disclosed all medications and skin conditions.</label>
+<label class="chk"><input type="checkbox">I understand redness may last up to 48 hours.</label>
+<label class="chk"><input type="checkbox">I agree to follow the aftercare instructions provided.</label>
+<div class="field"><label for="ncs-q">Any recent skin treatments?</label><input id="ncs-q" placeholder="Type the customer's answer"></div>
+<div class="field"><label for="ncs-f">Attachment (optional)</label><input id="ncs-f" type="file"></div>
+</div>
+<p class="small" style="font-weight: 600; margin: 16px 0 6px">Customer signature</p>
+<div class="sig">Sign here</div>
+<div class="row" style="margin-top: 16px"><button class="btn">Save consent record</button><button class="btn ghost">Clear signature</button></div>
+</div>
+</sc-if>
+
+<!-- ============ POS ============ -->
+<sc-if value="{{pos_till}}" hint-placeholder-val="{{ false }}">
+<div class="g2" style="grid-template-columns: repeat(auto-fit, minmax(340px, 1fr))">
+<div class="stack">
+<div class="card"><h2 class="h3">Customer</h2>
+<div class="row"><div style="flex: 1 1 220px"><label class="sr" for="tc">Customer</label><input id="tc" placeholder="Mehwish Raza · +92 300 1234567"></div><button class="btn ghost sm">New customer</button></div>
+</div>
+<div class="card"><h2 class="h3">Add services</h2>
+<div class="g2" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px">
+<sc-for list="{{catalog}}" as="s" hint-placeholder-count="6"><button class="svc" onClick="{{s.add}}"><span><strong>{{s.name}}</strong><br><span class="muted small">{{s.dur}}</span></span><span class="disp" style="font-weight: 600">{{s.priceTxt}}</span></button></sc-for>
+</div>
+</div>
+</div>
+<div class="card stack" style="gap: 14px">
+<h2 class="h3" style="margin: 0">Current sale</h2>
+<sc-if value="{{cartEmpty}}" hint-placeholder-val="{{ false }}"><p class="muted" style="margin: 0">No services yet — pick from the list.</p></sc-if>
+<sc-for list="{{cartLines}}" as="l" hint-placeholder-count="2">
+<div class="li"><div style="min-width: 0"><strong>{{l.name}}</strong><div class="muted small">Performed by {{l.staff}}</div></div><div class="row" style="gap: 10px; flex-wrap: nowrap"><div class="qty"><button onClick="{{l.dec}}" aria-label="Decrease">−</button><span>{{l.qty}}</span><button onClick="{{l.inc}}" aria-label="Increase">+</button></div><span style="min-width: 64px; text-align: right">{{l.lineTxt}}</span></div></div>
+</sc-for>
+<div class="row between"><label class="chk" style="margin: 0"><input type="checkbox" onChange="{{toggleDeal}}">Apply deal: Autumn glow −10%</label><span>{{dealTxt}}</span></div>
+<div class="row between"><label class="chk" style="margin: 0"><input type="checkbox" onChange="{{toggleRedeem}}">Redeem loyalty ($12.40 available)</label><span>{{redeemTxt}}</span></div>
+<div>
+<p class="small" style="font-weight: 600; margin: 0 0 6px">Payment method</p>
+<div class="seg" role="group" aria-label="Payment method">
+<sc-for list="{{payOpts}}" as="p" hint-placeholder-count="3"><button class="{{p.cls}}" onClick="{{p.go}}" aria-pressed="{{p.sel}}">{{p.label}}</button></sc-for>
+</div>
+</div>
+<sc-if value="{{isSplit}}" hint-placeholder-val="{{ false }}"><div class="form"><div class="field"><label for="sp1">Cash</label><input id="sp1" placeholder="$0.00"></div><div class="field"><label for="sp2">Card</label><input id="sp2" placeholder="$0.00"></div></div></sc-if>
+<div class="field"><label for="tn">Receipt note</label><input id="tn" placeholder="Optional"></div>
+<div class="dash"></div>
+<div class="rl"><span class="muted">Subtotal</span><span>{{subTxt}}</span></div>
+<div class="row between"><strong>Total</strong><span class="tot">{{totalTxt}}</span></div>
+<button class="btn" style="width: 100%" onClick="{{go_receipt}}">Charge {{totalTxt}}</button>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{pos_receipts}}" hint-placeholder-val="{{ false }}">
+<div class="row" style="margin-bottom: 14px">
+<div class="seg" role="group" aria-label="Quick range"><button class="on">Today</button><button>Yesterday</button><button>This week</button><button>This month</button></div>
+<label class="sr" for="rs">Status</label><select id="rs" style="width: auto"><option>All statuses</option><option>Issued</option><option>Voided</option></select>
+<label class="sr" for="rf">From</label><input id="rf" type="date" style="width: auto">
+<label class="sr" for="rt">To</label><input id="rt" type="date" style="width: auto">
+</div>
+<div class="kpis"><div class="card"><div class="kl">Receipts issued</div><div class="kv">9</div></div><div class="card"><div class="kl">Takings</div><div class="kv">$1,284.00</div></div><div class="card"><div class="kl">Voided</div><div class="kv">1</div><div class="kd" style="color: #8E2A25">$35.00</div></div></div>
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1fr 0.8fr 1.4fr 1fr 1fr 1fr; min-width: 720px">Receipt<span>Time</span><span>Customer</span><span>Method</span><span>Total</span><span>Status</span></div>
+<sc-for list="{{receipts}}" as="r" hint-placeholder-count="6"><div class="tr" style="grid-template-columns: 1fr 0.8fr 1.4fr 1fr 1fr 1fr; min-width: 720px"><button class="lnk" onClick="{{r.go}}">{{r.no}}</button><span class="muted">{{r.time}}</span><span>{{r.cust}}</span><span>{{r.method}}</span><strong>{{r.total}}</strong><span class="{{r.pcls}}">{{r.status}}</span></div></sc-for>
+</div>
+</sc-if>
+
+<!-- ============ RECEIPT DETAIL ============ -->
+<sc-if value="{{receipt_receipt}}" hint-placeholder-val="{{ false }}">
+<div class="rcpt">
+<div style="text-align: center"><div class="disp" style="font-weight: 700; font-size: 18px">Velvet Room Salon</div><div class="muted small">Receipt #R-1048 · 12 Oct 2026, 12:41</div></div>
+<div class="dash"></div>
+<div class="rl"><span class="muted">Customer</span><button class="lnk" style="min-height: 0" onClick="{{go_customer}}">Mehwish Raza</button></div>
+<div class="rl"><span class="muted">Issued by</span><span>Ayesha</span></div>
+<div class="dash"></div>
+<div class="rl"><span>Women's cut &amp; style × 1<br><span class="muted small">Sana</span></span><span>$45.00</span></div>
+<div class="rl"><span>Blow-dry × 1<br><span class="muted small">Sana</span></span><span>$25.00</span></div>
+<div class="rl"><span class="muted">Deal: Autumn glow</span><span>−$7.00</span></div>
+<div class="rl"><span class="muted">Loyalty redeemed</span><span>−$5.00</span></div>
+<div class="dash"></div>
+<div class="rl"><strong>Total</strong><strong class="disp" style="font-size: 20px">$58.00</strong></div>
+<div class="rl"><span class="muted">Paid · Card</span><span>$58.00</span></div>
+<div class="rl"><span class="muted">Loyalty earned</span><span>+$2.90</span></div>
+<div class="dash"></div>
+<p class="muted small" style="text-align: center; margin: 0">Thank you for visiting!</p>
+</div>
+</sc-if>
+<sc-if value="{{receipt_history}}" hint-placeholder-val="{{ false }}">
+<div class="g2">
+<div class="card"><h2 class="h3">Payments</h2>
+<div class="li"><div><strong>Deposit · Card</strong><div class="muted small">10 Oct, 16:05 · Ayesha</div></div><span>$20.00</span></div>
+<div class="li"><div><strong>Balance · Card</strong><div class="muted small">12 Oct, 12:41 · Ayesha</div></div><span>$38.00</span></div>
+</div>
+<div class="card"><h2 class="h3">Related appointment</h2><p style="margin-top: 0">Tue 13 Oct · 11:00 with Sana</p><button class="btn ghost" onClick="{{go_appt}}">View appointment</button></div>
+</div>
+</sc-if>
+<sc-if value="{{receipt_void}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="max-width: 640px">
+<h2 class="h3">Void this receipt</h2>
+<div class="note" style="margin-bottom: 16px">Only the salon owner can void an issued receipt. Voiding reverses loyalty earned and is recorded in the audit log.</div>
+<div class="field"><label for="vr">Reason</label><textarea id="vr" placeholder="e.g. Charged to the wrong customer"></textarea></div>
+<div class="row" style="margin-top: 16px"><button class="btn danger">Void receipt</button></div>
+</div>
+</sc-if>
+
+<!-- ============ SERVICES ============ -->
+<sc-if value="{{services_list}}" hint-placeholder-val="{{ false }}">
+<div class="stack">
+<sc-for list="{{svcCats}}" as="c" hint-placeholder-count="3">
+<div><div class="row between" style="margin-bottom: 8px"><h2 class="h3" style="margin: 0">{{c.name}}</h2><span class="muted small">{{c.count}}</span></div>
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1.8fr 0.8fr 0.8fr 1.4fr 1.4fr 90px; min-width: 760px">Service<span>Price</span><span>Duration</span><span>Team</span><span>Consent</span><span></span></div>
+<sc-for list="{{c.items}}" as="s" hint-placeholder-count="3"><div class="tr" style="grid-template-columns: 1.8fr 0.8fr 0.8fr 1.4fr 1.4fr 90px; min-width: 760px"><strong>{{s.name}}</strong><span>{{s.price}}</span><span class="muted">{{s.dur}}</span><span>{{s.team}}</span><span class="{{s.pcls}}">{{s.consent}}</span><button class="btn ghost sm">Edit</button></div></sc-for>
+</div></div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{services_add}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="max-width: 760px"><h2 class="h3">New service</h2>
+<div class="form">
+<div class="field"><label for="ns-n">Name</label><input id="ns-n" placeholder="e.g. Keratin treatment"></div>
+<div class="field"><label for="ns-c">Category</label><select id="ns-c"><option>Hair</option><option>Skin</option><option>Nails</option><option>Add new category…</option></select></div>
+<div class="field"><label for="ns-p">Price</label><input id="ns-p" placeholder="$0.00"></div>
+<div class="field"><label for="ns-d">Duration</label><input id="ns-d" placeholder="60 min"></div>
+<div class="field"><label for="ns-ct">Consent template</label><select id="ns-ct"><option>None</option><option>Chemical peel consent</option><option>Hair colour patch test</option></select></div>
+<fieldset class="full" style="border: 1px solid #E4E1E8; border-radius: 12px; padding: 14px"><legend style="font-size: 13px; font-weight: 600; padding: 0 6px">Team who can perform it</legend>
+<div class="row" style="gap: 18px"><label class="chk"><input type="checkbox">Sana</label><label class="chk"><input type="checkbox">Hira</label><label class="chk"><input type="checkbox">Maria</label><label class="chk"><input type="checkbox">Zoya</label></div></fieldset>
+</div>
+<div class="row" style="margin-top: 16px"><button class="btn">Add service</button></div>
+</div>
+</sc-if>
+<sc-if value="{{services_consent}}" hint-placeholder-val="{{ false }}">
+<div class="g3">
+<sc-for list="{{templates}}" as="t" hint-placeholder-count="3">
+<div class="card"><div class="row between"><h2 class="h3" style="margin: 0">{{t.name}}</h2><span class="pill p-grey">{{t.ver}}</span></div>
+<p class="muted small">{{t.count}} · used by {{t.used}}</p>
+<ol style="padding-left: 18px; margin: 0 0 14px; line-height: 1.7">
+<sc-for list="{{t.items}}" as="i" hint-placeholder-count="2"><li>{{i}}</li></sc-for>
+</ol>
+<button class="btn ghost sm">Edit statements</button></div>
+</sc-for>
+<div class="card" style="display: flex; align-items: center; justify-content: center; border-style: dashed"><button class="btn ghost">New template</button></div>
+</div>
+</sc-if>
+<sc-if value="{{services_deals}}" hint-placeholder-val="{{ false }}">
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1.6fr 1fr 1.6fr 1.4fr 1fr; min-width: 720px">Deal<span>Discount</span><span>Applies to</span><span>Runs</span><span>Status</span></div>
+<sc-for list="{{deals}}" as="d" hint-placeholder-count="3"><div class="tr" style="grid-template-columns: 1.6fr 1fr 1.6fr 1.4fr 1fr; min-width: 720px"><strong>{{d.name}}</strong><span>{{d.off}}</span><span class="muted">{{d.to}}</span><span>{{d.when}}</span><span class="{{d.pcls}}">{{d.status}}</span></div></sc-for>
+</div>
+<div class="row" style="margin-top: 14px"><button class="btn">Create deal</button></div>
+</sc-if>
+
+<!-- ============ PAYROLL ============ -->
+<sc-if value="{{payroll_periods}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="margin-bottom: 16px"><div class="row between"><div><h2 class="h3" style="margin: 0">1 – 30 Sep 2026</h2><span class="muted small">Draft · generated 1 Oct by Ayesha</span></div><div class="row"><button class="btn danger sm">Discard draft</button><button class="btn sm">Mark as paid</button></div></div></div>
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1.4fr 0.8fr 1fr 1fr 1fr 1fr; min-width: 720px">Team member<span>Services</span><span>Revenue</span><span>Salary</span><span>Commission</span><span>Total</span></div>
+<sc-for list="{{payrows}}" as="p" hint-placeholder-count="4"><div class="tr" style="grid-template-columns: 1.4fr 0.8fr 1fr 1fr 1fr 1fr; min-width: 720px"><strong>{{p.name}}</strong><span>{{p.n}}</span><span>{{p.rev}}</span><span>{{p.sal}}</span><span>{{p.com}}</span><strong>{{p.tot}}</strong></div></sc-for>
+</div>
+<h2 class="h3" style="margin-top: 24px">Previous periods</h2>
+<div class="tbox">
+<div class="tr" style="grid-template-columns: 2fr 1fr 1fr; min-width: 480px"><span>1 – 31 Aug 2026</span><span>$6,420.00</span><span class="pill p-sage">Paid</span></div>
+<div class="tr" style="grid-template-columns: 2fr 1fr 1fr; min-width: 480px"><span>1 – 31 Jul 2026</span><span>$6,105.00</span><span class="pill p-sage">Paid</span></div>
+</div>
+</sc-if>
+<sc-if value="{{payroll_generate}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="max-width: 640px"><h2 class="h3">Generate a pay period</h2>
+<div class="form"><div class="field"><label for="pg-s">Start date</label><input id="pg-s" type="date"></div><div class="field"><label for="pg-e">End date</label><input id="pg-e" type="date"></div></div>
+<p class="muted small">Totals use each team member's pay settings and services performed in the period. You can review the draft before marking it paid.</p>
+<button class="btn">Generate draft</button></div>
+</sc-if>
+<sc-if value="{{payroll_settings}}" hint-placeholder-val="{{ false }}">
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1.4fr 1.2fr 1fr 1fr 90px; min-width: 640px">Team member<span>Arrangement</span><span>Salary</span><span>Commission</span><span></span></div>
+<sc-for list="{{paySettings}}" as="p" hint-placeholder-count="4"><div class="tr" style="grid-template-columns: 1.4fr 1.2fr 1fr 1fr 90px; min-width: 640px"><strong>{{p.name}}</strong><span>{{p.arr}}</span><span>{{p.sal}}</span><span>{{p.com}}</span><button class="btn ghost sm">Edit</button></div></sc-for>
+</div>
+</sc-if>
+
+<!-- ============ EARNINGS ============ -->
+<sc-if value="{{earnings_summary}}" hint-placeholder-val="{{ false }}">
+<div class="kpis"><div class="card"><div class="kl">Paid to date (2026)</div><div class="kv">$11,240</div></div><div class="card"><div class="kl">Pending (current draft)</div><div class="kv">$1,612</div></div><div class="card"><div class="kl">Services this month</div><div class="kv">38</div></div></div>
+<div class="card" style="max-width: 560px"><h2 class="h3">Your pay arrangement</h2><div class="li"><span class="muted">Type</span><span>Salary + commission</span></div><div class="li"><span class="muted">Monthly salary</span><span>$900.00</span></div><div class="li"><span class="muted">Commission</span><span>15% of service revenue</span></div></div>
+</sc-if>
+<sc-if value="{{earnings_history}}" hint-placeholder-val="{{ false }}">
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1.6fr 1fr 1fr 1fr 1fr; min-width: 600px">Period<span>Salary</span><span>Commission</span><span>Total</span><span>Status</span></div>
+<div class="tr" style="grid-template-columns: 1.6fr 1fr 1fr 1fr 1fr; min-width: 600px"><span>1 – 30 Sep 2026</span><span>$900.00</span><span>$712.00</span><strong>$1,612.00</strong><span class="pill p-amber">Pending</span></div>
+<div class="tr" style="grid-template-columns: 1.6fr 1fr 1fr 1fr 1fr; min-width: 600px"><span>1 – 31 Aug 2026</span><span>$900.00</span><span>$655.50</span><strong>$1,555.50</strong><span class="pill p-sage">Paid</span></div>
+<div class="tr" style="grid-template-columns: 1.6fr 1fr 1fr 1fr 1fr; min-width: 600px"><span>1 – 31 Jul 2026</span><span>$900.00</span><span>$598.00</span><strong>$1,498.00</strong><span class="pill p-sage">Paid</span></div>
+</div>
+</sc-if>
+<sc-if value="{{earnings_recent}}" hint-placeholder-val="{{ false }}">
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1fr 1.4fr 1.6fr 1fr; min-width: 560px">Date<span>Customer</span><span>Service</span><span>Revenue</span></div>
+<sc-for list="{{recentSvc}}" as="r" hint-placeholder-count="5"><div class="tr" style="grid-template-columns: 1fr 1.4fr 1.6fr 1fr; min-width: 560px"><span class="muted">{{r.date}}</span><span>{{r.cust}}</span><span>{{r.svc}}</span><span>{{r.rev}}</span></div></sc-for>
+</div>
+</sc-if>
+
+<!-- ============ REPORTS ============ -->
+<sc-if value="{{reports_revenue}}" hint-placeholder-val="{{ false }}">
+<div class="kpis"><div class="card"><div class="kl">Revenue</div><div class="kv">$24,860</div><div class="kd">+8.4% vs previous</div></div><div class="card"><div class="kl">Receipts</div><div class="kv">412</div></div><div class="card"><div class="kl">Average sale</div><div class="kv">$60.34</div></div><div class="card"><div class="kl">Discounts given</div><div class="kv">$1,120</div></div></div>
+<div class="card"><div class="row between"><h2 class="h3" style="margin: 0">Revenue by week</h2><span class="muted small">Last 30 days</span></div>
+<div class="bars" role="img" aria-label="Weekly revenue for the last 8 weeks, rising from 4,900 to 6,700 dollars">
+<sc-for list="{{revBars}}" as="b" hint-placeholder-count="8"><div class="{{b.cls}}"><span class="small" style="font-weight: 600">{{b.v}}</span><div style="height: {{b.h}}%"></div></div></sc-for>
+</div>
+<div class="blab"><sc-for list="{{revBars}}" as="b" hint-placeholder-count="8"><span>{{b.l}}</span></sc-for></div>
+</div>
+</sc-if>
+<sc-if value="{{reports_loyalty}}" hint-placeholder-val="{{ false }}">
+<div class="kpis"><div class="card"><div class="kl">Issued</div><div class="kv">$1,243</div></div><div class="card"><div class="kl">Redeemed</div><div class="kv">$886</div></div><div class="card"><div class="kl">Net movement</div><div class="kv">+$357</div></div><div class="card"><div class="kl">Outstanding balance</div><div class="kv">$4,912</div><div class="kd" style="color: #6B6475">Across 618 customers</div></div></div>
+<div class="note">Outstanding balance is money-value credit customers can redeem on future visits.</div>
+</sc-if>
+<sc-if value="{{reports_breakdown}}" hint-placeholder-val="{{ false }}">
+<div class="g2">
+<div class="card"><h2 class="h3">Revenue by service</h2><div class="hb"><sc-for list="{{bySvc}}" as="r" hint-placeholder-count="5"><div class="hbr"><span>{{r.name}}</span><div class="hbt"><div style="width: {{r.w}}%"></div></div><strong style="text-align: right">{{r.v}}</strong></div></sc-for></div></div>
+<div class="card"><h2 class="h3">Revenue by team member</h2><div class="hb"><sc-for list="{{byTeam}}" as="r" hint-placeholder-count="4"><div class="hbr"><span>{{r.name}}</span><div class="hbt"><div style="width: {{r.w}}%; background: #6B2C5C"></div></div><strong style="text-align: right">{{r.v}}</strong></div></sc-for></div></div>
+</div>
+</sc-if>
+<sc-if value="{{reports_retention}}" hint-placeholder-val="{{ false }}">
+<div class="kpis"><div class="card"><div class="kl">Returning customers</div><div class="kv">64%</div></div><div class="card"><div class="kl">New customers</div><div class="kv">148</div></div><div class="card"><div class="kl">Came back within 60 days</div><div class="kv">41%</div></div><div class="card"><div class="kl">Avg visits per customer</div><div class="kv">2.7</div></div></div>
+<div class="card"><h2 class="h3">Returning vs new, by week</h2>
+<div class="bars" role="img" aria-label="Returning versus new customers each week">
+<sc-for list="{{retBars}}" as="b" hint-placeholder-count="8"><div class="bar" style="flex-direction: column"><div style="height: {{b.n}}%; background: #C48BB4; border-radius: 6px 6px 0 0"></div><div style="height: {{b.r}}%; border-radius: 0"></div></div></sc-for>
+</div>
+<div class="row small" style="margin-top: 10px"><span class="row" style="gap: 6px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #6B2C5C"></span>Returning</span><span class="row" style="gap: 6px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #C48BB4"></span>New</span></div>
+</div>
+</sc-if>
+<sc-if value="{{reports_appts}}" hint-placeholder-val="{{ false }}">
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1.4fr repeat(5, 1fr); min-width: 680px">Team member<span>Booked</span><span>Completed</span><span>No-show</span><span>Cancelled</span><span>Completion</span></div>
+<sc-for list="{{apptStats}}" as="a" hint-placeholder-count="4"><div class="tr" style="grid-template-columns: 1.4fr repeat(5, 1fr); min-width: 680px"><strong>{{a.name}}</strong><span>{{a.b}}</span><span>{{a.c}}</span><span>{{a.n}}</span><span>{{a.x}}</span><span class="{{a.pcls}}">{{a.rate}}</span></div></sc-for>
+</div>
+</sc-if>
+<sc-if value="{{reports_peak}}" hint-placeholder-val="{{ false }}">
+<div class="card"><div class="row between" style="margin-bottom: 12px"><h2 class="h3" style="margin: 0">Bookings by day and hour</h2><span class="muted small">Darker = busier</span></div>
+<div style="overflow-x: auto"><div class="heat" role="img" aria-label="Heatmap of bookings; Friday and Saturday afternoons are busiest">
+<div></div><sc-for list="{{heatHours}}" as="h" hint-placeholder-count="12"><div class="hl">{{h}}</div></sc-for>
+<sc-for list="{{heat}}" as="r" hint-placeholder-count="7"><div class="hl" style="justify-content: flex-start">{{r.day}}</div><sc-for list="{{r.cells}}" as="c" hint-placeholder-count="12"><div class="hc" style="background: {{c.bg}}" title="{{c.tip}}"></div></sc-for></sc-for>
+</div></div>
+</div>
+</sc-if>
+
+<!-- ============ TEAM ============ -->
+<sc-if value="{{team_roster}}" hint-placeholder-val="{{ false }}">
+<div class="row between" style="margin-bottom: 14px"><div class="seg" role="group" aria-label="Filter"><button class="on">Active</button><button>Inactive</button><button>All</button></div><button class="btn sm">Add team member</button></div>
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1.6fr 1fr 1.2fr 1fr 1fr 170px; min-width: 820px">Name<span>Title</span><span>Login</span><span>ID document</span><span>Status</span><span></span></div>
+<sc-for list="{{roster}}" as="m" hint-placeholder-count="6"><div class="tr" style="grid-template-columns: 1.6fr 1fr 1.2fr 1fr 1fr 170px; min-width: 820px"><div class="row" style="gap: 10px; flex-wrap: nowrap"><div class="av" style="width: 32px; height: 32px; font-size: 12px">{{m.ini}}</div><strong>{{m.name}}</strong></div><span>{{m.title}}</span><span class="muted">{{m.login}}</span><span>{{m.doc}}</span><span class="{{m.pcls}}">{{m.status}}</span><div class="row" style="gap: 6px; flex-wrap: nowrap"><button class="btn ghost sm">Edit</button><button class="btn ghost sm">{{m.toggle}}</button></div></div></sc-for>
+</div>
+</sc-if>
+<sc-if value="{{team_invites}}" hint-placeholder-val="{{ false }}">
+<div class="g2">
+<div class="card"><h2 class="h3">Invite a login</h2>
+<div class="form"><div class="field full"><label for="iv-e">Email</label><input id="iv-e" type="email" placeholder="name@example.com"></div><div class="field"><label for="iv-r">Role</label><select id="iv-r"><option>Front desk</option><option>Therapist</option><option>Manager</option></select></div><div class="field"><label for="iv-m">Link to team member</label><select id="iv-m"><option>Zoya Ali</option><option>Not linked</option></select></div></div>
+<div class="row" style="margin-top: 16px"><button class="btn">Send invitation</button></div></div>
+<div class="card"><h2 class="h3">Pending invitations</h2>
+<div class="li"><div><strong>zoya@example.com</strong><div class="muted small">Therapist · sent 9 Oct · expires 16 Oct</div></div><div class="row" style="gap: 6px"><button class="btn ghost sm">Resend</button><button class="btn danger sm">Revoke</button></div></div>
+<div class="li"><div><strong>reception2@example.com</strong><div class="muted small">Front desk · sent 1 Oct · expired</div></div><span class="pill p-red">Expired</span></div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{team_roles}}" hint-placeholder-val="{{ false }}">
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1.6fr repeat(4, 1fr); min-width: 640px">Module<span class="perm">Owner</span><span class="perm">Manager</span><span class="perm">Front desk</span><span class="perm">Therapist</span></div>
+<sc-for list="{{perms}}" as="p" hint-placeholder-count="8"><div class="tr" style="grid-template-columns: 1.6fr repeat(4, 1fr); min-width: 640px"><strong>{{p.mod}}</strong><span class="perm">{{p.o}}</span><span class="perm">{{p.m}}</span><span class="perm">{{p.f}}</span><span class="perm">{{p.t}}</span></div></sc-for>
+</div>
+<div class="row" style="margin-top: 14px"><button class="btn ghost">New role</button><button class="btn">Save permissions</button></div>
+</sc-if>
+<sc-if value="{{team_accounts}}" hint-placeholder-val="{{ false }}">
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1.6fr 1.4fr 1fr 1fr 110px; min-width: 700px">Account<span>Linked team member</span><span>Role</span><span>Access</span><span></span></div>
+<sc-for list="{{accounts}}" as="a" hint-placeholder-count="4"><div class="tr" style="grid-template-columns: 1.6fr 1.4fr 1fr 1fr 110px; min-width: 700px"><span>{{a.email}}</span><span>{{a.member}}</span><span>{{a.role}}</span><span class="{{a.pcls}}">{{a.access}}</span><button class="btn ghost sm">Change</button></div></sc-for>
+</div>
+</sc-if>
+
+<!-- ============ AUDIT ============ -->
+<sc-if value="{{audit_recent}}" hint-placeholder-val="{{ false }}">
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1.1fr 1fr 1.6fr 2fr; min-width: 720px">When<span>Who</span><span>Action</span><span>Details</span></div>
+<sc-for list="{{audit}}" as="a" hint-placeholder-count="7"><div class="tr" style="grid-template-columns: 1.1fr 1fr 1.6fr 2fr; min-width: 720px"><span class="muted">{{a.when}}</span><span>{{a.who}}</span><span class="{{a.pcls}}">{{a.what}}</span><span class="muted small">{{a.meta}}</span></div></sc-for>
+</div>
+</sc-if>
+<sc-if value="{{audit_filter}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="margin-bottom: 16px"><div class="form">
+<div class="field"><label for="af-a">Action</label><select id="af-a"><option>All actions</option><option>Receipt voided</option><option>Appointment cancelled</option><option>Role changed</option><option>Settings updated</option></select></div>
+<div class="field"><label for="af-u">Actor</label><select id="af-u"><option>Anyone</option><option>Ayesha</option><option>Sana</option><option>Bilal</option></select></div>
+<div class="field"><label for="af-f">From</label><input id="af-f" type="date"></div>
+<div class="field"><label for="af-t">To</label><input id="af-t" type="date"></div>
+</div><div class="row" style="margin-top: 14px"><button class="btn">Apply filters</button><button class="btn ghost">Reset</button></div></div>
+<div class="tbox">
+<div class="tr" style="grid-template-columns: 1.1fr 1fr 1.6fr 2fr; min-width: 720px"><span class="muted">12 Oct, 11:20</span><span>Ayesha</span><span class="pill p-red">Receipt voided</span><span class="muted small">#R-1041 · $35.00 · wrong customer</span></div>
+</div>
+</sc-if>
+
+<!-- ============ SETTINGS ============ -->
+<sc-if value="{{settings_business}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="max-width: 720px"><h2 class="h3">Business details</h2>
+<div class="form"><div class="field"><label for="sb-n">Business name</label><input id="sb-n" placeholder="Velvet Room Salon"></div><div class="field"><label for="sb-t">Business type</label><select id="sb-t"><option>Hair &amp; beauty salon</option><option>Aesthetic clinic</option><option>Spa</option><option>Barber</option><option>Nail studio</option></select></div></div>
+<div class="row" style="margin-top: 16px"><button class="btn">Save</button></div></div>
+</sc-if>
+<sc-if value="{{settings_region}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="max-width: 720px"><h2 class="h3">Region</h2>
+<div class="form"><div class="field"><label for="sr-c">Country</label><select id="sr-c"><option>Pakistan</option><option>United Kingdom</option><option>United Arab Emirates</option><option>United States</option></select></div><div class="field"><label for="sr-cu">Currency</label><select id="sr-cu"><option>USD ($)</option><option>PKR (Rs)</option><option>GBP (£)</option><option>AED</option></select></div><div class="field full"><label for="sr-tz">Timezone</label><select id="sr-tz"><option>Asia/Karachi (UTC+5)</option><option>Europe/London</option><option>Asia/Dubai</option></select></div></div>
+<div class="row" style="margin-top: 16px"><button class="btn">Save</button></div></div>
+</sc-if>
+<sc-if value="{{settings_loyalty}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="max-width: 720px"><h2 class="h3">Loyalty</h2>
+<div class="field" style="max-width: 260px"><label for="sl-r">Earn rate (% of bill)</label><input id="sl-r" type="number" placeholder="5"></div>
+<p class="muted small">Customers earn this percentage of every receipt as money-value credit they can redeem on a future visit.</p>
+<div class="ok">At 5%, a $60 sale earns $3.00 in credit.</div>
+<div class="row" style="margin-top: 16px"><button class="btn">Save</button></div></div>
+</sc-if>
+<sc-if value="{{settings_hours}}" hint-placeholder-val="{{ false }}">
+<div class="tbox" style="max-width: 760px">
+<div class="tr th" style="grid-template-columns: 1fr 1fr 1fr 1fr; min-width: 520px">Day<span>Opens</span><span>Closes</span><span>Closed</span></div>
+<sc-for list="{{openHours}}" as="h" hint-placeholder-count="7"><div class="tr" style="grid-template-columns: 1fr 1fr 1fr 1fr; min-width: 520px"><strong>{{h.day}}</strong><input type="time" aria-label="{{h.day}} opens"><input type="time" aria-label="{{h.day}} closes"><label class="chk"><input type="checkbox">Closed</label></div></sc-for>
+</div>
+<div class="row" style="margin-top: 14px"><button class="btn">Save opening hours</button><button class="btn ghost">Add closed day</button></div>
+</sc-if>
+
+<!-- ============ ACCOUNT ============ -->
+<sc-if value="{{account_profile}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="max-width: 640px"><h2 class="h3">Personal details</h2>
+<div class="form"><div class="field"><label for="ac-n">Name</label><input id="ac-n" placeholder="{{userName}}"></div><div class="field"><label for="ac-p">Phone</label><input id="ac-p" type="tel" placeholder="+92 3xx xxxxxxx"></div><div class="field full"><label for="ac-e">Email</label><input id="ac-e" placeholder="ayesha@velvetroom.example" disabled="disabled"></div></div>
+<div class="row" style="margin-top: 16px"><button class="btn">Save</button></div></div>
+</sc-if>
+<sc-if value="{{account_access}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="max-width: 640px"><h2 class="h3">Your role</h2><div class="row" style="margin-bottom: 10px"><span class="pill p-plum">{{roleLabel}}</span></div><p class="muted" style="margin: 0">{{roleDesc}}</p></div>
+</sc-if>
+
+<sc-if value="{{mflash}}" hint-placeholder-val="{{ false }}"><div class="ok" role="status" style="margin-bottom: 16px">{{mflashTxt}}</div></sc-if>
+
+<!-- ============ SETTINGS > APPEARANCE ============ -->
+<sc-if value="{{settings_appearance}}" hint-placeholder-val="{{ false }}">
+<div class="g2">
+<div class="stack">
+<div class="card">
+<h2 class="h3" style="margin-bottom: 4px">Colour scheme</h2>
+<p class="muted small" style="margin: 0 0 16px">Applies to everyone in your salon. The whole app previews it straight away — save to keep it.</p>
+<div class="themes" role="group" aria-label="Colour scheme">
+<sc-for list="{{ap.themes}}" as="t" hint-placeholder-count="6"><button class="{{t.cls}}" onClick="{{t.go}}" aria-pressed="{{t.sel}}"><sc-if value="{{t.isOn}}" hint-placeholder-val="{{ false }}"><span class="tick" aria-hidden="true">✓</span></sc-if><span class="sws" aria-hidden="true"><span style="background: {{t.side}}"></span><span style="background: {{t.accent}}"></span><span style="background: {{t.soft}}"></span></span><span><strong>{{t.name}}</strong><br><span class="muted small">{{t.hint}}</span></span></button></sc-for>
+</div>
+</div>
+<div class="card">
+<h2 class="h3" style="margin-bottom: 4px">Fonts</h2>
+<p class="muted small" style="margin: 0">Choose a font for headings and one for everyday text.</p>
+<p class="lbl">Heading font</p>
+<div class="fonts" role="group" aria-label="Heading font"><sc-for list="{{ap.head}}" as="f" hint-placeholder-count="4"><button class="{{f.cls}}" onClick="{{f.go}}" aria-pressed="{{f.sel}}"><span style="font-family: {{f.css}}; font-size: 24px; line-height: 1.1">Aa Velvet</span><span class="muted small">{{f.name}} · {{f.hint}}</span></button></sc-for></div>
+<p class="lbl">Body text font</p>
+<div class="fonts" role="group" aria-label="Body text font"><sc-for list="{{ap.body}}" as="f" hint-placeholder-count="4"><button class="{{f.cls}}" onClick="{{f.go}}" aria-pressed="{{f.sel}}"><span style="font-family: {{f.css}}; font-size: 15px">Book a blow-dry for Tuesday at 11:00.</span><span class="muted small">{{f.name}}</span></button></sc-for></div>
+<p class="lbl">Text size</p>
+<div class="seg" role="group" aria-label="Text size"><sc-for list="{{ap.sizes}}" as="z" hint-placeholder-count="3"><button class="{{z.cls}}" onClick="{{z.go}}" aria-pressed="{{z.sel}}">{{z.label}}</button></sc-for></div>
+</div>
+</div>
+<div class="card stack" style="gap: 12px; align-self: start">
+<h2 class="h3" style="margin: 0">Current look</h2>
+<div class="li"><span class="muted">Scheme</span><strong>{{ap.scheme}}</strong></div>
+<div class="li"><span class="muted">Headings</span><span>{{ap.fh}}</span></div>
+<div class="li"><span class="muted">Body text</span><span>{{ap.fb}}</span></div>
+<div class="li"><span class="muted">Text size</span><span>{{ap.size}}</span></div>
+<sc-if value="{{ap.dirty}}" hint-placeholder-val="{{ false }}"><div class="note">Previewing unsaved changes. Other staff still see the saved look.</div></sc-if>
+<div class="row"><button class="btn" onClick="{{ap.save}}" disabled="{{ap.clean}}">Save appearance</button><button class="btn ghost" onClick="{{ap.discard}}" disabled="{{ap.clean}}">Discard</button></div>
+<button class="btn ghost sm" onClick="{{ap.reset}}">Reset to default</button>
+<p class="muted small" style="margin: 0">Printed receipts always use black text on white.</p>
+</div>
+</div>
+</sc-if>
+
+<!-- ============ MY ACCOUNT > BILLINGS ============ -->
+<sc-if value="{{account_billing}}" hint-placeholder-val="{{ false }}">
+<div class="billhead">
+<div class="plan"><span class="l">Salon plan</span><span class="v">$20 / month</span><span class="l">Next charge {{b.nextAmt}} on Nov 1, 2026 · {{b.nextVia}}</span></div>
+<div class="balc">
+<div class="row between"><span class="muted small">Your balance</span><button class="btn sm" onClick="{{b.toggleTopup}}">{{b.topupBtn}}</button></div>
+<span class="v">{{b.balance}}</span>
+<span class="muted small">Used first for monthly charges, then your default card.</span>
+<sc-if value="{{b.showTopup}}" hint-placeholder-val="{{ false }}">
+<div class="quick" role="group" aria-label="Top-up amount"><sc-for list="{{b.topups}}" as="q" hint-placeholder-count="3"><button class="{{q.cls}}" onClick="{{q.go}}" aria-pressed="{{q.sel}}">{{q.label}}</button></sc-for></div>
+<div class="row"><span class="small">Charge to {{b.defName}}</span><button class="btn sm sage" onClick="{{b.doTopup}}">Add {{b.topAmt}}</button></div>
+</sc-if>
+</div>
+</div>
+<div class="subtabs" role="tablist" aria-label="Billing sections"><sc-for list="{{b.subtabs}}" as="t" hint-placeholder-count="3"><button role="tab" class="{{t.cls}}" aria-selected="{{t.sel}}" onClick="{{t.go}}">{{t.label}}</button></sc-for></div>
+
+<sc-if value="{{b.s_history}}" hint-placeholder-val="{{ true }}">
+<div class="row between" style="margin-bottom: 12px">
+<div class="seg" role="group" aria-label="Status"><sc-for list="{{b.filters}}" as="o" hint-placeholder-count="4"><button class="{{o.cls}}" onClick="{{o.go}}" aria-pressed="{{o.sel}}">{{o.label}}</button></sc-for></div>
+<span class="muted small">{{b.summary}}</span>
+</div>
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1fr 1.6fr 1.2fr 0.8fr 0.8fr 0.9fr 170px; min-width: 900px">Date<span>Description</span><span>Method</span><span style="text-align: right">Amount</span><span style="text-align: right">Discount</span><span>Status</span><span style="text-align: right">Actions</span></div>
+<sc-for list="{{b.rows}}" as="x" hint-placeholder-count="8">
+<div class="{{x.cls}}" style="grid-template-columns: 1fr 1.6fr 1.2fr 0.8fr 0.8fr 0.9fr 170px; min-width: 900px"><span>{{x.date}}</span><span>{{x.desc}}<sc-if value="{{x.hasNote}}" hint-placeholder-val="{{ false }}"><br><span class="muted small">{{x.note}}</span></sc-if></span><span class="muted">{{x.method}}</span><strong style="text-align: right">{{x.amt}}</strong><span style="text-align: right">{{x.disc}}</span><span class="{{x.pcls}}">{{x.status}}</span><div class="row" style="gap: 6px; justify-content: flex-end; flex-wrap: nowrap"><sc-if value="{{x.pending}}" hint-placeholder-val="{{ false }}"><button class="btn sm sage" onClick="{{x.pay}}">Pay now</button></sc-if><button class="btn ghost sm" aria-label="Download invoice for {{x.date}}">Invoice</button></div></div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{b.s_methods}}" hint-placeholder-val="{{ false }}">
+<div class="bcards">
+<sc-for list="{{b.cards}}" as="c" hint-placeholder-count="2">
+<div class="{{c.cls}}">
+<div class="row between"><div class="row" style="gap: 12px"><span class="{{c.boxCls}}" aria-hidden="true">{{c.short}}</span><div><strong>{{c.brand}} •••• {{c.last4}}</strong><div class="muted small">Expires {{c.exp}}</div></div></div><sc-if value="{{c.isDef}}" hint-placeholder-val="{{ false }}"><span class="pill p-plum">Default</span></sc-if></div>
+<div class="row" style="gap: 8px"><sc-if value="{{c.notDef}}" hint-placeholder-val="{{ true }}"><button class="btn ghost sm" onClick="{{c.makeDef}}">Make default</button><button class="btn danger sm" onClick="{{c.remove}}">Remove</button></sc-if><sc-if value="{{c.isDef}}" hint-placeholder-val="{{ false }}"><span class="muted small">Charged when your balance doesn't cover the bill</span></sc-if></div>
+</div>
+</sc-for>
+<div class="pm"><div class="row" style="gap: 12px"><span class="brandbox bl" aria-hidden="true">BAL</span><div><strong>Account balance</strong><div class="muted small">{{b.balance}} available</div></div></div><span class="muted small">Always used first. Top it up from the balance card above.</span></div>
+</div>
+<div class="card" style="margin-top: 16px; max-width: 640px">
+<div class="row between"><h2 class="h3" style="margin: 0">Add a card</h2><sc-if value="{{b.noForm}}" hint-placeholder-val="{{ true }}"><button class="btn ghost sm" onClick="{{b.openForm}}">Add card</button></sc-if></div>
+<sc-if value="{{b.showForm}}" hint-placeholder-val="{{ false }}">
+<div class="form" style="margin-top: 14px">
+<div class="field full"><label for="cc-n">Name on card</label><input id="cc-n" placeholder="Ayesha Siddiqui"></div>
+<div class="field full"><label for="cc-num">Card number</label><input id="cc-num" inputmode="numeric" placeholder="1234 5678 9012 3456" onInput="{{b.onNum}}"></div>
+<div class="field"><label for="cc-e">Expiry</label><input id="cc-e" placeholder="MM / YY"></div>
+<div class="field"><label for="cc-c">Security code</label><input id="cc-c" inputmode="numeric" placeholder="CVC"></div>
+</div>
+<p class="muted small">In the real app this form is Stripe's secure card field; card details never touch our servers.</p>
+<div class="row"><button class="btn" onClick="{{b.saveCard}}">Save card</button><button class="btn ghost" onClick="{{b.closeForm}}">Cancel</button></div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{b.s_discounts}}" hint-placeholder-val="{{ false }}">
+<div class="bcards">
+<sc-for list="{{b.discounts}}" as="d" hint-placeholder-count="2">
+<div class="{{d.cls}}">
+<div class="r2"><strong>{{d.title}}</strong><span class="pct" style="color: {{d.color}}">{{d.pct}}</span></div>
+<sc-for list="{{d.lines}}" as="l" hint-placeholder-count="2"><div class="r2"><span class="muted">{{l.k}}</span><span>{{l.v}}</span></div></sc-for>
+<div class="r2"><span class="muted">Status</span><span class="{{d.pcls}}">{{d.status}}</span></div>
+<span class="muted small">{{d.note}}</span>
+</div>
+</sc-for>
+</div>
+<div class="card" style="margin-top: 16px; max-width: 560px">
+<h2 class="h3" style="margin-bottom: 4px">Have a promo code?</h2>
+<p class="muted small" style="margin: 0 0 12px">Codes apply to your next monthly charge.</p>
+<div class="row"><div style="flex: 1 1 220px"><label class="sr" for="promo">Promo code</label><input id="promo" placeholder="e.g. WELCOME10" onInput="{{b.onCode}}"></div><button class="btn" onClick="{{b.applyCode}}" disabled="{{b.noCode}}">Apply</button></div>
+</div>
+</sc-if>
+</sc-if>
+
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"role":{"editor":"enum","options":["Owner","Front desk","Therapist"],"default":"Owner"},"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      page: 'overview', tab: 'summary', loading: false, cart: { cut: 1, blow: 1 }, deal: false, redeem: false, pay: 'card',
+      flash: '', look: { theme: 'plum', fh: 'sora', fb: 'figtree', size: 'm' }, savedLook: { theme: 'plum', fh: 'sora', fb: 'figtree', size: 'm' },
+      bsub: 'history', bf: 'all', bal: 8, paidNov: null, showTopup: false, topAmt: 20,
+      cards: [{ id: 'v', brand: 'Visa', short: 'VISA', last4: '4417', exp: '08/28' }, { id: 'm', brand: 'Mastercard', short: 'MC', last4: '0921', exp: '03/27' }],
+      def: 'v', showForm: false, num: '', code: '', promo: null
+    };
+  }
+  componentWillUnmount() { clearTimeout(this.tm); }
+  pages() {
+    return {
+      overview: { label: 'Overview', title: 'Good afternoon, Ayesha', sub: 'Here is how Velvet Room is running today.', tabs: [['summary', 'Today'], ['trial', 'Trial & plan'], ['access', 'Your access'], ['build', 'Build status']] },
+      calendar: { label: 'Calendar', title: 'Calendar', sub: 'Bookings across your team', tabs: [['day', 'Day'], ['week', 'Week'], ['agenda', 'Agenda'], ['book', 'New booking']] },
+      appt: { label: 'Appointment', parent: 'calendar', title: 'Mehwish Raza · 11:00', sub: 'Tue 13 Oct 2026 · 11:00 – 12:30 with Sana Malik', tabs: [['summary', 'Summary'], ['services', 'Services & price'], ['payments', 'Payments'], ['actions', 'Actions']] },
+      customers: { label: 'Customers', title: 'Customers', sub: 'Search, browse and add clients', tabs: [['directory', 'Directory'], ['add', 'Add customer']] },
+      customer: { label: 'Mehwish Raza', parent: 'customers', title: 'Mehwish Raza', sub: '+92 300 1234567 · client since March 2025', tabs: [['profile', 'Profile'], ['loyalty', 'Loyalty'], ['receipts', 'Receipts'], ['visits', 'Visits'], ['consent', 'Consent records'], ['newconsent', 'New consent']] },
+      pos: { label: 'Point of sale', title: 'Point of sale', sub: 'Ring up services and review takings', tabs: [['till', 'Till'], ['receipts', 'Receipts']] },
+      receipt: { label: 'Receipt #R-1048', parent: 'pos', title: 'Receipt #R-1048', sub: 'Issued 12 Oct 2026, 12:41 by Ayesha', tabs: [['receipt', 'Receipt'], ['history', 'Payment history'], ['void', 'Void']] },
+      services: { label: 'Services & pricing', title: 'Services & pricing', sub: 'Your menu, consent templates and deals', tabs: [['list', 'Services'], ['add', 'Add service'], ['consent', 'Consent templates'], ['deals', 'Deals']] },
+      payroll: { label: 'Payroll', title: 'Payroll', sub: 'Pay periods and team pay settings', tabs: [['periods', 'Pay periods'], ['generate', 'Generate period'], ['settings', 'Pay settings']] },
+      earnings: { label: 'My earnings', title: 'My earnings', sub: 'What you have been paid and what is pending', tabs: [['summary', 'Summary'], ['history', 'Payroll history'], ['recent', 'Recent services']] },
+      reports: { label: 'Reports', title: 'Reports', sub: '12 Sep – 11 Oct 2026', tabs: [['revenue', 'Revenue'], ['loyalty', 'Loyalty'], ['breakdown', 'Services & team'], ['retention', 'Retention'], ['appts', 'Appointments'], ['peak', 'Peak times']] },
+      team: { label: 'Team', title: 'Team & access', sub: 'Roster, logins and permissions', tabs: [['roster', 'Roster'], ['invites', 'Invitations'], ['roles', 'Roles & permissions'], ['accounts', 'Linked accounts']] },
+      audit: { label: 'Audit log', title: 'Audit log', sub: 'Read-only record of important actions', tabs: [['recent', 'Recent activity'], ['filter', 'Filter & search']] },
+      settings: { label: 'Settings', title: 'Salon settings', sub: 'Business details, region, loyalty and hours', tabs: [['business', 'Business'], ['region', 'Region'], ['loyalty', 'Loyalty'], ['hours', 'Opening hours'], ['appearance', 'Appearance']] },
+      account: { label: 'My account', title: 'My account', sub: 'Your personal details and access', tabs: [['profile', 'Profile'], ['access', 'Access'], ['billing', 'Billings']] }
+    };
+  }
+  go(p, t) {
+    const P = this.pages()[p];
+    this.setState({ page: p, tab: t || P.tabs[0][0], loading: true, flash: '' });
+    clearTimeout(this.tm);
+    this.tm = setTimeout(() => this.setState({ loading: false }), 380);
+  }
+  setTab(t) {
+    if (t === this.state.tab) return;
+    this.setState({ tab: t, loading: true, flash: '' });
+    clearTimeout(this.tm);
+    this.tm = setTimeout(() => this.setState({ loading: false }), 380);
+  }
+  renderVals() {
+    const s = this.state;
+    const role = this.props.role ?? 'Owner';
+    const PAGES = this.pages();
+    const P = PAGES[s.page];
+    const v = {};
+    const money = (n) => '$' + n.toFixed(2);
+
+    Object.keys(PAGES).forEach((k) => {
+      v['p_' + k] = s.page === k;
+      PAGES[k].tabs.forEach(([t]) => { v[k + '_' + t] = s.page === k && s.tab === t && !s.loading; });
+    });
+    v.loading = s.loading;
+
+    const allowed = role === 'Therapist' ? ['overview', 'calendar', 'earnings', 'account']
+      : role === 'Front desk' ? ['overview', 'calendar', 'customers', 'pos', 'account']
+      : ['overview', 'calendar', 'customers', 'pos', 'services', 'payroll', 'reports', 'team', 'audit', 'settings', 'earnings', 'account'];
+    const activeKey = P.parent || s.page;
+    const groups = [['Front desk', ['overview', 'calendar', 'customers', 'pos']], ['Business', ['services', 'payroll', 'reports', 'team', 'audit', 'settings']], ['You', ['earnings', 'account']]];
+    v.nav = groups.map(([name, keys]) => ({
+      name,
+      items: keys.filter((k) => allowed.includes(k)).map((k) => ({
+        label: PAGES[k].label, cls: k === activeKey ? 'nav on' : 'nav', cur: k === activeKey ? 'page' : 'false', go: () => this.go(k)
+      }))
+    })).filter((g) => g.items.length);
+
+    v.account_billing = v.account_billing && role === 'Owner';
+    v.tabs = P.tabs.filter(([id]) => !(s.page === 'account' && id === 'billing' && role !== 'Owner')).map(([id, label]) => ({ label, cls: id === s.tab ? 'tab on' : 'tab', sel: id === s.tab ? 'true' : 'false', go: () => this.setTab(id) }));
+    v.pageTitle = P.title; v.pageSub = P.sub; v.pageLabel = P.label;
+    v.hasParent = !!P.parent; v.parentLabel = P.parent ? PAGES[P.parent].label : '';
+    v.goParent = () => this.go(P.parent);
+
+    v.go_cal = () => this.go('calendar');
+    v.go_book = () => this.go('calendar', 'book');
+    v.go_till = () => this.go('pos', 'till');
+    v.go_appt = () => this.go('appt');
+    v.go_apptpay = () => this.go('appt', 'payments');
+    v.go_customer = () => this.go('customer');
+    v.go_receipt = () => this.go('receipt');
+
+    const users = { 'Owner': ['Ayesha Siddiqui', 'AS', 'Full access to every module, billing and team settings.'], 'Front desk': ['Bilal Ahmed', 'BA', 'Bookings, customers and the till. No payroll, reports or settings.'], 'Therapist': ['Sana Malik', 'SM', 'Your own schedule and earnings. Customer details only for your appointments.'] };
+    v.userName = users[role][0]; v.initials = users[role][1]; v.roleDesc = users[role][2];
+    v.roleLabel = role;
+    if (s.page === 'overview') v.pageTitle = 'Good afternoon, ' + v.userName.split(' ')[0];
+
+    const pc = { Confirmed: 'pill p-amber', 'Checked in': 'pill p-plum', Completed: 'pill p-sage', 'No-show': 'pill p-red', Cancelled: 'pill p-grey' };
+    const goA = () => this.go('appt');
+    v.agendaToday = [
+      ['14:00', 'Rabia Iqbal', 'Full colour', 'Hira', 'Checked in'], ['14:30', 'Mehwish Raza', 'Cut & style', 'Sana', 'Confirmed'],
+      ['15:15', 'Noor Fatima', 'Hydrating facial', 'Maria', 'Confirmed'], ['16:00', 'Amna Tariq', 'Gel manicure', 'Zoya', 'Confirmed']
+    ].map(([time, client, service, staff, status]) => ({ time, client, service, staff, status, pcls: pc[status], go: goA }));
+
+    v.accessList = [['Calendar & bookings', 'Full'], ['Customers', 'Full'], ['Point of sale', 'Full'], ['Payroll', role === 'Owner' ? 'Full' : 'None'], ['Reports', role === 'Owner' ? 'Full' : 'None'], ['Team & permissions', role === 'Owner' ? 'Full' : 'None']]
+      .map(([name, level]) => ({ name, level, pcls: level === 'Full' ? 'pill p-sage' : 'pill p-grey' }));
+    v.phases = [
+      ['Accounts & onboarding', 'Sign-up, invitations, roles', 'Live'], ['Calendar & bookings', 'Day/week/agenda, booking form', 'Live'],
+      ['Customers & consent', 'Profiles, intake forms, signatures', 'Live'], ['POS & loyalty', 'Till, receipts, 5% credit', 'Live'],
+      ['Payroll & reports', 'Pay periods, analytics', 'Live'], ['Audit log', 'Read-only action history', 'Live'],
+      ['Stripe billing', 'Subscription and access gating', 'Planned']
+    ].map(([name, inc, status]) => ({ name, inc, status, pcls: status === 'Live' ? 'pill p-sage' : 'pill p-amber' }));
+
+    v.hours = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+    const blk = (st, dur, client, service, c) => {
+      const [h, m] = st.split(':').map(Number);
+      return { top: (h - 9) * 60 + m + 2, h: dur - 4, client, service, time: st, cls: 'blk b-' + c, go: goA };
+    };
+    v.staffCols = [
+      { name: 'Sana', ini: 'SM', blocks: [blk('10:00', 60, 'Hiba Kamal', 'Cut', 'sage'), blk('11:30', 90, 'Mehwish Raza', 'Cut & blow-dry', 'plum'), blk('14:30', 60, 'Mehwish Raza', 'Cut & style', 'amber')] },
+      { name: 'Hira', ini: 'HS', blocks: [blk('09:30', 120, 'Sadia Noor', 'Balayage', 'sage'), blk('14:00', 120, 'Rabia Iqbal', 'Full colour', 'plum')] },
+      { name: 'Maria', ini: 'MK', blocks: [blk('10:30', 60, 'Iqra Javed', 'Chemical peel', 'sage'), blk('12:30', 45, 'Laiba Shah', 'Brow shape', 'grey'), blk('15:15', 75, 'Noor Fatima', 'Hydrating facial', 'amber')] },
+      { name: 'Zoya', ini: 'ZA', blocks: [blk('11:00', 60, 'Areeba Khan', 'Gel manicure', 'sage'), blk('16:00', 60, 'Amna Tariq', 'Gel manicure', 'amber')] }
+    ];
+    const chip = (time, client, c) => ({ time, client, cls: 'chip b-' + c, go: goA });
+    v.week = [
+      { day: 'Mon 12', count: '14 bookings', items: [chip('10:00', 'Hiba K.', 'sage'), chip('14:00', 'Rabia I.', 'plum'), chip('16:00', 'Amna T.', 'amber')] },
+      { day: 'Tue 13', count: '11 bookings', items: [chip('11:00', 'Mehwish R.', 'amber'), chip('13:30', 'Sara M.', 'amber')] },
+      { day: 'Wed 14', count: '9 bookings', items: [chip('10:30', 'Iqra J.', 'amber'), chip('15:00', 'Hania A.', 'amber')] },
+      { day: 'Thu 15', count: '12 bookings', items: [chip('12:00', 'Zara B.', 'amber'), chip('17:00', 'Mahnoor S.', 'amber')] },
+      { day: 'Fri 16', count: '16 bookings', items: [chip('11:00', 'Kinza R.', 'amber'), chip('14:00', 'Alina F.', 'amber'), chip('16:30', 'Eman T.', 'amber')] },
+      { day: 'Sat 17', count: '19 bookings', items: [chip('10:00', 'Maira H.', 'amber'), chip('13:00', 'Anum Z.', 'amber'), chip('15:30', 'Sobia L.', 'amber')] },
+      { day: 'Sun 18', count: 'Closed', items: [] }
+    ];
+    const ag = (time, client, service, staff, status) => ({ time, client, service, staff, status, pcls: pc[status], go: goA });
+    v.agendaDays = [
+      { label: 'Today · Mon 12 Oct', items: [ag('10:00', 'Hiba Kamal', 'Cut', 'Sana', 'Completed'), ag('12:30', 'Laiba Shah', 'Brow shape', 'Maria', 'No-show'), ag('14:00', 'Rabia Iqbal', 'Full colour', 'Hira', 'Checked in')] },
+      { label: 'Tomorrow · Tue 13 Oct', items: [ag('11:00', 'Mehwish Raza', 'Cut & style, blow-dry', 'Sana', 'Confirmed'), ag('13:30', 'Sara Mirza', 'Hydrating facial', 'Maria', 'Confirmed')] },
+      { label: 'Wed 14 Oct', items: [ag('10:30', 'Iqra Javed', 'Chemical peel', 'Maria', 'Confirmed'), ag('15:00', 'Hania Asif', 'Gel manicure', 'Zoya', 'Cancelled')] }
+    ];
+
+    const goC = () => this.go('customer');
+    v.customers = [
+      ['Mehwish Raza', '+92 300 1234567', '2 Oct 2026', '23', '$12.40'], ['Rabia Iqbal', '+92 321 5550192', 'Today', '8', '$4.10'],
+      ['Noor Fatima', '+92 333 8881204', '28 Sep 2026', '15', '$9.75'], ['Amna Tariq', '+92 345 2209981', '19 Sep 2026', '4', '$1.20'],
+      ['Hiba Kamal', '+92 301 7712345', 'Today', '11', '$6.55'], ['Iqra Javed', '+92 322 4401287', '30 Sep 2026', '6', '$3.00']
+    ].map(([name, phone, last, visits, pts]) => ({ name, phone, last, visits, pts, go: goC }));
+    v.ledger = [
+      ['2 Oct 2026', 'Earned on receipt #R-1011', '+$3.20', '$12.40', 'pill p-sage'], ['2 Oct 2026', 'Redeemed on receipt #R-1011', '−$5.00', '$9.20', 'pill p-plum'],
+      ['18 Sep 2026', 'Earned on receipt #R-0974', '+$4.75', '$14.20', 'pill p-sage'], ['1 Sep 2026', 'Earned on receipt #R-0921', '+$2.25', '$9.45', 'pill p-sage']
+    ].map(([date, what, amt, bal, pcls]) => ({ date, what, amt, bal, pcls }));
+    const goR = () => this.go('receipt');
+    v.custReceipts = [
+      ['#R-1048', '12 Oct 2026', 'Cut & style, blow-dry', '$58.00', 'Issued'], ['#R-1011', '2 Oct 2026', 'Chemical peel', '$64.00', 'Issued'],
+      ['#R-0974', '18 Sep 2026', 'Full colour', '$95.00', 'Issued'], ['#R-0950', '10 Sep 2026', 'Blow-dry', '$25.00', 'Voided']
+    ].map(([no, date, items, total, status]) => ({ no, date, items, total, status, pcls: status === 'Issued' ? 'pill p-sage' : 'pill p-red', go: goR }));
+    v.visits = [
+      ['2 Oct 2026', 'Chemical peel', 'Hira', 'Completed'], ['18 Sep 2026', 'Full colour', 'Hira', 'Completed'],
+      ['10 Sep 2026', 'Blow-dry', 'Sana', 'Completed'], ['26 Aug 2026', 'Cut & style', 'Sana', 'No-show'], ['12 Aug 2026', 'Cut & style', 'Sana', 'Completed']
+    ].map(([date, svc, staff, status]) => ({ date, svc, staff, status, pcls: pc[status] }));
+
+    const cat = [
+      { id: 'cut', name: "Women's cut & style", price: 45, dur: '60 min', staff: 'Sana' },
+      { id: 'blow', name: 'Blow-dry', price: 25, dur: '30 min', staff: 'Sana' },
+      { id: 'colour', name: 'Full colour', price: 95, dur: '120 min', staff: 'Hira' },
+      { id: 'facial', name: 'Hydrating facial', price: 70, dur: '60 min', staff: 'Maria' },
+      { id: 'mani', name: 'Gel manicure', price: 35, dur: '45 min', staff: 'Zoya' },
+      { id: 'brow', name: 'Brow shape & tint', price: 20, dur: '30 min', staff: 'Maria' }
+    ];
+    const setQty = (id, d) => {
+      const cart = { ...this.state.cart };
+      cart[id] = (cart[id] || 0) + d;
+      if (cart[id] <= 0) delete cart[id];
+      this.setState({ cart });
+    };
+    v.catalog = cat.map((c) => ({ ...c, priceTxt: '$' + c.price, add: () => setQty(c.id, 1) }));
+    const lines = cat.filter((c) => s.cart[c.id]).map((c) => ({ name: c.name, staff: c.staff, qty: s.cart[c.id], lineTxt: money(c.price * s.cart[c.id]), line: c.price * s.cart[c.id], inc: () => setQty(c.id, 1), dec: () => setQty(c.id, -1) }));
+    v.cartLines = lines; v.cartEmpty = lines.length === 0;
+    const sub = lines.reduce((a, l) => a + l.line, 0);
+    const deal = s.deal ? sub * 0.1 : 0;
+    const red = s.redeem ? Math.min(12.4, sub - deal) : 0;
+    v.subTxt = money(sub); v.dealTxt = s.deal ? '−' + money(deal) : '—'; v.redeemTxt = s.redeem ? '−' + money(red) : '—';
+    v.totalTxt = money(Math.max(0, sub - deal - red));
+    v.toggleDeal = () => this.setState({ deal: !this.state.deal });
+    v.toggleRedeem = () => this.setState({ redeem: !this.state.redeem });
+    v.payOpts = [['card', 'Card'], ['cash', 'Cash'], ['split', 'Split']].map(([id, label]) => ({ label, cls: s.pay === id ? 'on' : '', sel: s.pay === id ? 'true' : 'false', go: () => this.setState({ pay: id }) }));
+    v.isSplit = s.pay === 'split';
+    v.receipts = [
+      ['#R-1048', '12:41', 'Mehwish Raza', 'Card', '$58.00', 'Issued'], ['#R-1047', '12:05', 'Hiba Kamal', 'Cash', '$45.00', 'Issued'],
+      ['#R-1046', '11:40', 'Areeba Khan', 'Split', '$35.00', 'Issued'], ['#R-1045', '11:22', 'Iqra Javed', 'Card', '$70.00', 'Issued'],
+      ['#R-1041', '10:58', 'Walk-in', 'Cash', '$35.00', 'Voided'], ['#R-1040', '10:31', 'Sadia Noor', 'Card', '$180.00', 'Issued']
+    ].map(([no, time, cust, method, total, status]) => ({ no, time, cust, method, total, status, pcls: status === 'Issued' ? 'pill p-sage' : 'pill p-red', go: goR }));
+
+    const sv = (name, price, dur, team, consent) => ({ name, price, dur, team, consent, pcls: consent === 'None' ? 'pill p-grey' : 'pill p-plum' });
+    v.svcCats = [
+      { name: 'Hair', count: '4 services', items: [sv("Women's cut & style", '$45.00', '60 min', 'Sana, Hira', 'None'), sv('Blow-dry', '$25.00', '30 min', 'Sana, Hira', 'None'), sv('Full colour', '$95.00', '120 min', 'Hira', 'Patch test'), sv('Balayage', '$140.00', '150 min', 'Hira', 'Patch test')] },
+      { name: 'Skin', count: '3 services', items: [sv('Hydrating facial', '$70.00', '60 min', 'Maria', 'Medical intake'), sv('Chemical peel', '$64.00', '45 min', 'Maria', 'Chemical peel'), sv('Brow shape & tint', '$20.00', '30 min', 'Maria, Zoya', 'Patch test')] },
+      { name: 'Nails', count: '2 services', items: [sv('Gel manicure', '$35.00', '45 min', 'Zoya', 'None'), sv('Pedicure', '$40.00', '60 min', 'Zoya', 'None')] }
+    ];
+    v.templates = [
+      { name: 'Chemical peel consent', ver: 'v3', count: '4 statements', used: '1 service', items: ['Medications and skin conditions disclosed', 'Redness may last up to 48 hours'] },
+      { name: 'Medical intake', ver: 'v2', count: '9 questions', used: '1 service', items: ['Current medications', 'Allergies and sensitivities'] },
+      { name: 'Hair colour patch test', ver: 'v1', count: '3 statements', used: '3 services', items: ['Patch test completed 48h before', 'No reaction observed'] }
+    ];
+    v.deals = [
+      ['Autumn glow', '10% off', 'Hydrating facial, Chemical peel', '1 – 31 Oct 2026', 'Active'], ['Weekday blow-dry', '$5 off', 'Blow-dry', 'Mon – Thu, ongoing', 'Active'], ['Summer colour', '15% off', 'Full colour, Balayage', '1 Jul – 31 Aug 2026', 'Ended']
+    ].map(([name, off, to, when, status]) => ({ name, off, to, when, status, pcls: status === 'Active' ? 'pill p-sage' : 'pill p-grey' }));
+
+    v.payrows = [['Sana Malik', '64', '$4,120.00', '$900.00', '$618.00', '$1,518.00'], ['Hira Shah', '52', '$5,300.00', '$900.00', '$795.00', '$1,695.00'], ['Maria Khan', '58', '$3,880.00', '$800.00', '$582.00', '$1,382.00'], ['Zoya Ali', '71', '$2,485.00', '$700.00', '$372.75', '$1,072.75']]
+      .map(([name, n, rev, sal, com, tot]) => ({ name, n, rev, sal, com, tot }));
+    v.paySettings = [['Sana Malik', 'Salary + commission', '$900 / month', '15%'], ['Hira Shah', 'Salary + commission', '$900 / month', '15%'], ['Maria Khan', 'Salary + commission', '$800 / month', '15%'], ['Zoya Ali', 'Commission only', '—', '28%']]
+      .map(([name, arr, sal, com]) => ({ name, arr, sal, com }));
+    v.recentSvc = [['12 Oct', 'Hiba Kamal', 'Cut', '$45.00'], ['10 Oct', 'Rania Ali', 'Blow-dry', '$25.00'], ['10 Oct', 'Sara Mirza', 'Cut & style', '$45.00'], ['9 Oct', 'Kinza Rauf', 'Blow-dry', '$25.00'], ['8 Oct', 'Mehwish Raza', 'Cut & style', '$45.00']]
+      .map(([date, cust, svc, rev]) => ({ date, cust, svc, rev }));
+
+    const rv = [4900, 5200, 5050, 5600, 5900, 5750, 6300, 6700];
+    const mx = Math.max(...rv);
+    v.revBars = rv.map((n, i) => ({ v: '$' + (n / 1000).toFixed(1) + 'k', h: Math.round((n / mx) * 82), l: 'Wk ' + (i + 34), cls: i === rv.length - 1 ? 'bar' : 'bar alt' }));
+    const bs = [["Women's cut & style", 6120], ['Full colour', 5320], ['Hydrating facial', 4410], ['Balayage', 3920], ['Gel manicure', 2650]];
+    v.bySvc = bs.map(([name, n]) => ({ name, v: '$' + n.toLocaleString(), w: Math.round(n / bs[0][1] * 100) }));
+    const bt = [['Hira Shah', 7300], ['Sana Malik', 6180], ['Maria Khan', 5820], ['Zoya Ali', 3600]];
+    v.byTeam = bt.map(([name, n]) => ({ name, v: '$' + n.toLocaleString(), w: Math.round(n / bt[0][1] * 100) }));
+    v.retBars = [[50, 22], [52, 20], [55, 24], [54, 19], [58, 21], [60, 18], [62, 22], [66, 20]].map(([r, n]) => ({ r, n }));
+    v.apptStats = [['Sana Malik', 68, 61, 3, 4], ['Hira Shah', 55, 52, 1, 2], ['Maria Khan', 63, 54, 5, 4], ['Zoya Ali', 74, 69, 2, 3]].map(([name, b, c, n, x]) => {
+      const r = Math.round(c / b * 100);
+      return { name, b, c, n, x, rate: r + '%', pcls: r >= 90 ? 'pill p-sage' : 'pill p-amber' };
+    });
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const dayW = [0.5, 0.45, 0.55, 0.65, 0.85, 1, 0];
+    v.heatHours = ['10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21'];
+    v.heat = days.map((day, di) => ({
+      day,
+      cells: v.heatHours.map((h, hi) => {
+        const shape = Math.exp(-Math.pow((hi - 5) / 3.2, 2));
+        const val = dayW[di] * shape;
+        const n = Math.round(val * 12);
+        return { bg: 'rgba(107,44,92,' + (0.06 + val * 0.88).toFixed(2) + ')', tip: day + ' ' + h + ':00 · ' + n + ' bookings' };
+      })
+    }));
+
+    v.roster = [['Sana Malik', 'SM', 'Senior stylist', 'sana@velvetroom.example', 'CNIC on file', 'Active'], ['Hira Shah', 'HS', 'Colourist', 'hira@velvetroom.example', 'CNIC on file', 'Active'], ['Maria Khan', 'MK', 'Aesthetician', 'maria@velvetroom.example', 'Missing', 'Active'], ['Zoya Ali', 'ZA', 'Nail technician', 'Invite pending', 'CNIC on file', 'Active'], ['Bilal Ahmed', 'BA', 'Receptionist', 'bilal@velvetroom.example', 'CNIC on file', 'Active'], ['Fiza Noor', 'FN', 'Stylist', 'No login', 'CNIC on file', 'Inactive']]
+      .map(([name, ini, title, login, doc, status]) => ({ name, ini, title, login, doc, status, pcls: status === 'Active' ? 'pill p-sage' : 'pill p-grey', toggle: status === 'Active' ? 'Deactivate' : 'Activate' }));
+    v.perms = [['Calendar & bookings', 'Full', 'Full', 'Full', 'Own only'], ['Customers', 'Full', 'Full', 'Full', 'Own clients'], ['Consent records', 'Full', 'Full', 'View', 'Collect'], ['Point of sale', 'Full', 'Full', 'Full', '—'], ['Void receipts', 'Yes', '—', '—', '—'], ['Services & pricing', 'Full', 'Full', 'View', '—'], ['Payroll', 'Full', '—', '—', 'Own earnings'], ['Reports', 'Full', 'Full', '—', '—'], ['Team & access', 'Full', '—', '—', '—'], ['Audit log', 'View', '—', '—', '—'], ['Salon settings', 'Full', '—', '—', '—']]
+      .map(([mod, o, m, f, t]) => ({ mod, o, m, f, t }));
+    v.accounts = [['ayesha@velvetroom.example', 'Ayesha Siddiqui', 'Owner', 'Enabled'], ['bilal@velvetroom.example', 'Bilal Ahmed', 'Front desk', 'Enabled'], ['sana@velvetroom.example', 'Sana Malik', 'Therapist', 'Enabled'], ['maria@velvetroom.example', 'Not linked', 'Therapist', 'Disabled']]
+      .map(([email, member, role, access]) => ({ email, member, role, access, pcls: access === 'Enabled' ? 'pill p-sage' : 'pill p-grey' }));
+    v.audit = [['12 Oct, 12:41', 'Ayesha', 'Receipt issued', '#R-1048 · $58.00 · Mehwish Raza', 'pill p-sage'], ['12 Oct, 11:20', 'Ayesha', 'Receipt voided', '#R-1041 · $35.00 · wrong customer', 'pill p-red'], ['12 Oct, 10:02', 'Bilal', 'Appointment booked', 'Mehwish Raza · Tue 13 Oct 11:00', 'pill p-plum'], ['11 Oct, 18:44', 'Ayesha', 'Role changed', 'Maria Khan: Front desk → Therapist', 'pill p-amber'], ['11 Oct, 17:10', 'Bilal', 'Appointment cancelled', 'Hania Asif · Wed 14 Oct 15:00', 'pill p-grey'], ['10 Oct, 09:15', 'Ayesha', 'Settings updated', 'Loyalty earn rate 4% → 5%', 'pill p-amber'], ['9 Oct, 16:30', 'Ayesha', 'Invitation sent', 'zoya@example.com · Therapist', 'pill p-plum']]
+      .map(([when, who, what, meta, pcls]) => ({ when, who, what, meta, pcls }));
+    v.openHours = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => ({ day }));
+
+    // ---- Appearance ----
+    const L = s.look, SL = s.savedLook;
+    const setLook = (patch) => this.setState({ look: { ...this.state.look, ...patch }, flash: '' });
+    const THEMES = [['plum', 'Plum', 'Default · warm and calm', '#1C1724', '#6B2C5C', '#F3E8F0'], ['sage', 'Sage', 'Fresh, spa-like', '#14231E', '#2F6F5E', '#E3F0EB'], ['ocean', 'Ocean', 'Clean and clinical', '#0F1C26', '#1F5F8B', '#E1EEF7'], ['rose', 'Rose', 'Bold and beauty-led', '#261219', '#A8335A', '#FBE7EE'], ['terra', 'Terracotta', 'Earthy and warm', '#24160F', '#A4522D', '#FBEDE5'], ['midnight', 'Midnight', 'Cool and modern', '#13122A', '#3D3A8C', '#E9E8F7']];
+    const HF = [['sora', 'Sora', 'Modern', "'Sora', sans-serif"], ['playfair', 'Playfair Display', 'Elegant serif', "'Playfair Display', serif"], ['dmserif', 'DM Serif Display', 'Classic', "'DM Serif Display', serif"], ['poppins', 'Poppins', 'Friendly', "'Poppins', sans-serif"]];
+    const BF = [['figtree', 'Figtree', "'Figtree', sans-serif"], ['nunito', 'Nunito Sans', "'Nunito Sans', sans-serif"], ['lato', 'Lato', "'Lato', sans-serif"], ['source', 'Source Sans 3', "'Source Sans 3', sans-serif"]];
+    const SZ = [['s', 'Small'], ['m', 'Default'], ['l', 'Large']];
+    const dirty = JSON.stringify(L) !== JSON.stringify(SL);
+    v.ap = {
+      themes: THEMES.map(([id, name, hint, side, accent, soft]) => ({ name, hint, side, accent, soft, isOn: L.theme === id, cls: L.theme === id ? 'theme on' : 'theme', sel: L.theme === id ? 'true' : 'false', go: () => setLook({ theme: id }) })),
+      head: HF.map(([id, name, hint, css]) => ({ name, hint, css, cls: L.fh === id ? 'fontb on' : 'fontb', sel: L.fh === id ? 'true' : 'false', go: () => setLook({ fh: id }) })),
+      body: BF.map(([id, name, css]) => ({ name, css, cls: L.fb === id ? 'fontb on' : 'fontb', sel: L.fb === id ? 'true' : 'false', go: () => setLook({ fb: id }) })),
+      sizes: SZ.map(([id, label]) => ({ label, cls: L.size === id ? 'on' : '', sel: L.size === id ? 'true' : 'false', go: () => setLook({ size: id }) })),
+      scheme: THEMES.find((t) => t[0] === L.theme)[1], fh: HF.find((f) => f[0] === L.fh)[1], fb: BF.find((f) => f[0] === L.fb)[1], size: SZ.find((z) => z[0] === L.size)[1],
+      dirty, clean: !dirty,
+      save: () => this.setState({ savedLook: { ...this.state.look }, flash: 'Appearance saved. Everyone in your salon now sees this look.' }),
+      discard: () => this.setState({ look: { ...this.state.savedLook }, flash: '' }),
+      reset: () => setLook({ theme: 'plum', fh: 'sora', fb: 'figtree', size: 'm' })
+    };
+    v.appCls = 'app' + (L.theme !== 'plum' ? ' th-' + L.theme : '') + (L.fh !== 'sora' ? ' fh-' + L.fh : '') + (L.fb !== 'figtree' ? ' fb-' + L.fb : '') + ' sz-' + L.size;
+    v.mflash = !!s.flash && !s.loading && (s.page === 'settings' || s.page === 'account');
+    v.mflashTxt = s.flash;
+
+    // ---- Billings ----
+    const card = s.cards.find((c) => c.id === s.def) || s.cards[0];
+    const defName = card ? card.brand + ' •••• ' + card.last4 : 'no card on file';
+    const promoPct = s.promo ? 10 : 0;
+    const novAmt = 20 * (1 - promoPct / 100);
+    const INV = [
+      ['Nov 1, 2026', 'Monthly plan · Nov 2026', 20, promoPct, s.paidNov ? 'Paid' : 'Pending', s.paidNov || '—', s.promo ? 'Promo ' + s.promo + ' applied' : ''],
+      ['Oct 1, 2026', 'Monthly plan · Oct 2026', 20, 20, 'Paid', 'Account balance', ''],
+      ['Sep 18, 2026', 'Balance top-up', 40, 0, 'Paid', 'Mastercard •••• 0921', ''],
+      ['Sep 1, 2026', 'Monthly plan · Sep 2026', 20, 20, 'Paid', 'Account balance', 'Promo AUTUMN20'],
+      ['Aug 3, 2026', 'Monthly plan · Aug 2026', 20, 0, 'Paid', 'Visa •••• 4417', 'Retry of failed charge'],
+      ['Aug 1, 2026', 'Monthly plan · Aug 2026', 20, 0, 'Failed', 'Visa •••• 4417', 'Card declined — retried automatically'],
+      ['Jul 1, 2026', 'Monthly plan · Jul 2026', 20, 0, 'Paid', 'Visa •••• 4417', ''],
+      ['Jun 1, 2026', 'Monthly plan · Jun 2026', 20, 0, 'Paid', 'Visa •••• 4417', ''],
+      ['May 1, 2026', 'Monthly plan · May 2026', 20, 0, 'Paid', 'Visa •••• 4417', ''],
+      ['Apr 1, 2026', 'Monthly plan · Apr 2026', 20, 0, 'Paid', 'Visa •••• 4417', 'First month after free trial']
+    ];
+    const BPC = { Paid: 'pill p-sage', Pending: 'pill p-amber', Failed: 'pill p-red' };
+    const shownInv = INV.filter((x) => s.bf === 'all' || x[4] === s.bf);
+    const planPaid = INV.filter((x) => x[4] === 'Paid' && x[1].startsWith('Monthly')).reduce((t, x) => t + x[2] * (1 - x[3] / 100), 0);
+    const payNov = () => {
+      if (this.state.bal >= novAmt) this.setState({ bal: +(this.state.bal - novAmt).toFixed(2), paidNov: 'Account balance', flash: 'November paid from your balance.' });
+      else this.setState({ paidNov: defName, flash: 'November paid with ' + defName + '. Receipt emailed to you.' });
+    };
+    v.b = {
+      balance: money(s.bal), defName, nextAmt: money(novAmt),
+      nextVia: s.paidNov ? 'already paid' : (s.bal >= novAmt ? 'from your balance' : 'from ' + defName),
+      showTopup: s.showTopup, topupBtn: s.showTopup ? 'Close' : 'Add balance', topAmt: money(s.topAmt),
+      toggleTopup: () => this.setState({ showTopup: !this.state.showTopup }),
+      topups: [20, 60, 120].map((n) => ({ label: '$' + n, cls: s.topAmt === n ? 'on' : '', sel: s.topAmt === n ? 'true' : 'false', go: () => this.setState({ topAmt: n }) })),
+      doTopup: () => this.setState({ bal: this.state.bal + this.state.topAmt, showTopup: false, flash: money(this.state.topAmt) + ' added to your balance.' }),
+      subtabs: [['history', 'Billing history'], ['methods', 'Payment methods'], ['discounts', 'Discounts']].map(([id, label]) => ({ label, cls: s.bsub === id ? 'subtab on' : 'subtab', sel: s.bsub === id ? 'true' : 'false', go: () => this.setState({ bsub: id, flash: '' }) })),
+      s_history: s.bsub === 'history', s_methods: s.bsub === 'methods', s_discounts: s.bsub === 'discounts',
+      filters: [['all', 'All'], ['Paid', 'Paid'], ['Pending', 'Pending'], ['Failed', 'Failed']].map(([id, label]) => ({ label, cls: s.bf === id ? 'on' : '', sel: s.bf === id ? 'true' : 'false', go: () => this.setState({ bf: id }) })),
+      summary: shownInv.length + ' of ' + INV.length + ' · ' + money(planPaid) + ' paid for the plan in 2026',
+      rows: shownInv.map(([date, desc, gross, disc, status, method, note]) => ({ date, desc, method, note, hasNote: !!note, status, pcls: BPC[status], amt: money(gross * (1 - disc / 100)), disc: disc ? disc + '%' : '—', pending: status === 'Pending', cls: status === 'Pending' ? 'tr pend' : 'tr', pay: payNov })),
+      cards: s.cards.map((c) => ({ ...c, isDef: c.id === s.def, notDef: c.id !== s.def, cls: c.id === s.def ? 'pm def' : 'pm', boxCls: c.brand === 'Mastercard' ? 'brandbox mc' : 'brandbox', makeDef: () => this.setState({ def: c.id, flash: c.brand + ' •••• ' + c.last4 + ' is now your default card.' }), remove: () => this.setState({ cards: this.state.cards.filter((x) => x.id !== c.id), flash: 'Card removed.' }) })),
+      showForm: s.showForm, noForm: !s.showForm,
+      openForm: () => this.setState({ showForm: true }), closeForm: () => this.setState({ showForm: false }),
+      onNum: (e) => this.setState({ num: e.target.value.replace(/\D/g, '') }),
+      saveCard: () => { const n = this.state.num; const last4 = n.length >= 4 ? n.slice(-4) : '1881'; const brand = n.startsWith('5') ? 'Mastercard' : 'Visa'; this.setState({ cards: [...this.state.cards, { id: 'c' + Date.now(), brand, short: brand === 'Visa' ? 'VISA' : 'MC', last4, exp: '12/29' }], showForm: false, num: '', flash: brand + ' •••• ' + last4 + ' added.' }); },
+      discounts: [
+        { title: 'Solo salon', pct: '100%', color: '#245647', lines: [{ k: 'Team size', v: '1 – 1' }, { k: 'Applies to', v: 'Every month' }], status: 'Not applicable', pcls: 'pill p-grey', note: 'Your team has 7 members, so this discount is not applied.', cls: 'dc off' },
+        { title: 'Promotion', pct: '20%', color: '#1C1724', lines: [{ k: 'Code', v: 'AUTUMN20' }, { k: 'Expiration date', v: 'Oct 2, 2026' }], status: 'Expired', pcls: 'pill p-red', note: 'Applied to Sep and Oct 2026.', cls: 'dc off' },
+        ...(s.promo ? [{ title: 'Promotion', pct: '10%', color: '#245647', lines: [{ k: 'Code', v: s.promo }, { k: 'Expiration date', v: 'Dec 31, 2026' }], status: 'Active', pcls: 'pill p-sage', note: 'Will be applied to your Nov 2026 charge.', cls: 'dc' }] : [])
+      ],
+      onCode: (e) => this.setState({ code: e.target.value.trim().toUpperCase() }),
+      noCode: !s.code,
+      applyCode: () => { if (this.state.code) this.setState({ promo: this.state.code, flash: 'Promo ' + this.state.code + ' applied — your November charge is now $18.00.' }); }
+    };
+    return v;
+  }
+}
+</script>
+</body>
+</html>

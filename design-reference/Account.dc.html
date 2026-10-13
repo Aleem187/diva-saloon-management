@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My account</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+<style>
+body{margin:0;background:#F4F3F6;color:#1C1724;font-family:'Figtree',system-ui,sans-serif;font-size:14px;line-height:1.45}
+*{box-sizing:border-box}
+.disp{font-family:'Sora',sans-serif}
+.app{display:flex;flex-wrap:wrap;min-height:100vh;width:100%}
+.side{flex:1 1 252px;background:#1C1724;color:#EDE8F0;padding:22px 14px;display:flex;flex-direction:column;gap:22px}
+.main{flex:999 1 560px;min-width:0;display:flex;flex-direction:column}
+.brand{display:flex;gap:12px;align-items:center;padding:0 8px}
+.logo{width:40px;height:40px;border-radius:12px;background:#F3E8F0;color:#5A2350;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:700;font-size:16px;flex:none}
+.bname{font-family:'Sora',sans-serif;font-weight:600;font-size:15px;color:#fff;margin:0}
+.btype{font-size:12px;color:#B7AEC2;margin:0}
+.navg{display:flex;flex-direction:column;gap:2px}
+.navh{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#A79EB3;padding:0 10px;margin:0 0 6px;font-weight:600}
+.nav{display:flex;align-items:center;gap:10px;width:100%;min-height:40px;padding:8px 10px;border-radius:10px;border:0;background:transparent;color:#D9D2E0;font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.nav:hover{background:#2C2436;color:#fff}
+.nav.on{background:#F3E8F0;color:#4E1E43;font-weight:600}
+.ndot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.55;flex:none}
+.user{display:flex;gap:10px;align-items:center;padding:0 6px;margin-top:auto}
+.av{width:36px;height:36px;border-radius:50%;background:#3F6B5C;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none}
+.av.xl{width:72px;height:72px;font-size:24px;background:#6B2C5C}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 32px;background:#fff;border-bottom:1px solid #E4E1E8}
+.wrap{padding:26px 32px 56px;width:100%;max-width:1320px}
+h1{font-family:'Sora',sans-serif;font-size:28px;margin:0 0 4px;font-weight:600;letter-spacing:-.015em}
+.sub{color:#6B6475;margin:0 0 18px}
+.tabs{display:flex;gap:2px;border-bottom:1px solid #E1DDE6;overflow-x:auto;margin-bottom:22px}
+.tab{appearance:none;border:0;background:none;font:inherit;font-weight:500;color:#6B6475;padding:12px 14px;min-height:46px;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap}
+.tab:hover{color:#1C1724}
+.tab.on{color:#6B2C5C;border-bottom-color:#6B2C5C;font-weight:600}
+.card{background:#fff;border:1px solid #E4E1E8;border-radius:14px;padding:22px;min-width:0}
+.h3{font-family:'Sora',sans-serif;font-size:16px;font-weight:600;margin:0 0 4px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:10px;border:1px solid #6B2C5C;background:#6B2C5C;color:#fff;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn:disabled{background:#C9C2D1;border-color:#C9C2D1;cursor:not-allowed}
+.btn.ghost{background:#fff;color:#5A2350;border-color:#D8CFDD}
+.btn.danger{background:#fff;color:#A3312B;border-color:#EAC3BF}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.stack{display:flex;flex-direction:column;gap:16px}
+.muted{color:#6B6475}
+.small{font-size:13px}
+.field{display:flex;flex-direction:column;gap:6px}
+label{font-size:13px;font-weight:600}
+input{font:inherit;min-height:44px;padding:10px 12px;border:1px solid #D8D3DE;border-radius:10px;background:#fff;color:#1C1724;width:100%}
+input:focus{outline:2px solid #C48BB4;outline-offset:1px;border-color:#6B2C5C}
+input:read-only{background:#F6F5F8;color:#4C4556}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.full{grid-column:1/-1}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;width:max-content}
+.p-plum{background:#F3E8F0;color:#5A2350}.p-sage{background:#E3F0EB;color:#245647}.p-amber{background:#FBF0DC;color:#7A4710}.p-grey{background:#EEECF1;color:#4C4556}
+.seg{display:inline-flex;background:#EEECF1;border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;font:inherit;font-weight:600;font-size:13px;color:#4C4556;padding:0 12px;min-height:36px;border-radius:8px;cursor:pointer}
+.seg button.on{background:#fff;color:#5A2350;box-shadow:0 1px 2px rgba(28,23,36,.12)}
+.sk{border-radius:12px;background:linear-gradient(90deg,#ECE9EF 0%,#F6F4F8 50%,#ECE9EF 100%);background-size:200% 100%;animation:sh 1s linear infinite}
+@keyframes sh{from{background-position:200% 0}to{background-position:-200% 0}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.split{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+.splitmain{flex:999 1 520px;min-width:0}
+.panel{flex:1 1 300px;background:#fff;border:1px solid #E4E1E8;border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:12px}
+.idcard{display:flex;gap:18px;align-items:center;background:#1C1724;color:#fff;border-radius:16px;padding:22px}
+.li{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid #F0EEF2}
+.li:last-child{border-bottom:0}
+.mod{display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #F0EEF2}
+.mod:last-child{border-bottom:0}
+.ic{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.ic.yes{background:#E3F0EB;color:#245647}
+.ic.part{background:#FBF0DC;color:#7A4710}
+.ic.no{background:#EEECF1;color:#8A8296}
+.ok{background:#E3F0EB;color:#1E4A3D;border-radius:12px;padding:12px 14px;font-size:13px}
+.note{background:#FBF0DC;color:#6A3D0C;border-radius:12px;padding:12px 14px;font-size:13px}
+.lockrow{display:flex;gap:8px;align-items:center;font-size:12px;color:#6B6475;margin-top:4px}
+.btn.sm{min-height:36px;padding:0 12px;font-size:13px}
+.btn.paybtn{background:#2F6F5E;border-color:#2F6F5E}
+.p-red{background:#FBE6E4;color:#8E2A25}
+.billhead{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:18px}
+.plan{background:#1C1724;color:#fff;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:6px}
+.plan .v{font-family:'Sora',sans-serif;font-size:30px;font-weight:700}
+.plan .l{color:#D9D2E0;font-size:13px}
+.bal{background:#fff;border:1px solid #E4E1E8;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px}
+.bal .v{font-family:'Sora',sans-serif;font-size:30px;font-weight:700;color:#245647}
+.quick{display:flex;gap:8px;flex-wrap:wrap}
+.quick button{border:1px solid #D8D3DE;background:#fff;border-radius:8px;min-height:36px;padding:0 14px;font:inherit;font-weight:600;cursor:pointer}
+.quick button.on{border-color:#6B2C5C;background:#F3E8F0;color:#5A2350}
+.subtabs{display:flex;gap:4px;margin-bottom:18px;border-bottom:1px solid #EEECF1;overflow-x:auto}
+.subtab{border:0;background:none;font:inherit;font-weight:600;font-size:14px;color:#4C4556;padding:10px 12px;min-height:44px;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap}
+.subtab.on{color:#5A2350;border-bottom-color:#7B5BD6}
+.tbox{overflow-x:auto;border:1px solid #E4E1E8;border-radius:14px;background:#fff}
+.tr{display:grid;grid-template-columns:1fr 1.6fr 1.2fr 0.8fr 0.8fr 0.9fr 170px;gap:12px;align-items:center;padding:13px 16px;border-bottom:1px solid #F0EEF2;min-width:900px}
+.tr:last-child{border-bottom:0}
+.th{font-size:12px;font-weight:600;color:#6B6475;text-transform:uppercase;letter-spacing:.05em;background:#FAF9FB}
+.tr.pend{background:#FFFBF4}
+.r{text-align:right}
+.acts{display:flex;gap:6px;justify-content:flex-end}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.pm{background:#fff;border:1px solid #E4E1E8;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.pm.def{border-color:#6B2C5C;box-shadow:inset 0 0 0 1px #6B2C5C}
+.brandbox{width:52px;height:34px;border-radius:6px;background:#1C1724;color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;letter-spacing:.04em}
+.brandbox.mc{background:#8A3B12}
+.brandbox.bal{background:#2F6F5E}
+.dc{background:#fff;border:1px solid #E4E1E8;border-left:4px solid #A996E6;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.dc.off{border-left-color:#D8D3DE}
+.dc .row2{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px}
+.pct{font-family:'Sora',sans-serif;font-size:20px;font-weight:700}
+.code{background:#EEECF1;border-radius:6px;padding:2px 8px;font-family:ui-monospace,monospace;font-size:13px}
+.sel{min-height:40px;padding:6px 10px;width:auto;font:inherit;border:1px solid #D8D3DE;border-radius:10px;background:#fff}
+</style>
+</helmet>
+<div class="app">
+<aside class="side" aria-label="Main navigation">
+<div class="brand"><div class="logo" aria-hidden="true">VR</div><div><p class="bname">Velvet Room Salon</p><p class="btype">Hair &amp; beauty salon</p></div></div>
+<nav class="navg" aria-label="Front desk"><p class="navh">Front desk</p>
+<sc-for list="{{navItems}}" as="n" hint-placeholder-count="4"><button class="nav"><span class="ndot"></span>{{n}}</button></sc-for>
+</nav>
+<nav class="navg" aria-label="You"><p class="navh">You</p>
+<sc-if value="{{showEarn}}" hint-placeholder-val="{{ true }}"><button class="nav"><span class="ndot"></span>My earnings</button></sc-if>
+<button class="nav on" aria-current="page"><span class="ndot"></span>My account</button>
+</nav>
+<div class="user"><div class="av" aria-hidden="true">{{ini}}</div><div><div style="font-weight: 600; color: #fff">{{name}}</div><div style="font-size: 12px; color: #B7AEC2">{{roleLabel}}</div></div></div>
+</aside>
+
+<main class="main">
+<div class="top">
+<span class="muted small">Preview as</span>
+<div class="seg" role="group" aria-label="Preview role"><sc-for list="{{roleOpts}}" as="o" hint-placeholder-count="3"><button class="{{o.cls}}" onClick="{{o.go}}" aria-pressed="{{o.sel}}">{{o.label}}</button></sc-for></div>
+</div>
+<div class="wrap">
+<h1>My account</h1>
+<p class="sub">Your personal details and what you can access</p>
+<sc-if value="{{flash}}" hint-placeholder-val="{{ false }}"><div class="ok" role="status" style="margin-bottom: 16px">{{flashTxt}}</div></sc-if>
+
+<div class="tabs" role="tablist" aria-label="Sections">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="2"><button role="tab" class="{{t.cls}}" aria-selected="{{t.sel}}" onClick="{{t.go}}">{{t.label}}</button></sc-for>
+</div>
+
+<sc-if value="{{loading}}" hint-placeholder-val="{{ false }}">
+<div class="stack" aria-live="polite"><span class="sr">Loading…</span><div class="sk" style="height: 120px"></div><div class="sk" style="height: 260px"></div></div>
+</sc-if>
+
+<sc-if value="{{t_profile}}" hint-placeholder-val="{{ true }}">
+<div class="split">
+<div class="splitmain card">
+<h2 class="h3">Personal details</h2>
+<p class="muted small" style="margin: 0 0 16px">Your name appears on receipts you issue and in the audit log.</p>
+<div class="form">
+<div class="field"><label for="a-n">Full name</label><input id="a-n" placeholder="{{savedName}}" onInput="{{onName}}" /></div>
+<div class="field"><label for="a-p">Phone</label><input id="a-p" type="tel" placeholder="{{savedPhone}}" onInput="{{onPhone}}" /></div>
+<div class="field full"><label for="a-e">Email</label><input id="a-e" type="email" value="{{email}}" readOnly="{{ true }}" /><div class="lockrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>You sign in with this email. Ask the salon owner if it needs to change.</div></div>
+</div>
+<div class="row" style="margin-top: 18px"><button class="btn" onClick="{{save}}" disabled="{{clean}}">Save changes</button><sc-if value="{{dirty}}" hint-placeholder-val="{{ false }}"><button class="btn ghost" onClick="{{reset}}">Cancel</button><span class="muted small">Unsaved changes</span></sc-if></div>
+</div>
+<aside class="panel">
+<div class="idcard"><div class="av xl" aria-hidden="true">{{ini}}</div><div><div class="disp" style="font-size: 19px; font-weight: 600">{{name}}</div><div style="color: #D9D2E0; font-size: 13px">{{phone}}</div><div style="margin-top: 8px"><span class="pill p-plum">{{roleLabel}}</span></div></div></div>
+<div class="li"><span class="muted">Salon</span><span>Velvet Room Salon</span></div>
+<div class="li"><span class="muted">Member since</span><span>{{since}}</span></div>
+<div class="li"><span class="muted">Last sign-in</span><span>Today, 09:58</span></div>
+<form method="post" action="#" style="margin: 0"><button class="btn danger" type="button" style="width: 100%">Sign out</button></form>
+</aside>
+</div>
+</sc-if>
+
+<sc-if value="{{t_access}}" hint-placeholder-val="{{ false }}">
+<div class="split">
+<div class="splitmain card">
+<div class="row between" style="margin-bottom: 6px"><div><h2 class="h3">You're signed in as {{roleArticle}} {{roleLabel}}</h2><p class="muted small" style="margin: 0">{{roleDesc}}</p></div><span class="pill p-plum">{{roleLabel}}</span></div>
+<sc-for list="{{mods}}" as="m" hint-placeholder-count="10">
+<div class="mod"><span class="{{m.icCls}}" aria-hidden="true">{{m.sym}}</span><div><strong>{{m.name}}</strong><div class="muted small">{{m.what}}</div></div><span class="{{m.pcls}}">{{m.level}}</span></div>
+</sc-for>
+</div>
+<aside class="panel">
+<h2 class="h3">Need more access?</h2>
+<p class="muted small" style="margin: 0">Access is set by the salon owner in Team › Roles &amp; permissions. Ask them to change your role or adjust what it can do.</p>
+<div class="li"><span class="muted">Full access</span><strong>{{counts.full}}</strong></div>
+<div class="li"><span class="muted">Limited</span><strong>{{counts.part}}</strong></div>
+<div class="li"><span class="muted">No access</span><strong>{{counts.none}}</strong></div>
+<sc-if value="{{isOwner}}" hint-placeholder-val="{{ false }}"><div class="note">As the owner you have full access to everything, including the salon's billing.</div></sc-if>
+</aside>
+</div>
+</sc-if>
+
+<!-- BILLINGS -->
+<sc-if value="{{t_billing}}" hint-placeholder-val="{{ false }}">
+<div class="billhead">
+<div class="plan"><span class="l">Salon plan</span><span class="v">$20 / month</span><span class="l">Next charge {{b.nextAmt}} on Nov 1, 2026 · {{b.nextVia}}</span></div>
+<div class="bal">
+<div class="row between"><span class="muted small">Your balance</span><button class="btn sm" onClick="{{b.toggleTopup}}">{{b.topupBtn}}</button></div>
+<span class="v">{{b.balance}}</span>
+<span class="muted small">Used first for monthly charges, then your default card.</span>
+<sc-if value="{{b.showTopup}}" hint-placeholder-val="{{ false }}">
+<div class="quick" role="group" aria-label="Top-up amount"><sc-for list="{{b.topups}}" as="q" hint-placeholder-count="3"><button class="{{q.cls}}" onClick="{{q.go}}" aria-pressed="{{q.sel}}">{{q.label}}</button></sc-for></div>
+<div class="row"><span class="small">Charge to {{b.defName}}</span><button class="btn sm paybtn" onClick="{{b.doTopup}}">Add {{b.topAmt}}</button></div>
+</sc-if>
+</div>
+</div>
+
+<div class="subtabs" role="tablist" aria-label="Billing sections"><sc-for list="{{b.subtabs}}" as="t" hint-placeholder-count="3"><button role="tab" class="{{t.cls}}" aria-selected="{{t.sel}}" onClick="{{t.go}}">{{t.label}}</button></sc-for></div>
+
+<sc-if value="{{b.s_history}}" hint-placeholder-val="{{ true }}">
+<div class="row between" style="margin-bottom: 12px">
+<div class="seg" role="group" aria-label="Status"><sc-for list="{{b.filters}}" as="o" hint-placeholder-count="4"><button class="{{o.cls}}" onClick="{{o.go}}" aria-pressed="{{o.sel}}">{{o.label}}</button></sc-for></div>
+<span class="muted small">{{b.summary}}</span>
+</div>
+<div class="tbox">
+<div class="tr th">Date<span>Description</span><span>Method</span><span class="r">Amount</span><span class="r">Discount</span><span>Status</span><span class="r">Actions</span></div>
+<sc-for list="{{b.rows}}" as="x" hint-placeholder-count="8">
+<div class="{{x.cls}}"><span>{{x.date}}</span><span>{{x.desc}}<sc-if value="{{x.hasNote}}" hint-placeholder-val="{{ false }}"><br /><span class="muted small">{{x.note}}</span></sc-if></span><span class="muted">{{x.method}}</span><strong class="r">{{x.amt}}</strong><span class="r">{{x.disc}}</span><span class="{{x.pcls}}">{{x.status}}</span>
+<div class="acts"><sc-if value="{{x.pending}}" hint-placeholder-val="{{ false }}"><button class="btn sm paybtn" onClick="{{x.pay}}">Pay now</button></sc-if><button class="btn ghost sm" aria-label="Download invoice for {{x.date}}">Invoice</button></div></div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{b.s_methods}}" hint-placeholder-val="{{ false }}">
+<div class="cards">
+<sc-for list="{{b.cards}}" as="c" hint-placeholder-count="2">
+<div class="{{c.cls}}">
+<div class="row between"><div class="row" style="gap: 12px"><span class="{{c.boxCls}}" aria-hidden="true">{{c.short}}</span><div><strong>{{c.brand}} •••• {{c.last4}}</strong><div class="muted small">Expires {{c.exp}}</div></div></div><sc-if value="{{c.isDef}}" hint-placeholder-val="{{ false }}"><span class="pill p-plum">Default</span></sc-if></div>
+<div class="row" style="gap: 8px"><sc-if value="{{c.notDef}}" hint-placeholder-val="{{ true }}"><button class="btn ghost sm" onClick="{{c.makeDef}}">Make default</button><button class="btn danger sm" onClick="{{c.remove}}">Remove</button></sc-if><sc-if value="{{c.isDef}}" hint-placeholder-val="{{ false }}"><span class="muted small">Charged when your balance doesn't cover the bill</span></sc-if></div>
+</div>
+</sc-for>
+<div class="pm">
+<div class="row" style="gap: 12px"><span class="brandbox bal" aria-hidden="true">BAL</span><div><strong>Account balance</strong><div class="muted small">{{b.balance}} available</div></div></div>
+<span class="muted small">Always used first. Top it up from the balance card above.</span>
+</div>
+</div>
+<div class="card" style="margin-top: 16px; max-width: 640px">
+<div class="row between"><h2 class="h3">Add a card</h2><sc-if value="{{b.noForm}}" hint-placeholder-val="{{ true }}"><button class="btn ghost sm" onClick="{{b.openForm}}">Add card</button></sc-if></div>
+<sc-if value="{{b.showForm}}" hint-placeholder-val="{{ false }}">
+<div class="form" style="margin-top: 14px">
+<div class="field full"><label for="cc-n">Name on card</label><input id="cc-n" placeholder="Ayesha Siddiqui" /></div>
+<div class="field full"><label for="cc-num">Card number</label><input id="cc-num" inputmode="numeric" placeholder="1234 5678 9012 3456" onInput="{{b.onNum}}" /></div>
+<div class="field"><label for="cc-e">Expiry</label><input id="cc-e" placeholder="MM / YY" /></div>
+<div class="field"><label for="cc-c">Security code</label><input id="cc-c" inputmode="numeric" placeholder="CVC" /></div>
+</div>
+<p class="muted small">Card details are handled by our payment provider and never stored on our servers.</p>
+<div class="row"><button class="btn" onClick="{{b.saveCard}}">Save card</button><button class="btn ghost" onClick="{{b.closeForm}}">Cancel</button></div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{b.s_discounts}}" hint-placeholder-val="{{ false }}">
+<div class="cards">
+<sc-for list="{{b.discounts}}" as="d" hint-placeholder-count="2">
+<div class="{{d.cls}}">
+<div class="row2"><strong>{{d.title}}</strong><span class="pct" style="color: {{d.color}}">{{d.pct}}</span></div>
+<sc-for list="{{d.lines}}" as="l" hint-placeholder-count="2"><div class="row2"><span class="muted">{{l.k}}</span><span>{{l.v}}</span></div></sc-for>
+<div class="row2"><span class="muted">Status</span><span class="{{d.pcls}}">{{d.status}}</span></div>
+<sc-if value="{{d.hasNote}}" hint-placeholder-val="{{ false }}"><span class="muted small">{{d.note}}</span></sc-if>
+</div>
+</sc-for>
+</div>
+<div class="card" style="margin-top: 16px; max-width: 560px">
+<h2 class="h3">Have a promo code?</h2>
+<p class="muted small" style="margin: 0 0 12px">Codes apply to your next monthly charge.</p>
+<div class="row"><div style="flex: 1 1 220px"><label class="sr" for="promo">Promo code</label><input id="promo" placeholder="e.g. WELCOME10" onInput="{{b.onCode}}" /></div><button class="btn" onClick="{{b.applyCode}}" disabled="{{b.noCode}}">Apply</button></div>
+</div>
+</sc-if>
+</sc-if>
+
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      tab: 'billing', loading: false, role: 'Owner', draftName: '', draftPhone: '', saved: {}, flash: '',
+      sub: 'history', bf: 'all', balance: 8, paidNov: null, showTopup: false, topAmt: 20,
+      cards: [{ id: 'v', brand: 'Visa', short: 'VISA', last4: '4417', exp: '08/28' }, { id: 'm', brand: 'Mastercard', short: 'MC', last4: '0921', exp: '03/27' }],
+      def: 'v', showForm: false, num: '', code: '', promo: null
+    };
+  }
+  componentWillUnmount() { clearTimeout(this.tm); }
+  setTab(t) {
+    if (t === this.state.tab) return;
+    this.setState({ tab: t, loading: true, flash: '' });
+    clearTimeout(this.tm);
+    this.tm = setTimeout(() => this.setState({ loading: false }), 380);
+  }
+  renderVals() {
+    const s = this.state;
+    const v = {};
+    const U = {
+      Owner: ['Ayesha Siddiqui', '+92 300 1112233', 'ayesha@velvetroom.example', 'Jan 2023', 'Full control of the salon: bookings, sales, team, pay, reports and settings.'],
+      'Front desk': ['Bilal Ahmed', '+92 300 9988776', 'bilal@velvetroom.example', 'Sep 2024', 'You run bookings, customers and the till. Payroll, reports and settings are handled by the owner.'],
+      Therapist: ['Sana Malik', '+92 301 4455667', 'sana@velvetroom.example', 'Mar 2023', 'You see your own schedule, the customers you serve, and your own earnings.']
+    };
+    const u = U[s.role];
+    const sv = s.saved[s.role] || {};
+    const savedName = sv.name || u[0], savedPhone = sv.phone || u[1];
+    const name = s.draftName || savedName, phone = s.draftPhone || savedPhone;
+    v.savedName = savedName; v.savedPhone = savedPhone;
+    v.name = name; v.phone = phone; v.email = u[2]; v.since = u[3]; v.roleDesc = u[4];
+    v.ini = name.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+    v.roleLabel = s.role; v.roleArticle = s.role === 'Owner' ? 'the' : 'a';
+    v.isOwner = s.role === 'Owner';
+    v.roleOpts = ['Owner', 'Front desk', 'Therapist'].map((r) => ({ label: r, cls: s.role === r ? 'on' : '', sel: s.role === r ? 'true' : 'false', go: () => this.setState({ role: r, draftName: '', draftPhone: '', flash: '', tab: r !== 'Owner' && this.state.tab === 'billing' ? 'profile' : this.state.tab }) }));
+    v.navItems = s.role === 'Therapist' ? ['Overview', 'Calendar'] : ['Overview', 'Calendar', 'Customers', 'Point of sale'];
+    v.showEarn = s.role !== 'Front desk';
+
+    v.onName = (e) => this.setState({ draftName: e.target.value });
+    v.onPhone = (e) => this.setState({ draftPhone: e.target.value });
+    v.dirty = !!(s.draftName || s.draftPhone); v.clean = !v.dirty;
+    v.reset = () => this.setState({ draftName: '', draftPhone: '' });
+    v.save = () => { const x = { ...this.state.saved }; x[s.role] = { name, phone }; this.setState({ saved: x, draftName: '', draftPhone: '', flash: 'Your details were saved.' }); };
+
+    const M = [
+      ['Calendar & bookings', 'Appointments and the booking form', { Owner: 'Full', 'Front desk': 'Full', Therapist: 'Own only' }],
+      ['Customers', 'Profiles, visits and loyalty', { Owner: 'Full', 'Front desk': 'Full', Therapist: 'Own clients' }],
+      ['Consent records', 'Medical intake and signatures', { Owner: 'Full', 'Front desk': 'View', Therapist: 'Collect' }],
+      ['Point of sale', 'Take payments and issue receipts', { Owner: 'Full', 'Front desk': 'Full', Therapist: 'None' }],
+      ['Void receipts', 'Reverse an issued receipt', { Owner: 'Full', 'Front desk': 'None', Therapist: 'None' }],
+      ['Services & pricing', 'Menu, prices and deals', { Owner: 'Full', 'Front desk': 'View', Therapist: 'None' }],
+      ['Payroll', 'Pay periods and settings', { Owner: 'Full', 'Front desk': 'None', Therapist: 'Own earnings' }],
+      ['Reports', 'Revenue and performance', { Owner: 'Full', 'Front desk': 'None', Therapist: 'None' }],
+      ['Team & access', 'Roster, invites and roles', { Owner: 'Full', 'Front desk': 'None', Therapist: 'None' }],
+      ['Salon settings', 'Hours, region and loyalty', { Owner: 'Full', 'Front desk': 'None', Therapist: 'None' }]
+    ];
+    const c = { full: 0, part: 0, none: 0 };
+    v.mods = M.map(([n, what, lv]) => {
+      const level = lv[s.role];
+      const kind = level === 'Full' ? 'yes' : level === 'None' ? 'no' : 'part';
+      c[kind === 'yes' ? 'full' : kind === 'no' ? 'none' : 'part']++;
+      return { name: n, what, level: level === 'None' ? 'No access' : level, icCls: 'ic ' + kind, sym: kind === 'yes' ? '✓' : kind === 'no' ? '–' : '◐', pcls: kind === 'yes' ? 'pill p-sage' : kind === 'no' ? 'pill p-grey' : 'pill p-amber' };
+    });
+    v.counts = c;
+
+    const money = (n) => '$' + n.toFixed(2);
+    const card = (id) => s.cards.find((c) => c.id === id);
+    const defC = card(s.def) || s.cards[0];
+    const defName = defC ? defC.brand + ' •••• ' + defC.last4 : 'no card on file';
+    const promoPct = s.promo ? 10 : 0;
+    const novAmt = 20 * (1 - promoPct / 100);
+    const INV = [
+      ['nov', 'Nov 1, 2026', 'Monthly plan · Nov 2026', 20, promoPct, s.paidNov ? 'Paid' : 'Pending', s.paidNov || '—', s.promo ? 'Promo ' + s.promo + ' applied' : ''],
+      ['oct', 'Oct 1, 2026', 'Monthly plan · Oct 2026', 20, 20, 'Paid', 'Account balance', ''],
+      ['top', 'Sep 18, 2026', 'Balance top-up', 40, 0, 'Paid', 'Mastercard •••• 0921', ''],
+      ['sep', 'Sep 1, 2026', 'Monthly plan · Sep 2026', 20, 20, 'Paid', 'Account balance', 'Promo AUTUMN20'],
+      ['aug2', 'Aug 3, 2026', 'Monthly plan · Aug 2026', 20, 0, 'Paid', 'Visa •••• 4417', 'Retry of failed charge'],
+      ['aug', 'Aug 1, 2026', 'Monthly plan · Aug 2026', 20, 0, 'Failed', 'Visa •••• 4417', 'Card declined — retried automatically'],
+      ['jul', 'Jul 1, 2026', 'Monthly plan · Jul 2026', 20, 0, 'Paid', 'Visa •••• 4417', ''],
+      ['jun', 'Jun 1, 2026', 'Monthly plan · Jun 2026', 20, 0, 'Paid', 'Visa •••• 4417', ''],
+      ['may', 'May 1, 2026', 'Monthly plan · May 2026', 20, 0, 'Paid', 'Visa •••• 4417', ''],
+      ['apr', 'Apr 1, 2026', 'Monthly plan · Apr 2026', 20, 0, 'Paid', 'Visa •••• 4417', 'First month after free trial']
+    ];
+    const PC = { Paid: 'pill p-sage', Pending: 'pill p-amber', Failed: 'pill p-red' };
+    const shown = INV.filter((x) => s.bf === 'all' || x[5] === s.bf);
+    const paidSum = INV.filter((x) => x[5] === 'Paid' && x[2].startsWith('Monthly')).reduce((t, x) => t + x[3] * (1 - x[4] / 100), 0);
+    const payNov = () => {
+      if (this.state.balance >= novAmt) this.setState({ balance: +(this.state.balance - novAmt).toFixed(2), paidNov: 'Account balance', flash: 'November paid from your balance.' });
+      else this.setState({ paidNov: defName, flash: 'November paid with ' + defName + '. Receipt emailed to you.' });
+    };
+    const b = {
+      balance: money(s.balance), defName, nextAmt: money(novAmt),
+      nextVia: s.paidNov ? 'already paid' : (s.balance >= novAmt ? 'from your balance' : 'from ' + defName),
+      showTopup: s.showTopup, topupBtn: s.showTopup ? 'Close' : 'Add balance', topAmt: money(s.topAmt),
+      toggleTopup: () => this.setState({ showTopup: !this.state.showTopup }),
+      topups: [20, 60, 120].map((n) => ({ label: '$' + n, cls: s.topAmt === n ? 'on' : '', sel: s.topAmt === n ? 'true' : 'false', go: () => this.setState({ topAmt: n }) })),
+      doTopup: () => this.setState({ balance: this.state.balance + this.state.topAmt, showTopup: false, flash: money(this.state.topAmt) + ' added to your balance.' }),
+      subtabs: [['history', 'Billing history'], ['methods', 'Payment methods'], ['discounts', 'Discounts']].map(([id, label]) => ({ label, cls: s.sub === id ? 'subtab on' : 'subtab', sel: s.sub === id ? 'true' : 'false', go: () => this.setState({ sub: id, flash: '' }) })),
+      s_history: s.sub === 'history', s_methods: s.sub === 'methods', s_discounts: s.sub === 'discounts',
+      filters: [['all', 'All'], ['Paid', 'Paid'], ['Pending', 'Pending'], ['Failed', 'Failed']].map(([id, label]) => ({ label, cls: s.bf === id ? 'on' : '', sel: s.bf === id ? 'true' : 'false', go: () => this.setState({ bf: id }) })),
+      summary: shown.length + ' of ' + INV.length + ' · ' + money(paidSum) + ' paid for the plan in 2026',
+      rows: shown.map(([id, date, desc, gross, disc, status, method, note]) => ({
+        date, desc, method, note, hasNote: !!note, status, pcls: PC[status],
+        amt: money(gross * (1 - disc / 100)), disc: disc ? disc + '%' : '—',
+        pending: status === 'Pending', cls: status === 'Pending' ? 'tr pend' : 'tr', pay: payNov
+      })),
+      cards: s.cards.map((c) => ({
+        ...c, isDef: c.id === s.def, notDef: c.id !== s.def, cls: c.id === s.def ? 'pm def' : 'pm', boxCls: c.brand === 'Mastercard' ? 'brandbox mc' : 'brandbox',
+        makeDef: () => this.setState({ def: c.id, flash: c.brand + ' •••• ' + c.last4 + ' is now your default card.' }),
+        remove: () => this.setState({ cards: this.state.cards.filter((x) => x.id !== c.id), flash: 'Card removed.' })
+      })),
+      showForm: s.showForm, noForm: !s.showForm,
+      openForm: () => this.setState({ showForm: true }), closeForm: () => this.setState({ showForm: false }),
+      onNum: (e) => this.setState({ num: e.target.value.replace(/\D/g, '') }),
+      saveCard: () => {
+        const n = this.state.num;
+        const last4 = n.length >= 4 ? n.slice(-4) : '1881';
+        const brand = n.startsWith('5') ? 'Mastercard' : 'Visa';
+        const nc = { id: 'c' + Date.now(), brand, short: brand === 'Visa' ? 'VISA' : 'MC', last4, exp: '12/29' };
+        this.setState({ cards: [...this.state.cards, nc], showForm: false, num: '', flash: brand + ' •••• ' + last4 + ' added.' });
+      },
+      discounts: [
+        { title: 'Solo salon', pct: '100%', color: '#245647', lines: [{ k: 'Team size', v: '1 – 1' }, { k: 'Applies to', v: 'Every month' }], status: 'Not applicable', pcls: 'pill p-grey', hasNote: true, note: 'Your team has 7 members, so this discount is not applied.', cls: 'dc off' },
+        { title: 'Promotion', pct: '20%', color: '#1C1724', lines: [{ k: 'Code', v: 'AUTUMN20' }, { k: 'Expiration date', v: 'Oct 2, 2026' }], status: 'Expired', pcls: 'pill p-red', hasNote: true, note: 'Applied to Sep and Oct 2026.', cls: 'dc off' },
+        ...(s.promo ? [{ title: 'Promotion', pct: '10%', color: '#245647', lines: [{ k: 'Code', v: s.promo }, { k: 'Expiration date', v: 'Dec 31, 2026' }], status: 'Active', pcls: 'pill p-sage', hasNote: true, note: 'Will be applied to your Nov 2026 charge.', cls: 'dc' }] : [])
+      ],
+      onCode: (e) => this.setState({ code: e.target.value.trim().toUpperCase() }),
+      noCode: !s.code,
+      applyCode: () => { if (this.state.code) this.setState({ promo: this.state.code, flash: 'Promo ' + this.state.code + ' applied — your November charge is now ' + money(18) + '.' }); }
+    };
+    v.b = b;
+
+    const TT = s.role === 'Owner' ? [['profile', 'Profile'], ['access', 'Access'], ['billing', 'Billings']] : [['profile', 'Profile'], ['access', 'Access']];
+    v.tabs = TT.map(([id, label]) => ({ label, cls: s.tab === id ? 'tab on' : 'tab', sel: s.tab === id ? 'true' : 'false', go: () => this.setTab(id) }));
+    TT.forEach(([id]) => { v['t_' + id] = s.tab === id && !s.loading; });
+    v.loading = s.loading;
+    v.flash = !!s.flash; v.flashTxt = s.flash;
+    return v;
+  }
+}
+</script>
+</body>
+</html>

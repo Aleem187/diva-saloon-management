@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Reports</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+<style>
+body{margin:0;background:#F4F3F6;color:#1C1724;font-family:'Figtree',system-ui,sans-serif;font-size:14px;line-height:1.45}
+*{box-sizing:border-box}
+a{color:#6B2C5C}a:hover{color:#4E1E43}
+.disp{font-family:'Sora',sans-serif}
+.app{display:flex;flex-wrap:wrap;min-height:100vh;width:100%}
+.side{flex:1 1 252px;background:#1C1724;color:#EDE8F0;padding:22px 14px;display:flex;flex-direction:column;gap:22px}
+.main{flex:999 1 560px;min-width:0;display:flex;flex-direction:column}
+.brand{display:flex;gap:12px;align-items:center;padding:0 8px}
+.logo{width:40px;height:40px;border-radius:12px;background:#F3E8F0;color:#5A2350;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:700;font-size:16px;flex:none}
+.bname{font-family:'Sora',sans-serif;font-weight:600;font-size:15px;color:#fff;margin:0}
+.btype{font-size:12px;color:#B7AEC2;margin:0}
+.navg{display:flex;flex-direction:column;gap:2px}
+.navh{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#A79EB3;padding:0 10px;margin:0 0 6px;font-weight:600}
+.nav{display:flex;align-items:center;gap:10px;width:100%;min-height:40px;padding:8px 10px;border-radius:10px;border:0;background:transparent;color:#D9D2E0;font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.nav:hover{background:#2C2436;color:#fff}
+.nav.on{background:#F3E8F0;color:#4E1E43;font-weight:600}
+.ndot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.55;flex:none}
+.user{display:flex;gap:10px;align-items:center;padding:0 6px;margin-top:auto}
+.av{width:36px;height:36px;border-radius:50%;background:#3F6B5C;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 32px;background:#fff;border-bottom:1px solid #E4E1E8}
+.wrap{padding:26px 32px 56px;width:100%;max-width:1320px}
+.ph{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;margin-bottom:18px}
+h1{font-family:'Sora',sans-serif;font-size:28px;margin:0 0 4px;font-weight:600;letter-spacing:-.015em}
+.sub{color:#6B6475;margin:0}
+.tabs{display:flex;gap:2px;border-bottom:1px solid #E1DDE6;overflow-x:auto;margin-bottom:22px}
+.tab{appearance:none;border:0;background:none;font:inherit;font-weight:500;color:#6B6475;padding:12px 14px;min-height:46px;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap}
+.tab:hover{color:#1C1724}
+.tab.on{color:#6B2C5C;border-bottom-color:#6B2C5C;font-weight:600}
+.card{background:#fff;border:1px solid #E4E1E8;border-radius:14px;padding:20px;min-width:0}
+.h3{font-family:'Sora',sans-serif;font-size:16px;font-weight:600;margin:0}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:#fff;border:1px solid #E4E1E8;border-radius:14px;padding:14px 16px}
+.kl{font-size:12px;color:#6B6475}
+.kv{font-family:'Sora',sans-serif;font-size:24px;font-weight:600;margin-top:4px}
+.up{font-size:12px;font-weight:700;color:#245647;margin-top:2px}
+.down{font-size:12px;font-weight:700;color:#8E2A25;margin-top:2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:10px;border:1px solid #6B2C5C;background:#6B2C5C;color:#fff;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn.ghost{background:#fff;color:#5A2350;border-color:#D8CFDD}
+.btn.sm{min-height:36px;padding:0 12px;font-size:13px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.stack{display:flex;flex-direction:column;gap:16px}
+.muted{color:#6B6475}
+.small{font-size:13px}
+.tbox{overflow-x:auto;border:1px solid #E4E1E8;border-radius:14px;background:#fff}
+.tr{display:grid;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid #F0EEF2}
+.tr:last-child{border-bottom:0}
+.th{font-size:12px;font-weight:600;color:#6B6475;text-transform:uppercase;letter-spacing:.05em;background:#FAF9FB}
+.r{text-align:right}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;width:max-content}
+.p-sage{background:#E3F0EB;color:#245647}.p-amber{background:#FBF0DC;color:#7A4710}.p-red{background:#FBE6E4;color:#8E2A25}
+.seg{display:inline-flex;background:#EEECF1;border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;font:inherit;font-weight:600;font-size:13px;color:#4C4556;padding:0 12px;min-height:36px;border-radius:8px;cursor:pointer}
+.seg button.on{background:#fff;color:#5A2350;box-shadow:0 1px 2px rgba(28,23,36,.12)}
+.seg button:disabled{color:#B5AEBE;cursor:not-allowed}
+.sk{border-radius:12px;background:linear-gradient(90deg,#ECE9EF 0%,#F6F4F8 50%,#ECE9EF 100%);background-size:200% 100%;animation:sh 1s linear infinite}
+@keyframes sh{from{background-position:200% 0}to{background-position:-200% 0}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.tip{display:flex;gap:16px;align-items:baseline;flex-wrap:wrap;min-height:28px;margin:10px 0 4px}
+.chart{display:flex;align-items:flex-end;gap:4px;height:240px;border-bottom:1px solid #E4E1E8;position:relative;background:repeating-linear-gradient(to top,transparent 0 59px,#F0EEF2 59px 60px)}
+.bar{flex:1;height:100%;display:flex;align-items:flex-end;justify-content:center;border:0;background:none;padding:0;cursor:pointer;min-width:6px}
+.bar span{display:block;width:100%;max-width:40px;background:#C48BB4;border-radius:5px 5px 0 0}
+.bar.on span{background:#6B2C5C}
+.bar:focus-visible{outline:2px solid #6B2C5C;outline-offset:2px}
+.pair{flex:1;height:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px;border:0;background:none;padding:0;cursor:pointer}
+.pair span{display:block;width:45%;max-width:22px;border-radius:4px 4px 0 0}
+.pair .i{background:#2F6F5E}.pair .d{background:#E0A65A}
+.pair.on .i{background:#1E4A3D}.pair.on .d{background:#B7741F}
+.xl{display:flex;gap:4px;margin-top:6px}
+.xl span{flex:1;text-align:center;font-size:11px;color:#6B6475;white-space:nowrap;overflow:hidden}
+.hb{display:flex;flex-direction:column;gap:12px}
+.hbr{display:grid;grid-template-columns:150px 1fr 90px;gap:10px;align-items:center;font-size:13px}
+.hbt{height:12px;background:#F0EEF2;border-radius:99px;overflow:hidden}
+.hbt div{height:100%;border-radius:99px}
+.stk{display:flex;height:14px;border-radius:99px;overflow:hidden;background:#EEECF1}
+.legend{display:flex;gap:14px;font-size:12px;color:#4C4556;flex-wrap:wrap}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.coh{display:grid;grid-template-columns:110px 70px repeat(5,minmax(64px,1fr));gap:4px;min-width:620px;font-size:13px}
+.coh div{padding:10px 8px;border-radius:6px;text-align:center}
+.coh .hd{font-size:11px;font-weight:600;color:#6B6475;text-transform:uppercase;letter-spacing:.04em}
+.coh .lb{text-align:left;font-weight:600}
+.heat{display:grid;grid-template-columns:44px repeat(12,minmax(36px,1fr));gap:4px;min-width:580px}
+.hc{height:38px;border-radius:6px;border:0;padding:0;cursor:pointer}
+.hc.on{outline:2px solid #1C1724;outline-offset:1px}
+.hl{font-size:11px;color:#6B6475;display:flex;align-items:center;justify-content:center}
+.scale{display:flex;align-items:center;gap:8px;font-size:12px;color:#6B6475}
+.scale i{width:120px;height:10px;border-radius:99px;background:linear-gradient(90deg,rgba(107,44,92,.06),rgba(107,44,92,.94))}
+.li{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F0EEF2}
+.li:last-child{border-bottom:0}
+.ok{background:#E3F0EB;color:#1E4A3D;border-radius:12px;padding:12px 14px;font-size:13px}
+</style>
+</helmet>
+<div class="app">
+<aside class="side" aria-label="Main navigation">
+<div class="brand"><div class="logo" aria-hidden="true">VR</div><div><p class="bname">Velvet Room Salon</p><p class="btype">Hair &amp; beauty salon</p></div></div>
+<nav class="navg" aria-label="Front desk"><p class="navh">Front desk</p>
+<button class="nav"><span class="ndot"></span>Overview</button>
+<button class="nav"><span class="ndot"></span>Calendar</button>
+<button class="nav"><span class="ndot"></span>Customers</button>
+<button class="nav"><span class="ndot"></span>Point of sale</button>
+</nav>
+<nav class="navg" aria-label="Business"><p class="navh">Business</p>
+<button class="nav"><span class="ndot"></span>Services &amp; pricing</button>
+<button class="nav"><span class="ndot"></span>Payroll</button>
+<button class="nav on" aria-current="page"><span class="ndot"></span>Reports</button>
+<button class="nav"><span class="ndot"></span>Team</button>
+<button class="nav"><span class="ndot"></span>Audit log</button>
+<button class="nav"><span class="ndot"></span>Settings</button>
+</nav>
+<nav class="navg" aria-label="You"><p class="navh">You</p>
+<button class="nav"><span class="ndot"></span>My earnings</button>
+<button class="nav"><span class="ndot"></span>My account</button>
+</nav>
+<div class="user"><div class="av" aria-hidden="true">AS</div><div><div style="font-weight: 600; color: #fff">Ayesha Siddiqui</div><div style="font-size: 12px; color: #B7AEC2">Owner</div></div></div>
+</aside>
+
+<main class="main">
+<div class="top">
+<span class="muted small">Mon 12 Oct 2026 · Amounts in USD · compared with the previous period</span>
+<div class="row"><button class="btn ghost sm">Export CSV</button><button class="btn ghost sm">Print</button></div>
+</div>
+<div class="wrap">
+<div class="ph">
+<div><h1>Reports</h1><p class="sub">{{rangeTxt}}</p></div>
+<div class="row">
+<div class="seg" role="group" aria-label="Date range"><sc-for list="{{ranges}}" as="o" hint-placeholder-count="4"><button class="{{o.cls}}" onClick="{{o.go}}" aria-pressed="{{o.sel}}">{{o.label}}</button></sc-for></div>
+<div class="seg" role="group" aria-label="Group by"><sc-for list="{{groups}}" as="o" hint-placeholder-count="3"><button class="{{o.cls}}" onClick="{{o.go}}" aria-pressed="{{o.sel}}" disabled="{{o.off}}">{{o.label}}</button></sc-for></div>
+</div>
+</div>
+
+<div class="tabs" role="tablist" aria-label="Report sections">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="6"><button role="tab" class="{{t.cls}}" aria-selected="{{t.sel}}" onClick="{{t.go}}">{{t.label}}</button></sc-for>
+</div>
+
+<sc-if value="{{loading}}" hint-placeholder-val="{{ false }}">
+<div class="stack" aria-live="polite"><span class="sr">Loading…</span><div class="kpis"><div class="sk" style="height: 84px"></div><div class="sk" style="height: 84px"></div><div class="sk" style="height: 84px"></div><div class="sk" style="height: 84px"></div></div><div class="sk" style="height: 320px"></div></div>
+</sc-if>
+
+<!-- REVENUE -->
+<sc-if value="{{t_revenue}}" hint-placeholder-val="{{ true }}">
+<div class="kpis">
+<sc-for list="{{revK}}" as="k" hint-placeholder-count="4"><div class="kpi"><div class="kl">{{k.l}}</div><div class="kv">{{k.v}}</div><div class="{{k.dcls}}">{{k.d}}</div></div></sc-for>
+</div>
+<div class="card">
+<div class="row between"><h2 class="h3">Revenue by {{groupWord}}</h2><span class="muted small">Hover or tap a bar</span></div>
+<div class="tip" aria-live="polite"><span class="disp" style="font-size: 22px; font-weight: 600">{{hb.v}}</span><span class="muted">{{hb.l}}</span><span class="small">{{hb.r}}</span></div>
+<div class="chart">
+<sc-for list="{{bars}}" as="b" hint-placeholder-count="12"><button class="{{b.cls}}" onMouseEnter="{{b.hover}}" onFocus="{{b.hover}}" onClick="{{b.hover}}" aria-label="{{b.aria}}"><span style="height: {{b.h}}%"></span></button></sc-for>
+</div>
+<div class="xl"><sc-for list="{{bars}}" as="b" hint-placeholder-count="12"><span>{{b.x}}</span></sc-for></div>
+</div>
+<div class="g2" style="margin-top: 16px">
+<div class="card"><h2 class="h3" style="margin-bottom: 14px">How customers paid</h2>
+<div class="stk" role="img" aria-label="Card 68%, cash 24%, split 8%"><span style="width: 68%; background: #6B2C5C"></span><span style="width: 24%; background: #C48BB4"></span><span style="width: 8%; background: #E0A65A"></span></div>
+<div class="legend" style="margin-top: 10px"><span><i style="background: #6B2C5C"></i>Card 68%</span><span><i style="background: #C48BB4"></i>Cash 24%</span><span><i style="background: #E0A65A"></i>Split 8%</span></div>
+</div>
+<div class="card"><h2 class="h3" style="margin-bottom: 6px">Discounts given</h2>
+<div class="li"><span>Deals</span><span>{{disc.deals}}</span></div>
+<div class="li"><span>Manual discounts</span><span>{{disc.manual}}</span></div>
+<div class="li"><span>Loyalty redeemed</span><span>{{disc.loyalty}}</span></div>
+</div>
+</div>
+</sc-if>
+
+<!-- LOYALTY -->
+<sc-if value="{{t_loyalty}}" hint-placeholder-val="{{ false }}">
+<div class="kpis">
+<sc-for list="{{loyK}}" as="k" hint-placeholder-count="4"><div class="kpi"><div class="kl">{{k.l}}</div><div class="kv">{{k.v}}</div><div class="{{k.dcls}}">{{k.d}}</div></div></sc-for>
+</div>
+<div class="g2" style="grid-template-columns: repeat(auto-fit, minmax(360px, 1fr))">
+<div class="card">
+<div class="row between"><h2 class="h3">Issued vs redeemed by {{groupWord}}</h2><div class="legend"><span><i style="background: #2F6F5E"></i>Issued</span><span><i style="background: #E0A65A"></i>Redeemed</span></div></div>
+<div class="tip" aria-live="polite"><span class="small"><strong>{{hl.l}}</strong> · issued {{hl.i}} · redeemed {{hl.d}}</span></div>
+<div class="chart" style="height: 200px">
+<sc-for list="{{lbars}}" as="b" hint-placeholder-count="8"><button class="{{b.cls}}" onMouseEnter="{{b.hover}}" onFocus="{{b.hover}}" onClick="{{b.hover}}" aria-label="{{b.aria}}"><span class="i" style="height: {{b.hi}}%"></span><span class="d" style="height: {{b.hd}}%"></span></button></sc-for>
+</div>
+<div class="xl"><sc-for list="{{lbars}}" as="b" hint-placeholder-count="8"><span>{{b.x}}</span></sc-for></div>
+</div>
+<div class="card"><h2 class="h3" style="margin-bottom: 6px">Highest balances</h2>
+<sc-for list="{{topBal}}" as="t" hint-placeholder-count="5"><div class="li"><span>{{t.n}}</span><strong style="color: #245647">{{t.v}}</strong></div></sc-for>
+<p class="muted small" style="margin: 10px 0 0">Outstanding credit is what customers can still redeem on future visits.</p>
+</div>
+</div>
+</sc-if>
+
+<!-- SERVICES & TEAM -->
+<sc-if value="{{t_breakdown}}" hint-placeholder-val="{{ false }}">
+<div class="row" style="margin-bottom: 14px"><span class="small" style="font-weight: 600">Show</span><div class="seg" role="group" aria-label="Metric"><sc-for list="{{metrics}}" as="o" hint-placeholder-count="2"><button class="{{o.cls}}" onClick="{{o.go}}" aria-pressed="{{o.sel}}">{{o.label}}</button></sc-for></div></div>
+<div class="g2">
+<div class="card"><h2 class="h3" style="margin-bottom: 16px">By service</h2><div class="hb"><sc-for list="{{bySvc}}" as="r" hint-placeholder-count="7"><div class="hbr"><span>{{r.name}}</span><div class="hbt"><div style="width: {{r.w}}%; background: #6B2C5C"></div></div><strong class="r">{{r.v}}</strong></div></sc-for></div></div>
+<div class="card"><h2 class="h3" style="margin-bottom: 16px">By team member</h2><div class="hb"><sc-for list="{{byTeam}}" as="r" hint-placeholder-count="4"><div class="hbr"><span>{{r.name}}</span><div class="hbt"><div style="width: {{r.w}}%; background: #2F6F5E"></div></div><strong class="r">{{r.v}}</strong></div></sc-for></div>
+<p class="muted small" style="margin: 16px 0 0">{{teamNote}}</p></div>
+</div>
+</sc-if>
+
+<!-- RETENTION -->
+<sc-if value="{{t_retention}}" hint-placeholder-val="{{ false }}">
+<div class="kpis">
+<div class="kpi"><div class="kl">Returning customers</div><div class="kv">64%</div><div class="up">▲ 3 pts</div></div>
+<div class="kpi"><div class="kl">New customers</div><div class="kv">{{newCust}}</div><div class="up">▲ 9%</div></div>
+<div class="kpi"><div class="kl">Back within 60 days</div><div class="kv">41%</div><div class="down">▼ 2 pts</div></div>
+<div class="kpi"><div class="kl">Avg visits per customer</div><div class="kv">2.7</div><div class="up">▲ 0.2</div></div>
+</div>
+<div class="card">
+<div class="row between" style="margin-bottom: 12px"><h2 class="h3">Do first-time customers come back?</h2><span class="muted small">% of each month's new customers who returned</span></div>
+<div style="overflow-x: auto"><div class="coh">
+<div class="hd lb">First visit</div><div class="hd">New</div><div class="hd">Month 1</div><div class="hd">Month 2</div><div class="hd">Month 3</div><div class="hd">Month 4</div><div class="hd">Month 5</div>
+<sc-for list="{{cohorts}}" as="c" hint-placeholder-count="6"><div class="lb">{{c.m}}</div><div>{{c.n}}</div><sc-for list="{{c.cells}}" as="x" hint-placeholder-count="5"><div style="background: {{x.bg}}; color: {{x.fg}}">{{x.t}}</div></sc-for></sc-for>
+</div></div>
+<p class="muted small" style="margin: 12px 0 0">Read across a row: of 52 customers who first visited in April, 46% came back within a month.</p>
+</div>
+</sc-if>
+
+<!-- APPOINTMENTS -->
+<sc-if value="{{t_appts}}" hint-placeholder-val="{{ false }}">
+<div class="kpis">
+<div class="kpi"><div class="kl">Booked</div><div class="kv">{{ap.b}}</div></div>
+<div class="kpi"><div class="kl">Completed</div><div class="kv">{{ap.c}}</div></div>
+<div class="kpi"><div class="kl">No-shows</div><div class="kv" style="color: #8E2A25">{{ap.n}}</div><div class="muted small">{{ap.nPct}} of bookings</div></div>
+<div class="kpi"><div class="kl">Cancelled</div><div class="kv">{{ap.x}}</div></div>
+</div>
+<div class="card" style="margin-bottom: 16px">
+<div class="row between" style="margin-bottom: 14px"><h2 class="h3">Outcome by team member</h2><div class="legend"><span><i style="background: #2F6F5E"></i>Completed</span><span><i style="background: #A3312B"></i>No-show</span><span><i style="background: #B5AEBE"></i>Cancelled</span></div></div>
+<div class="hb"><sc-for list="{{apRows}}" as="a" hint-placeholder-count="4"><div class="hbr" style="grid-template-columns: 150px 1fr 70px"><span>{{a.name}}</span><div class="stk" role="img" aria-label="{{a.aria}}"><span style="width: {{a.cw}}%; background: #2F6F5E"></span><span style="width: {{a.nw}}%; background: #A3312B"></span><span style="width: {{a.xw}}%; background: #B5AEBE"></span></div><strong class="r">{{a.rate}}</strong></div></sc-for></div>
+</div>
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1.4fr repeat(4, 1fr) 1fr; min-width: 640px">Team member<span class="r">Booked</span><span class="r">Completed</span><span class="r">No-show</span><span class="r">Cancelled</span><span>Completion</span></div>
+<sc-for list="{{apRows}}" as="a" hint-placeholder-count="4"><div class="tr" style="grid-template-columns: 1.4fr repeat(4, 1fr) 1fr; min-width: 640px"><strong>{{a.name}}</strong><span class="r">{{a.b}}</span><span class="r">{{a.c}}</span><span class="r">{{a.n}}</span><span class="r">{{a.x}}</span><span class="{{a.pcls}}">{{a.rate}}</span></div></sc-for>
+</div>
+</sc-if>
+
+<!-- PEAK TIMES -->
+<sc-if value="{{t_peak}}" hint-placeholder-val="{{ false }}">
+<div class="card">
+<div class="row between" style="margin-bottom: 8px">
+<h2 class="h3">When are you busiest?</h2>
+<div class="seg" role="group" aria-label="Measure"><sc-for list="{{heatM}}" as="o" hint-placeholder-count="2"><button class="{{o.cls}}" onClick="{{o.go}}" aria-pressed="{{o.sel}}">{{o.label}}</button></sc-for></div>
+</div>
+<div class="tip" aria-live="polite"><strong>{{hc.l}}</strong><span class="muted">{{hc.v}}</span></div>
+<div style="overflow-x: auto"><div class="heat">
+<div></div><sc-for list="{{hours}}" as="h" hint-placeholder-count="12"><div class="hl">{{h}}</div></sc-for>
+<sc-for list="{{heat}}" as="r" hint-placeholder-count="7"><div class="hl" style="justify-content: flex-start; font-weight: 600">{{r.day}}</div><sc-for list="{{r.cells}}" as="c" hint-placeholder-count="12"><button class="{{c.cls}}" style="background: {{c.bg}}" onMouseEnter="{{c.hover}}" onFocus="{{c.hover}}" onClick="{{c.hover}}" aria-label="{{c.aria}}"></button></sc-for></sc-for>
+</div></div>
+<div class="row between" style="margin-top: 14px"><div class="scale"><span>Quiet</span><i aria-hidden="true"></i><span>Busy</span></div><span class="muted small">Closed on Sundays</span></div>
+</div>
+<div class="ok" style="margin-top: 16px">Saturdays 13:00–16:00 are your busiest hours. Tuesday and Wednesday mornings have the most free capacity — a good slot for a weekday deal.</div>
+</sc-if>
+
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tab: 'revenue', loading: false, range: '30', group: 'week', hov: -1, lhov: -1, metric: 'rev', hm: 'book', cell: '5-5' };
+  }
+  componentWillUnmount() { clearTimeout(this.tm); }
+  reload(patch) {
+    this.setState({ ...patch, loading: true, hov: -1, lhov: -1 });
+    clearTimeout(this.tm);
+    this.tm = setTimeout(() => this.setState({ loading: false }), 380);
+  }
+  renderVals() {
+    const s = this.state;
+    const v = {};
+    const usd = (n) => '$' + Math.round(n).toLocaleString('en-US');
+    const usd2 = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const noise = (i, k) => (Math.sin(i * 12.9898 + k * 78.233) * 43758.5453) % 1;
+
+    const R = { '7': [7, 'Last 7 days · 6 – 12 Oct 2026'], '30': [30, 'Last 30 days · 13 Sep – 12 Oct 2026'], '90': [90, 'Last 90 days · 15 Jul – 12 Oct 2026'], '365': [285, 'This year · 1 Jan – 12 Oct 2026'] };
+    const days = R[s.range][0];
+    v.rangeTxt = R[s.range][1];
+    v.ranges = [['7', '7 days'], ['30', '30 days'], ['90', '90 days'], ['365', 'This year']].map(([id, label]) => ({
+      label, cls: s.range === id ? 'on' : '', sel: s.range === id ? 'true' : 'false',
+      go: () => {
+        const d = R[id][0];
+        let g = s.group;
+        if (d <= 7 && g !== 'day') g = 'day';
+        if (d >= 285 && g === 'day') g = 'month';
+        if (d <= 30 && g === 'month') g = 'week';
+        this.reload({ range: id, group: g });
+      }
+    }));
+    const okGroup = (g) => g === 'day' ? days <= 90 : g === 'week' ? days >= 14 : days >= 60;
+    v.groups = [['day', 'Day'], ['week', 'Week'], ['month', 'Month']].map(([id, label]) => ({ label, off: !okGroup(id), cls: s.group === id ? 'on' : '', sel: s.group === id ? 'true' : 'false', go: () => { if (okGroup(id) && s.group !== id) this.reload({ group: id }); } }));
+    v.groupWord = s.group;
+
+    const step = s.group === 'day' ? 1 : s.group === 'week' ? 7 : 30.4;
+    const n = s.group === 'month' ? Math.max(1, Math.ceil(days / step)) : Math.max(1, Math.round(days / step));
+    const base = s.group === 'day' ? 820 : s.group === 'week' ? 5600 : 24000;
+    const MONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monAt = (i) => MONS[((9 - (n - 1 - i)) % 12 + 12) % 12];
+    const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const series = Array.from({ length: n }, (_, i) => {
+      let val = base * (0.82 + 0.3 * (i / Math.max(1, n - 1)) + 0.18 * Math.abs(noise(i, n)));
+      let label;
+      if (s.group === 'day') {
+        const dow = (i + 7 - (n % 7)) % 7;
+        if (dow === 6) val = 0;
+        else if (dow === 5) val *= 1.45;
+        else if (dow === 4) val *= 1.2;
+        label = n <= 7 ? DOW[dow] : (i % 5 === 0 ? String(i + 1) : '');
+      } else if (s.group === 'week') {
+        label = n <= 13 ? 'Wk ' + (41 - n + i + 1) : (i % 4 === 0 ? 'Wk ' + (41 - n + i + 1) : '');
+      } else {
+        label = monAt(i);
+      }
+      return { val, label, receipts: Math.round(val / 60.3) };
+    });
+    const max = Math.max(...series.map((x) => x.val)) || 1;
+    const hi = s.hov >= 0 && s.hov < n ? s.hov : n - 1;
+    v.bars = series.map((x, i) => ({ h: Math.max(1, Math.round(x.val / max * 92)), x: x.label, cls: i === hi ? 'bar on' : 'bar', aria: (x.label || ('Period ' + (i + 1))) + ': ' + usd(x.val), hover: () => this.setState({ hov: i }) }));
+    const hbx = series[hi];
+    const unitLabel = s.group === 'day' ? (n <= 7 ? hbx.label : 'Day ' + (hi + 1)) : s.group === 'week' ? 'Week ' + (41 - n + hi + 1) : (monAt(hi) + ' 2026');
+    v.hb = { v: usd(hbx.val), l: unitLabel, r: hbx.val ? hbx.receipts + ' receipts · avg ' + usd2(hbx.val / Math.max(1, hbx.receipts)) : 'Closed' };
+
+    const total = series.reduce((t, x) => t + x.val, 0);
+    const receipts = Math.round(total / 60.3);
+    v.revK = [
+      { l: 'Revenue', v: usd(total), d: '▲ 8.4% vs previous', dcls: 'up' },
+      { l: 'Receipts', v: receipts.toLocaleString('en-US'), d: '▲ 5.1%', dcls: 'up' },
+      { l: 'Average sale', v: usd2(total / receipts), d: '▲ 3.1%', dcls: 'up' },
+      { l: 'Discounts given', v: usd(total * 0.045), d: '▼ 0.6 pts of revenue', dcls: 'down' }
+    ];
+    v.disc = { deals: usd(total * 0.021), manual: usd(total * 0.009), loyalty: usd(total * 0.015) };
+
+    const lser = series.map((x, i) => ({ i: x.val * 0.05, d: x.val * (0.028 + 0.012 * Math.abs(noise(i, 3))), label: x.label }));
+    const lmax = Math.max(...lser.map((x) => Math.max(x.i, x.d))) || 1;
+    const lh = s.lhov >= 0 && s.lhov < n ? s.lhov : n - 1;
+    v.lbars = lser.map((x, i) => ({ hi: Math.max(1, Math.round(x.i / lmax * 92)), hd: Math.max(1, Math.round(x.d / lmax * 92)), x: x.label, cls: i === lh ? 'pair on' : 'pair', aria: (x.label || 'Period ' + (i + 1)) + ': issued ' + usd(x.i) + ', redeemed ' + usd(x.d), hover: () => this.setState({ lhov: i }) }));
+    const issued = lser.reduce((t, x) => t + x.i, 0), red = lser.reduce((t, x) => t + x.d, 0);
+    v.hl = { l: unitLabel, i: usd2(lser[lh].i), d: usd2(lser[lh].d) };
+    v.loyK = [
+      { l: 'Credit issued', v: usd(issued), d: '5% of every receipt', dcls: 'muted small' },
+      { l: 'Credit redeemed', v: usd(red), d: Math.round(red / issued * 100) + '% of issued', dcls: 'muted small' },
+      { l: 'Net movement', v: '+' + usd(issued - red), d: 'Outstanding grew', dcls: 'up' },
+      { l: 'Outstanding balance', v: '$4,912', d: 'Across 618 customers', dcls: 'muted small' }
+    ];
+    v.topBal = [['Mehwish Raza', '$12.40'], ['Sadia Noor', '$11.85'], ['Noor Fatima', '$9.75'], ['Hiba Kamal', '$6.55'], ['Kinza Rauf', '$5.90']].map(([n2, val]) => ({ n: n2, v: val }));
+
+    v.metrics = [['rev', 'Revenue'], ['count', 'Number sold']].map(([id, label]) => ({ label, cls: s.metric === id ? 'on' : '', sel: s.metric === id ? 'true' : 'false', go: () => this.setState({ metric: id }) }));
+    const f = total / 24860;
+    const SV = [["Women's cut & style", 136, 45], ['Full colour', 56, 95], ['Hydrating facial', 63, 70], ['Balayage', 28, 140], ['Gel manicure', 76, 35], ['Blow-dry', 118, 25], ['Chemical peel', 31, 64]];
+    const svRows = SV.map(([name, c, p]) => ({ name, c: Math.round(c * f), rev: c * p * f })).sort((a, b) => s.metric === 'rev' ? b.rev - a.rev : b.c - a.c);
+    const svMax = s.metric === 'rev' ? svRows[0].rev : svRows[0].c;
+    v.bySvc = svRows.map((x) => ({ name: x.name, v: s.metric === 'rev' ? usd(x.rev) : x.c + ' sold', w: Math.round((s.metric === 'rev' ? x.rev : x.c) / svMax * 100) }));
+    const TM = [['Hira Shah', 7300, 92], ['Sana Malik', 6180, 154], ['Maria Khan', 5820, 107], ['Zoya Ali', 3600, 116]].map(([name, rv, c]) => ({ name, rev: rv * f, c: Math.round(c * f) })).sort((a, b) => s.metric === 'rev' ? b.rev - a.rev : b.c - a.c);
+    const tMax = s.metric === 'rev' ? TM[0].rev : TM[0].c;
+    v.byTeam = TM.map((x) => ({ name: x.name, v: s.metric === 'rev' ? usd(x.rev) : x.c + ' services', w: Math.round((s.metric === 'rev' ? x.rev : x.c) / tMax * 100) }));
+    v.teamNote = s.metric === 'rev' ? 'Hira brings in the most revenue from fewer, higher-priced colour services.' : 'Sana performs the most services, mostly cuts and blow-dries.';
+
+    v.newCust = Math.round(148 * days / 30).toLocaleString('en-US');
+    const C = [['Apr 2026', 52, [46, 38, 33, 30, 27]], ['May 2026', 61, [44, 36, 31, 28, null]], ['Jun 2026', 58, [49, 40, 34, null, null]], ['Jul 2026', 70, [51, 41, null, null, null]], ['Aug 2026', 66, [47, null, null, null, null]], ['Sep 2026', 74, [null, null, null, null, null]]];
+    v.cohorts = C.map(([m, n2, vals]) => ({ m, n: n2, cells: vals.map((x) => x == null ? { t: '—', bg: '#FAF9FB', fg: '#B5AEBE' } : { t: x + '%', bg: 'rgba(47,111,94,' + (0.08 + x / 60 * 0.85).toFixed(2) + ')', fg: x >= 38 ? '#fff' : '#1E4A3D' }) }));
+
+    const AP = [['Sana Malik', 68, 61, 3, 4], ['Hira Shah', 55, 52, 1, 2], ['Maria Khan', 63, 54, 5, 4], ['Zoya Ali', 74, 69, 2, 3]].map(([name, b, c, n2, x]) => {
+      const k = days / 30;
+      const B = Math.round(b * k), Cc = Math.round(c * k), N = Math.round(n2 * k), X = Math.max(0, B - Cc - N);
+      const rate = Math.round(Cc / B * 100);
+      return { name, b: B, c: Cc, n: N, x: X, rate: rate + '%', pcls: rate >= 90 ? 'pill p-sage' : 'pill p-amber', cw: Cc / B * 100, nw: N / B * 100, xw: X / B * 100, aria: name + ': ' + Cc + ' completed, ' + N + ' no-shows, ' + X + ' cancelled' };
+    });
+    const tb = AP.reduce((t, a) => t + a.b, 0), tn = AP.reduce((t, a) => t + a.n, 0);
+    v.ap = { b: tb, c: AP.reduce((t, a) => t + a.c, 0), n: tn, x: AP.reduce((t, a) => t + a.x, 0), nPct: (tn / tb * 100).toFixed(1) + '%' };
+    v.apRows = AP;
+
+    v.heatM = [['book', 'Bookings'], ['rev', 'Revenue']].map(([id, label]) => ({ label, cls: s.hm === id ? 'on' : '', sel: s.hm === id ? 'true' : 'false', go: () => this.setState({ hm: id }) }));
+    v.hours = ['10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21'];
+    const dayW = [0.5, 0.42, 0.48, 0.65, 0.85, 1, 0];
+    let sel = null;
+    v.heat = DOW.map((day, di) => ({
+      day,
+      cells: v.hours.map((h, hi2) => {
+        const shape = Math.exp(-Math.pow((hi2 - 5) / 3.2, 2));
+        const val = dayW[di] * shape * (s.hm === 'rev' ? (0.85 + 0.3 * Math.abs(noise(di, hi2))) : 1);
+        const cnt = Math.round(val * 12 * days / 30);
+        const money = Math.round(val * 760 * days / 30);
+        const key = di + '-' + hi2;
+        const text = day + ' ' + h + ':00';
+        const vtxt = di === 6 ? 'Closed' : (s.hm === 'rev' ? usd(money) + ' revenue' : cnt + ' bookings');
+        if (key === s.cell) sel = { l: text, v: vtxt };
+        return { bg: 'rgba(107,44,92,' + (0.06 + Math.min(1, val) * 0.88).toFixed(2) + ')', cls: key === s.cell ? 'hc on' : 'hc', aria: text + ': ' + vtxt, hover: () => this.setState({ cell: key }) };
+      })
+    }));
+    v.hc = sel || { l: '', v: '' };
+
+    const TT = [['revenue', 'Revenue'], ['loyalty', 'Loyalty'], ['breakdown', 'Services & team'], ['retention', 'Retention'], ['appts', 'Appointments'], ['peak', 'Peak times']];
+    v.tabs = TT.map(([id, label]) => ({ label, cls: s.tab === id ? 'tab on' : 'tab', sel: s.tab === id ? 'true' : 'false', go: () => { if (s.tab !== id) this.reload({ tab: id }); } }));
+    TT.forEach(([id]) => { v['t_' + id] = s.tab === id && !s.loading; });
+    v.loading = s.loading;
+    return v;
+  }
+}
+</script>
+</body>
+</html>

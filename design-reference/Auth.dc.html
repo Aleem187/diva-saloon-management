@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sign in and onboarding</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+<style>
+body{margin:0;background:#F4F3F6;color:#1C1724;font-family:'Figtree',system-ui,sans-serif;font-size:14px;line-height:1.45}
+*{box-sizing:border-box}
+a{color:#6B2C5C}a:hover{color:#4E1E43}
+.wrapA{display:flex;flex-wrap:wrap;min-height:100vh;width:100%}
+.hero{flex:1 1 380px;background:#1C1724;color:#EDE8F0;padding:48px;display:flex;flex-direction:column;justify-content:space-between;gap:40px}
+.panel{flex:999 1 480px;min-width:0;display:flex;align-items:flex-start;justify-content:center;padding:48px 24px}
+.box{width:100%;max-width:520px}
+.logo{width:44px;height:44px;border-radius:12px;background:#F3E8F0;color:#5A2350;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:700}
+.big{font-family:'Sora',sans-serif;font-size:36px;font-weight:600;line-height:1.15;letter-spacing:-.02em;margin:0;color:#fff}
+.feat{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none;color:#D9D2E0}
+.feat li{display:flex;gap:10px;align-items:center}
+.feat span{width:8px;height:8px;border-radius:50%;background:#E6B8D6;flex:none}
+.tabs{display:flex;gap:2px;border-bottom:1px solid #E1DDE6;overflow-x:auto;margin-bottom:24px}
+.tab{appearance:none;border:0;background:none;font:inherit;font-weight:500;color:#6B6475;padding:12px 14px;min-height:46px;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap}
+.tab:hover{color:#1C1724}
+.tab.on{color:#6B2C5C;border-bottom-color:#6B2C5C;font-weight:600}
+.card{background:#fff;border:1px solid #E4E1E8;border-radius:16px;padding:28px}
+h1{font-family:'Sora',sans-serif;font-size:24px;font-weight:600;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:#6B6475;margin:0 0 20px}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.full{grid-column:1/-1}
+.field{display:flex;flex-direction:column;gap:6px}
+label{font-size:13px;font-weight:600}
+input,select{font:inherit;min-height:44px;padding:10px 12px;border:1px solid #D8D3DE;border-radius:10px;background:#fff;color:#1C1724;width:100%}
+input:focus,select:focus{outline:2px solid #C48BB4;outline-offset:1px;border-color:#6B2C5C}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;border-radius:10px;border:1px solid #6B2C5C;background:#6B2C5C;color:#fff;font:inherit;font-weight:600;cursor:pointer;width:100%}
+.btn:hover{background:#56224A}
+.ok{background:#E3F0EB;color:#1E4A3D;border-radius:12px;padding:12px 14px;font-size:13px;margin-bottom:16px}
+.err{background:#FBE6E4;color:#8E2A25;border-radius:12px;padding:12px 14px;font-size:13px;margin-bottom:16px}
+.price{display:flex;gap:12px;align-items:center;background:#F3E8F0;color:#4E1E43;border-radius:12px;padding:12px 14px;margin-bottom:20px;font-size:13px}
+.muted{color:#6B6475}
+.inv{display:flex;gap:12px;align-items:center;padding:14px;border:1px solid #E4E1E8;border-radius:12px;margin-bottom:18px;background:#FAF9FB}
+.spin{width:44px;height:44px;border-radius:50%;border:4px solid #F3E8F0;border-top-color:#6B2C5C;animation:sp 0.9s linear infinite;margin:8px auto 18px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.seg{display:inline-flex;background:#EEECF1;border-radius:10px;padding:3px;gap:2px;margin-bottom:16px}
+.seg button{border:0;background:transparent;font:inherit;font-weight:600;font-size:13px;color:#4C4556;padding:0 12px;min-height:34px;border-radius:8px;cursor:pointer}
+.seg button.on{background:#fff;color:#5A2350;box-shadow:0 1px 2px rgba(28,23,36,.12)}
+</style>
+</helmet>
+<div class="wrapA">
+<section class="hero">
+<div style="display: flex; gap: 12px; align-items: center"><div class="logo" aria-hidden="true">SS</div><span style="font-family: 'Sora', sans-serif; font-weight: 600; font-size: 17px; color: #fff">Salon Suite</span></div>
+<div style="display: flex; flex-direction: column; gap: 24px">
+<p class="big">Bookings, till, loyalty and payroll for your salon — in one place.</p>
+<ul class="feat"><li><span></span>Calendar with day, week and agenda views</li><li><span></span>Point of sale with 5% loyalty credit</li><li><span></span>Consent forms with signatures</li><li><span></span>Payroll and reports for owners</li></ul>
+</div>
+<p style="margin: 0; font-size: 13px; color: #B7AEC2">14-day free trial · then $20/month per salon</p>
+</section>
+<main class="panel">
+<div class="box">
+<div class="tabs" role="tablist" aria-label="Account screens">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="4"><button role="tab" class="{{t.cls}}" aria-selected="{{t.sel}}" onClick="{{t.go}}">{{t.label}}</button></sc-for>
+</div>
+
+<sc-if value="{{t_login}}" hint-placeholder-val="{{ true }}">
+<div class="card">
+<h1>Welcome back</h1>
+<p class="sub">Sign in to your salon dashboard.</p>
+<div class="seg" role="group" aria-label="Message preview"><button class="{{msgNone}}" onClick="{{showNone}}">Default</button><button class="{{msgOk}}" onClick="{{showOk}}">Confirmed</button><button class="{{msgErr}}" onClick="{{showErr}}">Error</button></div>
+<sc-if value="{{isOk}}" hint-placeholder-val="{{ false }}"><div class="ok" role="status">Email confirmed. You can sign in now.</div></sc-if>
+<sc-if value="{{isErr}}" hint-placeholder-val="{{ false }}"><div class="err" role="alert">That email and password don't match. Try again.</div></sc-if>
+<div class="form">
+<div class="field full"><label for="l-e">Email</label><input id="l-e" type="email" placeholder="you@salon.com" /></div>
+<div class="field full"><label for="l-p">Password</label><input id="l-p" type="password" placeholder="Your password" /></div>
+</div>
+<div style="margin-top: 20px"><button class="btn">Sign in</button></div>
+<p class="muted" style="margin: 18px 0 0; text-align: center">New here? <a href="#" onClick="{{goSignup}}">Create your salon account</a></p>
+</div>
+</sc-if>
+
+<sc-if value="{{t_signup}}" hint-placeholder-val="{{ false }}">
+<div class="card">
+<h1>Create your salon account</h1>
+<p class="sub">Set up your salon in under two minutes.</p>
+<div class="price"><strong>14-day free trial</strong><span>then $20/month · cancel anytime</span></div>
+<div class="form">
+<div class="field"><label for="s-n">Salon name</label><input id="s-n" placeholder="e.g. Velvet Room Salon" /></div>
+<div class="field"><label for="s-t">Business type</label><select id="s-t"><option>Hair &amp; beauty salon</option><option>Aesthetic clinic</option><option>Spa</option><option>Barber</option><option>Nail studio</option></select></div>
+<div class="field full"><label for="s-o">Your name</label><input id="s-o" placeholder="Owner's full name" /></div>
+<div class="field"><label for="s-e">Email</label><input id="s-e" type="email" placeholder="you@salon.com" /></div>
+<div class="field"><label for="s-p">Password</label><input id="s-p" type="password" placeholder="At least 8 characters" /></div>
+<div class="field"><label for="s-c">Country</label><select id="s-c"><option>Pakistan</option><option>United Kingdom</option><option>United Arab Emirates</option><option>United States</option></select></div>
+<div class="field"><label for="s-cu">Currency</label><select id="s-cu"><option>USD ($)</option><option>PKR (Rs)</option><option>GBP (£)</option><option>AED</option></select></div>
+<div class="field full"><label for="s-tz">Timezone</label><select id="s-tz"><option>Asia/Karachi (UTC+5)</option><option>Europe/London</option><option>Asia/Dubai</option></select></div>
+</div>
+<div style="margin-top: 20px"><button class="btn">Start free trial</button></div>
+<p class="muted" style="margin: 18px 0 0; text-align: center">Already have an account? <a href="#" onClick="{{goLogin}}">Sign in</a></p>
+</div>
+</sc-if>
+
+<sc-if value="{{t_invite}}" hint-placeholder-val="{{ false }}">
+<div class="card">
+<div class="seg" role="group" aria-label="Invitation state"><button class="{{invValid}}" onClick="{{setValid}}">Valid invite</button><button class="{{invBad}}" onClick="{{setExpired}}">Expired invite</button></div>
+<sc-if value="{{inviteOk}}" hint-placeholder-val="{{ true }}">
+<h1>Join your team</h1>
+<p class="sub">Set a password to finish setting up your login.</p>
+<div class="inv"><div class="logo" aria-hidden="true">VR</div><div><strong>Velvet Room Salon</strong><div class="muted" style="font-size: 13px">You've been invited as <strong>Therapist</strong></div></div></div>
+<div class="form">
+<div class="field full"><label for="i-n">Your name</label><input id="i-n" placeholder="Full name" /></div>
+<div class="field"><label for="i-p">Password</label><input id="i-p" type="password" placeholder="At least 8 characters" /></div>
+<div class="field"><label for="i-c">Confirm password</label><input id="i-c" type="password" placeholder="Repeat password" /></div>
+</div>
+<div style="margin-top: 20px"><button class="btn">Accept invitation</button></div>
+</sc-if>
+<sc-if value="{{inviteBad}}" hint-placeholder-val="{{ false }}">
+<h1>This invitation has expired</h1>
+<div class="err" role="alert">The link is no longer valid. Ask the salon owner to send a new invitation.</div>
+<button class="btn" onClick="{{goLogin}}">Go to sign in</button>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{t_callback}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="text-align: center">
+<div class="spin" aria-hidden="true"></div>
+<h1>Signing you in…</h1>
+<p class="sub" style="margin-bottom: 0" role="status">Checking your email link. You'll be taken to your dashboard in a moment.</p>
+</div>
+</sc-if>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":820}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tab: 'login', msg: 'none', invite: 'valid' };
+  }
+  renderVals() {
+    const s = this.state;
+    const T = [['login', 'Sign in'], ['signup', 'Create account'], ['invite', 'Accept invite'], ['callback', 'Email-link sign-in']];
+    const v = {};
+    v.tabs = T.map(([id, label]) => ({ label, cls: s.tab === id ? 'tab on' : 'tab', sel: s.tab === id ? 'true' : 'false', go: () => this.setState({ tab: id }) }));
+    T.forEach(([id]) => { v['t_' + id] = s.tab === id; });
+    v.goSignup = (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ tab: 'signup' }); };
+    v.goLogin = (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ tab: 'login' }); };
+    v.isOk = s.msg === 'ok'; v.isErr = s.msg === 'err';
+    v.msgNone = s.msg === 'none' ? 'on' : ''; v.msgOk = s.msg === 'ok' ? 'on' : ''; v.msgErr = s.msg === 'err' ? 'on' : '';
+    v.showNone = () => this.setState({ msg: 'none' });
+    v.showOk = () => this.setState({ msg: 'ok' });
+    v.showErr = () => this.setState({ msg: 'err' });
+    v.inviteOk = s.invite === 'valid'; v.inviteBad = s.invite !== 'valid';
+    v.invValid = s.invite === 'valid' ? 'on' : ''; v.invBad = s.invite !== 'valid' ? 'on' : '';
+    v.setValid = () => this.setState({ invite: 'valid' });
+    v.setExpired = () => this.setState({ invite: 'expired' });
+    return v;
+  }
+}
+</script>
+</body>
+</html>

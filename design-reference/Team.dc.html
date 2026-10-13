@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Team and access</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+<style>
+body{margin:0;background:#F4F3F6;color:#1C1724;font-family:'Figtree',system-ui,sans-serif;font-size:14px;line-height:1.45}
+*{box-sizing:border-box}
+a{color:#6B2C5C}a:hover{color:#4E1E43}
+.disp{font-family:'Sora',sans-serif}
+.app{display:flex;flex-wrap:wrap;min-height:100vh;width:100%}
+.side{flex:1 1 252px;background:#1C1724;color:#EDE8F0;padding:22px 14px;display:flex;flex-direction:column;gap:22px}
+.main{flex:999 1 560px;min-width:0;display:flex;flex-direction:column}
+.brand{display:flex;gap:12px;align-items:center;padding:0 8px}
+.logo{width:40px;height:40px;border-radius:12px;background:#F3E8F0;color:#5A2350;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:700;font-size:16px;flex:none}
+.bname{font-family:'Sora',sans-serif;font-weight:600;font-size:15px;color:#fff;margin:0}
+.btype{font-size:12px;color:#B7AEC2;margin:0}
+.navg{display:flex;flex-direction:column;gap:2px}
+.navh{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#A79EB3;padding:0 10px;margin:0 0 6px;font-weight:600}
+.nav{display:flex;align-items:center;gap:10px;width:100%;min-height:40px;padding:8px 10px;border-radius:10px;border:0;background:transparent;color:#D9D2E0;font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.nav:hover{background:#2C2436;color:#fff}
+.nav.on{background:#F3E8F0;color:#4E1E43;font-weight:600}
+.ndot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.55;flex:none}
+.user{display:flex;gap:10px;align-items:center;padding:0 6px;margin-top:auto}
+.av{width:36px;height:36px;border-radius:50%;background:#3F6B5C;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none}
+.av.sm{width:32px;height:32px;font-size:12px;background:#8A5A80}
+.av.lg{width:56px;height:56px;font-size:18px;background:#6B2C5C}
+.av.off{background:#B5AEBE}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 32px;background:#fff;border-bottom:1px solid #E4E1E8}
+.wrap{padding:26px 32px 56px;width:100%;max-width:1320px}
+.ph{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;margin-bottom:18px}
+h1{font-family:'Sora',sans-serif;font-size:28px;margin:0 0 4px;font-weight:600;letter-spacing:-.015em}
+.sub{color:#6B6475;margin:0}
+.tabs{display:flex;gap:2px;border-bottom:1px solid #E1DDE6;overflow-x:auto;margin-bottom:22px}
+.tab{appearance:none;border:0;background:none;font:inherit;font-weight:500;color:#6B6475;padding:12px 14px;min-height:46px;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap;display:flex;gap:8px;align-items:center}
+.tab:hover{color:#1C1724}
+.tab.on{color:#6B2C5C;border-bottom-color:#6B2C5C;font-weight:600}
+.cnt{font-size:11px;font-weight:700;background:#EEECF1;color:#4C4556;border-radius:99px;padding:1px 7px}
+.card{background:#fff;border:1px solid #E4E1E8;border-radius:14px;padding:20px;min-width:0}
+.h3{font-family:'Sora',sans-serif;font-size:16px;font-weight:600;margin:0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:#fff;border:1px solid #E4E1E8;border-radius:14px;padding:14px 16px}
+.kl{font-size:12px;color:#6B6475}
+.kv{font-family:'Sora',sans-serif;font-size:22px;font-weight:600;margin-top:4px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:10px;border:1px solid #6B2C5C;background:#6B2C5C;color:#fff;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn:hover{background:#56224A}
+.btn:disabled{background:#C9C2D1;border-color:#C9C2D1;cursor:not-allowed}
+.btn.ghost{background:#fff;color:#5A2350;border-color:#D8CFDD}
+.btn.ghost:hover{background:#FAF5F9}
+.btn.danger{background:#fff;color:#A3312B;border-color:#EAC3BF}
+.btn.sage{background:#2F6F5E;border-color:#2F6F5E}
+.btn.sm{min-height:36px;padding:0 12px;font-size:13px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.stack{display:flex;flex-direction:column;gap:16px}
+.muted{color:#6B6475}
+.small{font-size:13px}
+.tbox{overflow-x:auto;border:1px solid #E4E1E8;border-radius:14px;background:#fff}
+.tr{display:grid;gap:12px;align-items:center;padding:11px 16px;border-bottom:1px solid #F0EEF2}
+.tr:last-child{border-bottom:0}
+.tr.on{background:#FAF5F9;box-shadow:inset 3px 0 0 #6B2C5C}
+.tr.dim{color:#8A8296}
+.th{font-size:12px;font-weight:600;color:#6B6475;text-transform:uppercase;letter-spacing:.05em;background:#FAF9FB}
+.lnk{background:none;border:0;padding:0;font:inherit;font-weight:600;color:inherit;cursor:pointer;text-align:left;min-height:36px;display:flex;gap:10px;align-items:center}
+.lnk:hover{color:#6B2C5C}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;width:max-content}
+.p-plum{background:#F3E8F0;color:#5A2350}.p-sage{background:#E3F0EB;color:#245647}.p-amber{background:#FBF0DC;color:#7A4710}.p-red{background:#FBE6E4;color:#8E2A25}.p-grey{background:#EEECF1;color:#4C4556}
+.field{display:flex;flex-direction:column;gap:6px}
+label{font-size:13px;font-weight:600}
+input,select{font:inherit;min-height:44px;padding:10px 12px;border:1px solid #D8D3DE;border-radius:10px;background:#fff;color:#1C1724;width:100%}
+input:focus,select:focus{outline:2px solid #C48BB4;outline-offset:1px;border-color:#6B2C5C}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.li{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F0EEF2}
+.li:last-child{border-bottom:0}
+.seg{display:inline-flex;background:#EEECF1;border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;font:inherit;font-weight:600;font-size:13px;color:#4C4556;padding:0 12px;min-height:36px;border-radius:8px;cursor:pointer}
+.seg button.on{background:#fff;color:#5A2350;box-shadow:0 1px 2px rgba(28,23,36,.12)}
+.seg button:disabled{cursor:not-allowed;opacity:.7}
+.seg.full{display:flex}
+.seg.full button{flex:1}
+.sk{border-radius:12px;background:linear-gradient(90deg,#ECE9EF 0%,#F6F4F8 50%,#ECE9EF 100%);background-size:200% 100%;animation:sh 1s linear infinite}
+@keyframes sh{from{background-position:200% 0}to{background-position:-200% 0}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.split{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+.splitmain{flex:999 1 560px;min-width:0}
+.panel{flex:1 1 320px;background:#fff;border:1px solid #E4E1E8;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.rolelist{flex:1 1 230px;max-width:290px;display:flex;flex-direction:column;gap:8px}
+.role{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;padding:12px 14px;border:1px solid #E4E1E8;border-radius:12px;background:#fff;font:inherit;text-align:left;cursor:pointer;min-height:60px}
+.role.on{border-color:#6B2C5C;background:#FAF5F9;box-shadow:inset 3px 0 0 #6B2C5C}
+.perm{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #F0EEF2}
+.perm:last-child{border-bottom:0}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.doc{display:flex;gap:12px;align-items:center;padding:12px;border:1px dashed #C9C2D1;border-radius:12px;background:#FAF9FB}
+.ok{background:#E3F0EB;color:#1E4A3D;border-radius:12px;padding:12px 14px;font-size:13px}
+.note{background:#FBF0DC;color:#6A3D0C;border-radius:12px;padding:12px 14px;font-size:13px}
+.warn{background:#FBE6E4;color:#7E241F;border-radius:12px;padding:12px 14px;font-size:13px}
+.sw{display:inline-flex;align-items:center;gap:10px;border:0;background:none;font:inherit;cursor:pointer;padding:0;min-height:40px;color:#1C1724;font-weight:600}
+.sw i{width:40px;height:22px;border-radius:99px;background:#D8D3DE;position:relative;display:inline-block}
+.sw i::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff}
+.sw.on i{background:#2F6F5E}
+.sw.on i::after{left:21px}
+</style>
+</helmet>
+<div class="app">
+<aside class="side" aria-label="Main navigation">
+<div class="brand"><div class="logo" aria-hidden="true">VR</div><div><p class="bname">Velvet Room Salon</p><p class="btype">Hair &amp; beauty salon</p></div></div>
+<nav class="navg" aria-label="Front desk"><p class="navh">Front desk</p>
+<button class="nav"><span class="ndot"></span>Overview</button>
+<button class="nav"><span class="ndot"></span>Calendar</button>
+<button class="nav"><span class="ndot"></span>Customers</button>
+<button class="nav"><span class="ndot"></span>Point of sale</button>
+</nav>
+<nav class="navg" aria-label="Business"><p class="navh">Business</p>
+<button class="nav"><span class="ndot"></span>Services &amp; pricing</button>
+<button class="nav"><span class="ndot"></span>Payroll</button>
+<button class="nav"><span class="ndot"></span>Reports</button>
+<button class="nav on" aria-current="page"><span class="ndot"></span>Team</button>
+<button class="nav"><span class="ndot"></span>Audit log</button>
+<button class="nav"><span class="ndot"></span>Settings</button>
+</nav>
+<nav class="navg" aria-label="You"><p class="navh">You</p>
+<button class="nav"><span class="ndot"></span>My earnings</button>
+<button class="nav"><span class="ndot"></span>My account</button>
+</nav>
+<div class="user"><div class="av" aria-hidden="true">AS</div><div><div style="font-weight: 600; color: #fff">Ayesha Siddiqui</div><div style="font-size: 12px; color: #B7AEC2">Owner</div></div></div>
+</aside>
+
+<main class="main">
+<div class="top">
+<span class="muted small">Mon 12 Oct 2026 · Velvet Room Salon</span>
+<div class="row"><button class="btn ghost sm" onClick="{{goInvite}}">Invite login</button><button class="btn sm" onClick="{{addMember}}">Add team member</button></div>
+</div>
+<div class="wrap">
+<div class="ph"><div><h1>Team &amp; access</h1><p class="sub">Who works here, who can sign in, and what each role can do</p></div></div>
+
+<sc-if value="{{flash}}" hint-placeholder-val="{{ false }}"><div class="ok" role="status" style="margin-bottom: 16px">{{flashTxt}}</div></sc-if>
+
+<div class="tabs" role="tablist" aria-label="Sections">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="4"><button role="tab" class="{{t.cls}}" aria-selected="{{t.sel}}" onClick="{{t.go}}">{{t.label}}<sc-if value="{{t.hasCnt}}" hint-placeholder-val="{{ false }}"><span class="cnt">{{t.cnt}}</span></sc-if></button></sc-for>
+</div>
+
+<sc-if value="{{loading}}" hint-placeholder-val="{{ false }}">
+<div class="stack" aria-live="polite"><span class="sr">Loading…</span><div class="kpis"><div class="sk" style="height: 74px"></div><div class="sk" style="height: 74px"></div><div class="sk" style="height: 74px"></div></div><div class="sk" style="height: 380px"></div></div>
+</sc-if>
+
+<!-- ROSTER -->
+<sc-if value="{{t_roster}}" hint-placeholder-val="{{ true }}">
+<div class="kpis">
+<div class="kpi"><div class="kl">Active team</div><div class="kv">{{k.active}}</div></div>
+<div class="kpi"><div class="kl">With a login</div><div class="kv">{{k.login}}</div></div>
+<div class="kpi"><div class="kl">ID document missing</div><div class="kv" style="color: #8E2A25">{{k.missing}}</div></div>
+<div class="kpi"><div class="kl">Inactive</div><div class="kv">{{k.inactive}}</div></div>
+</div>
+<div class="row between" style="margin-bottom: 14px">
+<div class="seg" role="group" aria-label="Show"><sc-for list="{{rFilter}}" as="o" hint-placeholder-count="3"><button class="{{o.cls}}" onClick="{{o.go}}" aria-pressed="{{o.sel}}">{{o.label}}</button></sc-for></div>
+<div style="flex: 1 1 220px; max-width: 320px"><label class="sr" for="tq">Search team</label><input id="tq" type="search" placeholder="Search by name or title" onInput="{{onFind}}" /></div>
+</div>
+<div class="split">
+<div class="splitmain">
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1.7fr 1.1fr 1.3fr 1fr 0.9fr; min-width: 700px">Name<span>Title</span><span>Login</span><span>ID document</span><span>Status</span></div>
+<sc-for list="{{roster}}" as="m" hint-placeholder-count="6">
+<div class="{{m.cls}}" style="grid-template-columns: 1.7fr 1.1fr 1.3fr 1fr 0.9fr; min-width: 700px"><button class="lnk" onClick="{{m.pick}}" aria-pressed="{{m.pressed}}"><span class="{{m.avCls}}" aria-hidden="true">{{m.ini}}</span>{{m.name}}</button><span>{{m.title}}</span><span class="{{m.loginCls}}">{{m.login}}</span><span class="{{m.docCls}}">{{m.doc}}</span><span class="{{m.pcls}}">{{m.status}}</span></div>
+</sc-for>
+<sc-if value="{{noRoster}}" hint-placeholder-val="{{ false }}"><div class="tr muted">Nobody matches that search.</div></sc-if>
+</div>
+</div>
+
+<sc-if value="{{isNew}}" hint-placeholder-val="{{ false }}">
+<aside class="panel" aria-label="New team member">
+<h2 class="h3">New team member</h2>
+<div class="field"><label for="nm-n">Full name</label><input id="nm-n" placeholder="Full name" /></div>
+<div class="field"><label for="nm-t">Job title</label><input id="nm-t" placeholder="e.g. Stylist" /></div>
+<div class="field"><label for="nm-p">Phone</label><input id="nm-p" type="tel" placeholder="+92 3xx xxxxxxx" /></div>
+<div class="field"><label for="nm-d">ID document</label><input id="nm-d" type="file" /></div>
+<p class="muted small" style="margin: 0">Adding someone to the roster doesn't give them a login. Invite them separately if they need to sign in.</p>
+<div class="row" style="gap: 8px"><button class="btn" style="flex: 1" onClick="{{saveNew}}">Add to roster</button><button class="btn ghost" onClick="{{cancelNew}}">Cancel</button></div>
+</aside>
+</sc-if>
+<sc-if value="{{isView}}" hint-placeholder-val="{{ true }}">
+<aside class="panel" aria-label="Team member details">
+<div class="row" style="gap: 14px"><div class="av lg" aria-hidden="true">{{p.ini}}</div><div><div class="disp" style="font-weight: 600; font-size: 18px">{{p.name}}</div><div class="muted small">{{p.title}} · since {{p.since}}</div></div></div>
+<div class="row" style="gap: 8px"><span class="{{p.pcls}}">{{p.status}}</span><span class="pill p-plum">{{p.role}}</span></div>
+<div class="li" style="padding-top: 0"><span class="muted">Phone</span><span>{{p.phone}}</span></div>
+<div class="li"><span class="muted">Login</span><span>{{p.login}}</span></div>
+<div class="li"><span class="muted">Pay</span><span>{{p.pay}}</span></div>
+<div><p class="small" style="font-weight: 600; margin: 4px 0 8px">Performs</p><div class="tags"><sc-for list="{{p.svc}}" as="s" hint-placeholder-count="2"><span class="pill p-grey">{{s}}</span></sc-for></div></div>
+<p class="small" style="font-weight: 600; margin: 4px 0 0">ID document</p>
+<div class="doc">
+<sc-if value="{{p.hasDoc}}" hint-placeholder-val="{{ true }}"><div style="flex: 1"><strong>{{p.docName}}</strong><div class="muted small">Uploaded {{p.docDate}} · visible to owner only</div></div><button class="btn ghost sm">View</button></sc-if>
+<sc-if value="{{p.noDoc}}" hint-placeholder-val="{{ false }}"><div style="flex: 1"><strong style="color: #8E2A25">No ID on file</strong><div class="muted small">Upload a CNIC or passport copy</div></div><button class="btn sm" onClick="{{uploadDoc}}">Upload</button></sc-if>
+</div>
+<div class="row" style="gap: 8px; margin-top: 4px"><button class="btn ghost" style="flex: 1">Edit details</button><button class="{{p.toggleCls}}" onClick="{{toggleActive}}">{{p.toggleTxt}}</button></div>
+<sc-if value="{{p.inactive}}" hint-placeholder-val="{{ false }}"><p class="muted small" style="margin: 0">Inactive team members can't be booked and their login is paused. Their past work stays in reports and payroll.</p></sc-if>
+</aside>
+</sc-if>
+</div>
+</sc-if>
+
+<!-- INVITATIONS -->
+<sc-if value="{{t_invites}}" hint-placeholder-val="{{ false }}">
+<div class="split">
+<div class="splitmain card">
+<h2 class="h3" style="margin-bottom: 14px">Invite someone to sign in</h2>
+<div class="form">
+<div class="field" style="grid-column: 1 / -1"><label for="iv-e">Email</label><input id="iv-e" type="email" placeholder="name@example.com" onInput="{{onEmail}}" /></div>
+<div class="field"><label for="iv-m">Link to team member</label><select id="iv-m" onChange="{{onLink}}"><option value="Zoya Ali">Zoya Ali</option><option value="Fiza Noor">Fiza Noor</option><option value="Not linked">Not linked</option></select></div>
+</div>
+<p class="small" style="font-weight: 600; margin: 16px 0 6px">Role</p>
+<div class="seg" role="group" aria-label="Role"><sc-for list="{{invRoles}}" as="o" hint-placeholder-count="3"><button class="{{o.cls}}" onClick="{{o.go}}" aria-pressed="{{o.sel}}">{{o.label}}</button></sc-for></div>
+<p class="muted small" style="margin: 10px 0 0">{{invRoleDesc}}</p>
+<div class="row" style="margin-top: 18px"><button class="btn" onClick="{{sendInvite}}" disabled="{{noEmail}}">Send invitation</button><span class="muted small">The link expires after 7 days.</span></div>
+</div>
+<aside class="panel" style="flex: 1 1 420px">
+<div class="row between"><h2 class="h3">Pending invitations</h2><span class="muted small">{{invCount}}</span></div>
+<sc-for list="{{invites}}" as="i" hint-placeholder-count="2">
+<div class="li" style="align-items: flex-start"><div><strong>{{i.email}}</strong><div class="muted small">{{i.role}} · {{i.member}}</div><div class="small" style="margin-top: 4px"><span class="{{i.pcls}}">{{i.state}}</span> <span class="muted">{{i.when}}</span></div></div><div class="row" style="gap: 6px; flex-wrap: nowrap"><button class="btn ghost sm" onClick="{{i.resend}}">Resend</button><button class="btn danger sm" onClick="{{i.revoke}}">Revoke</button></div></div>
+</sc-for>
+<sc-if value="{{noInvites}}" hint-placeholder-val="{{ false }}"><p class="muted" style="margin: 0">No pending invitations.</p></sc-if>
+</aside>
+</div>
+</sc-if>
+
+<!-- ROLES -->
+<sc-if value="{{t_roles}}" hint-placeholder-val="{{ false }}">
+<div class="split">
+<div class="rolelist" role="group" aria-label="Roles">
+<sc-for list="{{roles}}" as="r" hint-placeholder-count="4"><button class="{{r.cls}}" onClick="{{r.pick}}" aria-pressed="{{r.pressed}}"><span><strong>{{r.name}}</strong><br /><span class="muted small">{{r.people}}</span></span><sc-if value="{{r.locked}}" hint-placeholder-val="{{ false }}"><span class="pill p-grey">Fixed</span></sc-if></button></sc-for>
+<button class="btn ghost" style="width: 100%">New role</button>
+</div>
+<div class="card" style="flex: 999 1 520px">
+<div class="row between" style="margin-bottom: 4px"><div><h2 class="h3">{{role.name}}</h2><span class="muted small">{{role.desc}}</span></div>
+<sc-if value="{{dirty}}" hint-placeholder-val="{{ false }}"><div class="row" style="gap: 8px"><button class="btn ghost sm" onClick="{{resetPerms}}">Undo</button><button class="btn sm" onClick="{{savePerms}}">Save changes</button></div></sc-if>
+</div>
+<sc-if value="{{role.locked}}" hint-placeholder-val="{{ false }}"><div class="note" style="margin: 12px 0">The Owner role always has full access and can't be changed.</div></sc-if>
+<sc-if value="{{dirty}}" hint-placeholder-val="{{ false }}"><div class="note" style="margin: 12px 0">You have unsaved changes. They apply to {{role.people}} as soon as you save.</div></sc-if>
+<sc-for list="{{perms}}" as="p" hint-placeholder-count="10">
+<div class="perm"><div><strong>{{p.mod}}</strong><div class="muted small">{{p.hint}}</div></div><div class="seg" role="group" aria-label="{{p.mod}} access"><sc-for list="{{p.opts}}" as="o" hint-placeholder-count="3"><button class="{{o.cls}}" onClick="{{o.go}}" aria-pressed="{{o.sel}}" disabled="{{o.off}}">{{o.label}}</button></sc-for></div></div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<!-- ACCOUNTS -->
+<sc-if value="{{t_accounts}}" hint-placeholder-val="{{ false }}">
+<div class="split">
+<div class="splitmain">
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1.8fr 1.3fr 1fr 1fr 1fr; min-width: 700px">Account<span>Linked team member</span><span>Role</span><span>Last sign-in</span><span>Access</span></div>
+<sc-for list="{{accts}}" as="a" hint-placeholder-count="5"><div class="{{a.cls}}" style="grid-template-columns: 1.8fr 1.3fr 1fr 1fr 1fr; min-width: 700px"><button class="lnk" onClick="{{a.pick}}" aria-pressed="{{a.pressed}}">{{a.email}}</button><span class="{{a.memCls}}">{{a.member}}</span><span>{{a.role}}</span><span class="muted">{{a.last}}</span><span class="{{a.pcls}}">{{a.access}}</span></div></sc-for>
+</div>
+<p class="muted small">An account that isn't linked to a team member can't be booked or paid. Link it so their work shows up in payroll.</p>
+</div>
+<aside class="panel" aria-label="Account settings">
+<h2 class="h3">{{acct.email}}</h2>
+<span class="muted small">Signed in {{acct.last}}</span>
+<div class="field"><label for="ac-m">Linked team member</label><select id="ac-m"><option>{{acct.member}}</option><option>Sana Malik</option><option>Hira Shah</option><option>Maria Khan</option><option>Not linked</option></select></div>
+<div class="field"><label for="ac-r">Role</label><select id="ac-r"><option>{{acct.role}}</option><option>Manager</option><option>Front desk</option><option>Therapist</option></select></div>
+<button class="{{acct.swCls}}" onClick="{{toggleAccess}}" aria-pressed="{{acct.on}}" disabled="{{acct.isOwner}}"><i aria-hidden="true"></i>{{acct.swTxt}}</button>
+<sc-if value="{{acct.isOwner}}" hint-placeholder-val="{{ false }}"><p class="muted small" style="margin: 0">The owner account can't be disabled.</p></sc-if>
+<sc-if value="{{acct.disabled}}" hint-placeholder-val="{{ false }}"><div class="warn">This person can't sign in. Their history is kept.</div></sc-if>
+<button class="btn">Save account</button>
+</aside>
+</div>
+</sc-if>
+
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      tab: 'roster', loading: false, flash: '', mode: 'view', sel: 'maria', rf: 'active', find: '',
+      inactive: { fiza: true }, docs: {}, added: 0,
+      email: '', invRole: 'Therapist', link: 'Zoya Ali',
+      invites: [
+        { id: 'i1', email: 'zoya@example.com', role: 'Therapist', member: 'Zoya Ali', state: 'Pending', when: 'sent 9 Oct · expires 16 Oct' },
+        { id: 'i2', email: 'reception2@example.com', role: 'Front desk', member: 'Not linked', state: 'Expired', when: 'sent 1 Oct · expired 8 Oct' }
+      ],
+      role: 'Front desk', perms: {}, saved: {},
+      acct: 'maria', access: { maria: false }
+    };
+  }
+  componentWillUnmount() { clearTimeout(this.tm); }
+  setTab(t, extra) {
+    this.setState({ tab: t, loading: true, flash: '', ...(extra || {}) });
+    clearTimeout(this.tm);
+    this.tm = setTimeout(() => this.setState({ loading: false }), 380);
+  }
+  renderVals() {
+    const s = this.state;
+    const v = {};
+    const M = [
+      ['ayesha', 'Ayesha Siddiqui', 'AS', 'Owner', 'ayesha@velvetroom.example', 'Owner', true, 'Jan 2023', '+92 300 1112233', 'Owner', []],
+      ['sana', 'Sana Malik', 'SM', 'Senior stylist', 'sana@velvetroom.example', 'Therapist', true, 'Mar 2023', '+92 301 4455667', '$900/mo + 15%', ['Cut & style', 'Blow-dry']],
+      ['hira', 'Hira Shah', 'HS', 'Colourist', 'hira@velvetroom.example', 'Therapist', true, 'Jun 2023', '+92 321 7788990', '$900/mo + 15%', ['Full colour', 'Balayage', 'Blow-dry']],
+      ['maria', 'Maria Khan', 'MK', 'Aesthetician', 'maria@velvetroom.example', 'Therapist', false, 'Feb 2024', '+92 333 2211009', '$800/mo + 15%', ['Hydrating facial', 'Chemical peel', 'Brow shape']],
+      ['zoya', 'Zoya Ali', 'ZA', 'Nail technician', 'Invite pending', 'Therapist', true, 'Aug 2025', '+92 345 6677889', '28% commission', ['Gel manicure', 'Pedicure']],
+      ['bilal', 'Bilal Ahmed', 'BA', 'Receptionist', 'bilal@velvetroom.example', 'Front desk', true, 'Sep 2024', '+92 300 9988776', '$600/mo', []],
+      ['fiza', 'Fiza Noor', 'FN', 'Stylist', 'No login', 'Therapist', true, 'Apr 2023', '+92 311 5544332', '$700/mo + 12%', ['Cut & style']]
+    ].map(([id, name, ini, title, login, role, doc, since, phone, pay, svc]) => ({ id, name, ini, title, login, role, doc: doc || !!s.docs[id], since, phone, pay, svc, active: !s.inactive[id] }));
+    for (let i = 0; i < s.added; i++) M.push({ id: 'new' + i, name: 'New team member', ini: 'NT', title: 'Stylist', login: 'No login', role: 'Therapist', doc: false, since: 'Oct 2026', phone: '—', pay: 'Not set', svc: [], active: true });
+
+    v.k = { active: M.filter((m) => m.active).length, login: M.filter((m) => m.login.includes('@')).length, missing: M.filter((m) => !m.doc).length, inactive: M.filter((m) => !m.active).length };
+    v.rFilter = [['active', 'Active'], ['inactive', 'Inactive'], ['all', 'All']].map(([id, label]) => ({ label, cls: s.rf === id ? 'on' : '', sel: s.rf === id ? 'true' : 'false', go: () => this.setState({ rf: id }) }));
+    v.onFind = (e) => this.setState({ find: e.target.value });
+    const q = s.find.trim().toLowerCase();
+    const list = M.filter((m) => (s.rf === 'all' || (s.rf === 'active' ? m.active : !m.active)) && (!q || (m.name + ' ' + m.title).toLowerCase().includes(q)));
+    v.roster = list.map((m) => ({
+      ...m, status: m.active ? 'Active' : 'Inactive', pcls: m.active ? 'pill p-sage' : 'pill p-grey',
+      loginCls: m.login.includes('@') ? 'small' : 'muted small', docCls: m.doc ? 'pill p-sage' : 'pill p-red', doc: m.doc ? 'On file' : 'Missing',
+      avCls: m.active ? 'av sm' : 'av sm off',
+      cls: 'tr' + (m.id === s.sel && s.mode === 'view' ? ' on' : '') + (m.active ? '' : ' dim'), pressed: m.id === s.sel ? 'true' : 'false',
+      pick: () => this.setState({ sel: m.id, mode: 'view' })
+    }));
+    v.noRoster = list.length === 0;
+    v.isNew = s.mode === 'new'; v.isView = s.mode === 'view';
+    const P = M.find((m) => m.id === s.sel) || M[0];
+    v.p = {
+      ...P, status: P.active ? 'Active' : 'Inactive', pcls: P.active ? 'pill p-sage' : 'pill p-grey', inactive: !P.active,
+      svc: P.svc.length ? P.svc : ['Not a service provider'],
+      hasDoc: P.doc, noDoc: !P.doc, docName: 'CNIC-' + P.ini + '.pdf', docDate: s.docs[P.id] ? 'just now' : '14 ' + P.since,
+      toggleTxt: P.active ? 'Deactivate' : 'Reactivate', toggleCls: P.active ? 'btn danger' : 'btn sage'
+    };
+    v.toggleActive = () => {
+      if (P.id === 'ayesha') return;
+      const x = { ...this.state.inactive }; x[P.id] = P.active; this.setState({ inactive: x, flash: P.name + (P.active ? ' was deactivated.' : ' is active again.') });
+    };
+    v.uploadDoc = () => { const d = { ...this.state.docs }; d[P.id] = true; this.setState({ docs: d, flash: 'ID document uploaded for ' + P.name + '.' }); };
+    v.addMember = () => { if (s.tab !== 'roster') this.setTab('roster', { mode: 'new' }); else this.setState({ mode: 'new', flash: '' }); };
+    v.cancelNew = () => this.setState({ mode: 'view' });
+    v.saveNew = () => this.setState({ added: this.state.added + 1, mode: 'view', sel: 'new' + this.state.added, rf: 'all', flash: 'Added to the roster. Invite them if they need to sign in.' });
+
+    const RD = { Therapist: 'Sees their own schedule, customers they serve, and their own earnings.', 'Front desk': 'Runs bookings, customers and the till. No payroll, reports or settings.', Manager: 'Everything except billing, team permissions and voiding receipts.' };
+    v.invRoles = ['Therapist', 'Front desk', 'Manager'].map((r) => ({ label: r, cls: s.invRole === r ? 'on' : '', sel: s.invRole === r ? 'true' : 'false', go: () => this.setState({ invRole: r }) }));
+    v.invRoleDesc = RD[s.invRole];
+    v.onEmail = (e) => this.setState({ email: e.target.value });
+    v.onLink = (e) => this.setState({ link: e.target.value });
+    v.noEmail = !/.+@.+\..+/.test(s.email);
+    v.sendInvite = () => {
+      if (v.noEmail) return;
+      const inv = { id: 'i' + Date.now(), email: this.state.email, role: this.state.invRole, member: this.state.link, state: 'Pending', when: 'sent just now · expires 19 Oct' };
+      this.setState({ invites: [inv, ...this.state.invites], flash: 'Invitation sent to ' + this.state.email + '.' });
+    };
+    v.invites = s.invites.map((i) => ({
+      ...i, pcls: i.state === 'Pending' ? 'pill p-amber' : 'pill p-red',
+      resend: () => this.setState({ invites: this.state.invites.map((x) => x.id === i.id ? { ...x, state: 'Pending', when: 'resent just now · expires 19 Oct' } : x), flash: 'Invitation resent to ' + i.email + '.' }),
+      revoke: () => this.setState({ invites: this.state.invites.filter((x) => x.id !== i.id), flash: 'Invitation to ' + i.email + ' revoked.' })
+    }));
+    v.noInvites = s.invites.length === 0;
+    v.invCount = s.invites.length + ' total';
+
+    const MODS = [
+      ['cal', 'Calendar & bookings', 'Book, move and cancel appointments', ['None', 'Own', 'Full']],
+      ['cust', 'Customers', 'Profiles and contact details', ['None', 'Own', 'Full']],
+      ['consent', 'Consent records', 'Medical intake and signatures', ['None', 'View', 'Full']],
+      ['pos', 'Point of sale', 'Take payments and issue receipts', ['None', 'Full']],
+      ['void', 'Void receipts', 'Reverse an issued receipt', ['No', 'Yes']],
+      ['svc', 'Services & pricing', 'Menu, prices and deals', ['None', 'View', 'Full']],
+      ['pay', 'Payroll', 'Pay periods and pay settings', ['None', 'Own', 'Full']],
+      ['rep', 'Reports', 'Revenue and performance', ['None', 'Full']],
+      ['team', 'Team & access', 'Roster, invites and roles', ['None', 'Full']],
+      ['set', 'Salon settings', 'Hours, region and loyalty', ['None', 'Full']]
+    ];
+    const DEF = {
+      Owner: { cal: 'Full', cust: 'Full', consent: 'Full', pos: 'Full', void: 'Yes', svc: 'Full', pay: 'Full', rep: 'Full', team: 'Full', set: 'Full' },
+      Manager: { cal: 'Full', cust: 'Full', consent: 'Full', pos: 'Full', void: 'No', svc: 'Full', pay: 'None', rep: 'Full', team: 'None', set: 'None' },
+      'Front desk': { cal: 'Full', cust: 'Full', consent: 'View', pos: 'Full', void: 'No', svc: 'View', pay: 'None', rep: 'None', team: 'None', set: 'None' },
+      Therapist: { cal: 'Own', cust: 'Own', consent: 'View', pos: 'None', void: 'No', svc: 'None', pay: 'Own', rep: 'None', team: 'None', set: 'None' }
+    };
+    const cur = (r) => ({ ...DEF[r], ...(s.saved[r] || {}), ...(s.perms[r] || {}) });
+    const people = { Owner: 1, Manager: 0, 'Front desk': 1, Therapist: 5 };
+    v.roles = Object.keys(DEF).map((r) => ({ name: r, people: people[r] + (people[r] === 1 ? ' person' : ' people'), locked: r === 'Owner', cls: s.role === r ? 'role on' : 'role', pressed: s.role === r ? 'true' : 'false', pick: () => this.setState({ role: r }) }));
+    const RDESC = { Owner: 'Full control of the salon account', Manager: 'Runs the salon day to day', 'Front desk': 'Reception and checkout', Therapist: 'Performs services' };
+    const locked = s.role === 'Owner';
+    v.role = { name: s.role, desc: RDESC[s.role], locked, people: people[s.role] + (people[s.role] === 1 ? ' person' : ' people') };
+    const C = cur(s.role);
+    v.perms = MODS.map(([id, mod, hint, opts]) => ({
+      mod, hint,
+      opts: opts.map((o) => ({ label: o, off: locked, cls: C[id] === o ? 'on' : '', sel: C[id] === o ? 'true' : 'false', go: () => { if (locked) return; const p = { ...this.state.perms }; p[s.role] = { ...(p[s.role] || {}), [id]: o }; this.setState({ perms: p }); } }))
+    }));
+    v.dirty = !!s.perms[s.role] && Object.keys(s.perms[s.role]).length > 0;
+    v.resetPerms = () => { const p = { ...this.state.perms }; delete p[s.role]; this.setState({ perms: p }); };
+    v.savePerms = () => { const p = { ...this.state.perms }; const sv = { ...this.state.saved }; sv[s.role] = { ...(sv[s.role] || {}), ...p[s.role] }; delete p[s.role]; this.setState({ perms: p, saved: sv, flash: 'Permissions for ' + s.role + ' saved.' }); };
+
+    const A = [
+      ['ayesha', 'ayesha@velvetroom.example', 'Ayesha Siddiqui', 'Owner', 'Today, 09:41'],
+      ['bilal', 'bilal@velvetroom.example', 'Bilal Ahmed', 'Front desk', 'Today, 09:52'],
+      ['sana', 'sana@velvetroom.example', 'Sana Malik', 'Therapist', 'Today, 09:58'],
+      ['hira', 'hira@velvetroom.example', 'Hira Shah', 'Therapist', 'Yesterday, 18:10'],
+      ['maria', 'maria@velvetroom.example', 'Not linked', 'Therapist', '2 Oct, 11:05']
+    ].map(([id, email, member, role, last]) => {
+      const on = s.access[id] !== false;
+      return { id, email, member, role, last, on, access: on ? 'Enabled' : 'Disabled', pcls: on ? 'pill p-sage' : 'pill p-grey', memCls: member === 'Not linked' ? 'pill p-amber' : '', cls: s.acct === id ? 'tr on' : 'tr', pressed: s.acct === id ? 'true' : 'false', pick: () => this.setState({ acct: id }) };
+    });
+    v.accts = A;
+    const AC = A.find((a) => a.id === s.acct) || A[0];
+    v.acct = { ...AC, isOwner: AC.role === 'Owner', disabled: !AC.on, swCls: AC.on ? 'sw on' : 'sw', swTxt: AC.on ? 'Can sign in' : 'Sign-in disabled', on: AC.on ? 'true' : 'false' };
+    v.toggleAccess = () => { if (AC.role === 'Owner') return; const x = { ...this.state.access }; x[AC.id] = !AC.on; this.setState({ access: x }); };
+
+    const pend = s.invites.filter((i) => i.state === 'Pending').length;
+    const TT = [['roster', 'Roster', String(M.length)], ['invites', 'Invitations', pend ? String(pend) : ''], ['roles', 'Roles & permissions', ''], ['accounts', 'Linked accounts', '']];
+    v.tabs = TT.map(([id, label, cnt]) => ({ label, cnt, hasCnt: !!cnt, cls: s.tab === id ? 'tab on' : 'tab', sel: s.tab === id ? 'true' : 'false', go: () => { if (s.tab !== id) this.setTab(id); } }));
+    TT.forEach(([id]) => { v['t_' + id] = s.tab === id && !s.loading; });
+    v.loading = s.loading;
+    v.goInvite = () => this.setTab('invites');
+    v.flash = !!s.flash; v.flashTxt = s.flash;
+    return v;
+  }
+}
+</script>
+</body>
+</html>

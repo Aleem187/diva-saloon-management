@@ -1,0 +1,321 @@
+@import "tailwindcss";
+
+/*
+ * LEGACY palette. Used by the pages that have not been moved to the redesign
+ * kit yet (`ink-*`, `brand-*`). Deleted when the last of them has moved.
+ */
+@theme {
+  --color-ink-50: oklch(0.985 0.002 280);
+  --color-ink-100: oklch(0.967 0.003 280);
+  --color-ink-200: oklch(0.92 0.005 280);
+  --color-ink-300: oklch(0.85 0.007 280);
+  --color-ink-400: oklch(0.68 0.011 280);
+  --color-ink-500: oklch(0.55 0.013 280);
+  --color-ink-600: oklch(0.44 0.014 280);
+  --color-ink-700: oklch(0.35 0.014 280);
+  --color-ink-800: oklch(0.26 0.013 280);
+  --color-ink-900: oklch(0.19 0.012 280);
+
+  --color-brand-50: oklch(0.97 0.018 330);
+  --color-brand-100: oklch(0.94 0.035 330);
+  --color-brand-300: oklch(0.8 0.09 330);
+  --color-brand-500: oklch(0.63 0.16 330);
+  --color-brand-600: oklch(0.56 0.17 330);
+  --color-brand-700: oklch(0.47 0.15 330);
+}
+
+/* ========================================================================== */
+/* REDESIGN TOKENS                                                            */
+/*                                                                            */
+/* Values come from design-reference/DESIGN.md. Components use these          */
+/* variables (through the Tailwind names mapped below) and never a literal    */
+/* colour.                                                                    */
+/* ========================================================================== */
+
+/*
+ * Colour scheme. The default, plum, is on :root so anything outside a themed
+ * element still resolves; `data-theme` on the dashboard root swaps the four
+ * scheme-dependent values. Status colours below never change with the scheme.
+ */
+:root,
+[data-theme="plum"] {
+  --accent: #6b2c5c;
+  --accent-d: #4e1e43;
+  --soft: #f3e8f0;
+  --side: #1c1724;
+}
+[data-theme="sage"] {
+  --accent: #2f6f5e;
+  --accent-d: #1e4a3d;
+  --soft: #e3f0eb;
+  --side: #14231e;
+}
+[data-theme="ocean"] {
+  --accent: #1f5f8b;
+  --accent-d: #154468;
+  --soft: #e1eef7;
+  --side: #0f1c26;
+}
+[data-theme="rose"] {
+  --accent: #a8335a;
+  --accent-d: #7e2343;
+  --soft: #fbe7ee;
+  --side: #261219;
+}
+[data-theme="terra"] {
+  --accent: #a4522d;
+  --accent-d: #7a3b1f;
+  --soft: #fbede5;
+  --side: #24160f;
+}
+[data-theme="midnight"] {
+  --accent: #3d3a8c;
+  --accent-d: #2b2967;
+  --soft: #e9e8f7;
+  --side: #13122a;
+}
+
+:root {
+  /* Surfaces and text */
+  --bg: #f4f3f6;
+  --surface: #ffffff;
+  --ink: #1c1724;
+  --muted: #6b6475; /* 4.5:1 on white */
+  --line: #e4e1e8;
+  --line-soft: #f0eef2;
+  --on-accent: #ffffff;
+
+  /* Form controls and table chrome */
+  --field-line: #d8d3de;
+  --head-bg: #faf9fb;
+  --track: #eeecf1; /* segmented-control track, switch off */
+
+  /* Derived from the scheme, so they follow it */
+  --ring: color-mix(in srgb, var(--accent) 55%, white);
+
+  /* Sidebar: text on --side, and surfaces lifted off it */
+  --side-ink: #ede8f0;
+  --side-muted: #b7aec2;
+  --side-hover: color-mix(in srgb, white 9%, var(--side));
+  --side-box: color-mix(in srgb, white 7%, var(--side));
+  --side-line: color-mix(in srgb, white 18%, var(--side));
+  --side-meter: color-mix(in srgb, white 20%, var(--side));
+  --meter-fill: color-mix(in srgb, var(--accent) 40%, white);
+
+  /* Status. -bg / -fg for pills and banners, the bare name for strong marks. */
+  --good-bg: #e3f0eb;
+  --good-fg: #245647;
+  --good: #2f6f5e;
+  --warning-bg: #fbf0dc;
+  --warning-fg: #7a4710;
+  --warning: #b7741f;
+  --critical-bg: #fbe6e4;
+  --critical-fg: #8e2a25;
+  --critical: #a3312b;
+  --critical-line: #eac3bf;
+  --info-bg: #e4ecf7;
+  --info-fg: #234b7a;
+  --info: #2f5f9e;
+  --neutral-bg: #eeecf1;
+  --neutral-fg: #4c4556;
+  --neutral: #8a8296;
+
+  /* Skeleton shimmer */
+  --skeleton: #ece9ef;
+  --skeleton-hi: #f6f4f8;
+
+  /* Type: fall back to the system until a themed element supplies fonts */
+  --font-heading: ui-sans-serif, system-ui, sans-serif;
+  --font-body: ui-sans-serif, system-ui, sans-serif;
+  --base-size: 14px;
+}
+
+/*
+ * Fonts. next/font defines --font-sora, --font-figtree, ... on the themed
+ * element (see src/lib/fonts.ts); these point the two role variables at the
+ * chosen ones. They sit on the same element as the font classes, which is what
+ * lets var() resolve.
+ */
+[data-font-heading="sora"] {
+  --font-heading: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
+}
+[data-font-heading="playfair"] {
+  --font-heading: var(--font-playfair), ui-serif, Georgia, serif;
+}
+[data-font-heading="dmserif"] {
+  --font-heading: var(--font-dmserif), ui-serif, Georgia, serif;
+}
+[data-font-heading="poppins"] {
+  --font-heading: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+}
+
+[data-font-body="figtree"] {
+  --font-body: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+}
+[data-font-body="nunito"] {
+  --font-body: var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
+}
+[data-font-body="lato"] {
+  --font-body: var(--font-lato), ui-sans-serif, system-ui, sans-serif;
+}
+[data-font-body="source"] {
+  --font-body: var(--font-source), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Text size: the base the kit's em-based sizes scale from. */
+[data-text-size="s"] {
+  --base-size: 13px;
+}
+[data-text-size="m"] {
+  --base-size: 14px;
+}
+[data-text-size="l"] {
+  --base-size: 15.5px;
+}
+[data-text-size] {
+  font-size: var(--base-size);
+}
+[data-font-body] {
+  font-family: var(--font-body);
+}
+
+/*
+ * Map the tokens into Tailwind. `inline` makes each utility emit
+ * var(--accent) itself rather than a copy of its value, so a `data-theme`
+ * on any ancestor re-colours everything below it.
+ *
+ * (Tailwind v4 has no tailwind.config by default; @theme is the config.)
+ */
+@theme inline {
+  --color-accent: var(--accent);
+  --color-accent-d: var(--accent-d);
+  --color-soft: var(--soft);
+  --color-side: var(--side);
+  --color-page: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-on-accent: var(--on-accent);
+  --color-field: var(--field-line);
+  --color-head: var(--head-bg);
+  --color-track: var(--track);
+  --color-ring: var(--ring);
+
+  --color-side-ink: var(--side-ink);
+  --color-side-muted: var(--side-muted);
+  --color-side-hover: var(--side-hover);
+  --color-side-box: var(--side-box);
+  --color-side-line: var(--side-line);
+  --color-side-meter: var(--side-meter);
+  --color-meter-fill: var(--meter-fill);
+
+  --color-good-bg: var(--good-bg);
+  --color-good-fg: var(--good-fg);
+  --color-good: var(--good);
+  --color-warning-bg: var(--warning-bg);
+  --color-warning-fg: var(--warning-fg);
+  --color-warning: var(--warning);
+  --color-critical-bg: var(--critical-bg);
+  --color-critical-fg: var(--critical-fg);
+  --color-critical: var(--critical);
+  --color-critical-line: var(--critical-line);
+  --color-info-bg: var(--info-bg);
+  --color-info-fg: var(--info-fg);
+  --color-info: var(--info);
+  --color-neutral-bg: var(--neutral-bg);
+  --color-neutral-fg: var(--neutral-fg);
+  --color-neutral: var(--neutral);
+
+  --color-skeleton: var(--skeleton);
+  --color-skeleton-hi: var(--skeleton-hi);
+
+  /*
+   * Type scale in em, so changing --base-size (Appearance > Text size)
+   * rescales everything built from these. DESIGN.md: 12 / 13 / 14 / 16 / 26 /
+   * 28 px at the default 14 px base. The built-in text-sm, text-xs, ... are
+   * rem-based and deliberately untouched, so pages not yet moved over look as
+   * they did.
+   */
+  --text-fine: 0.857em;
+  --text-fine--line-height: 1.4;
+  --text-small: 0.929em;
+  --text-small--line-height: 1.45;
+  --text-section: 1.143em;
+  --text-section--line-height: 1.3;
+  --text-kpi: 1.857em;
+  --text-kpi--line-height: 1.15;
+  --text-display: 2.571em;
+  --text-display--line-height: 1.15;
+  --text-title: 2em;
+  --text-title--line-height: 1.15;
+}
+
+/* font-heading / font-body: the role variables above, as utilities. */
+@utility font-heading {
+  font-family: var(--font-heading);
+}
+@utility font-body {
+  font-family: var(--font-body);
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-ink-50 text-ink-800 antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-500;
+  }
+}
+
+/*
+ * Printing a receipt: drop the dashboard chrome and anything marked
+ * print:hidden, so the sheet that comes out is just the receipt.
+ *
+ * And print it black on white whatever the salon chose in Appearance: every
+ * token that depends on the colour scheme, plus the text and surface colours,
+ * is pinned here. Declared after the [data-theme] blocks above so it wins at
+ * equal specificity.
+ */
+@media print {
+  :root,
+  [data-theme] {
+    --accent: #000000;
+    --accent-d: #000000;
+    --soft: #ffffff;
+    --side: #ffffff;
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --ink: #000000;
+    --muted: #000000;
+    --on-accent: #ffffff;
+  }
+
+  aside,
+  nav {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  body {
+    background: #fff;
+  }
+}

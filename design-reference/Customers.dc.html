@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Customers and profile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+<style>
+body{margin:0;background:#F4F3F6;color:#1C1724;font-family:'Figtree',system-ui,sans-serif;font-size:14px;line-height:1.45}
+*{box-sizing:border-box}
+a{color:#6B2C5C}a:hover{color:#4E1E43}
+.disp{font-family:'Sora',sans-serif}
+.app{display:flex;flex-wrap:wrap;min-height:100vh;width:100%}
+.side{flex:1 1 252px;background:#1C1724;color:#EDE8F0;padding:22px 14px;display:flex;flex-direction:column;gap:22px}
+.main{flex:999 1 560px;min-width:0;display:flex;flex-direction:column}
+.brand{display:flex;gap:12px;align-items:center;padding:0 8px}
+.logo{width:40px;height:40px;border-radius:12px;background:#F3E8F0;color:#5A2350;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:700;font-size:16px;flex:none}
+.bname{font-family:'Sora',sans-serif;font-weight:600;font-size:15px;color:#fff;margin:0}
+.btype{font-size:12px;color:#B7AEC2;margin:0}
+.navg{display:flex;flex-direction:column;gap:2px}
+.navh{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#A79EB3;padding:0 10px;margin:0 0 6px;font-weight:600}
+.nav{display:flex;align-items:center;gap:10px;width:100%;min-height:40px;padding:8px 10px;border-radius:10px;border:0;background:transparent;color:#D9D2E0;font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.nav:hover{background:#2C2436;color:#fff}
+.nav.on{background:#F3E8F0;color:#4E1E43;font-weight:600}
+.ndot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.55;flex:none}
+.user{display:flex;gap:10px;align-items:center;padding:0 6px;margin-top:auto}
+.av{width:36px;height:36px;border-radius:50%;background:#3F6B5C;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none}
+.av.lg{width:64px;height:64px;font-size:22px;background:#6B2C5C}
+.av.md{width:44px;height:44px;font-size:15px;background:#6B2C5C}
+.av.sm{width:32px;height:32px;font-size:12px;background:#8A5A80}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 32px;background:#fff;border-bottom:1px solid #E4E1E8}
+.wrap{padding:26px 32px 56px;width:100%;max-width:1320px}
+.ph{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;margin-bottom:18px}
+.crumb{font-size:13px;color:#6B6475;display:flex;gap:6px;align-items:center;margin-bottom:4px}
+.crumb button{background:none;border:0;padding:0;font:inherit;color:#6B2C5C;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+h1{font-family:'Sora',sans-serif;font-size:28px;margin:0 0 4px;font-weight:600;letter-spacing:-.015em}
+.sub{color:#6B6475;margin:0}
+.tabs{display:flex;gap:2px;border-bottom:1px solid #E1DDE6;overflow-x:auto;margin-bottom:22px}
+.tab{appearance:none;border:0;background:none;font:inherit;font-weight:500;color:#6B6475;padding:12px 14px;min-height:46px;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap;display:flex;gap:8px;align-items:center}
+.tab:hover{color:#1C1724}
+.tab.on{color:#6B2C5C;border-bottom-color:#6B2C5C;font-weight:600}
+.cnt{font-size:11px;font-weight:700;background:#EEECF1;color:#4C4556;border-radius:99px;padding:1px 7px}
+.card{background:#fff;border:1px solid #E4E1E8;border-radius:14px;padding:20px;min-width:0}
+.h3{font-family:'Sora',sans-serif;font-size:16px;font-weight:600;margin:0 0 14px}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:#fff;border:1px solid #E4E1E8;border-radius:14px;padding:14px 16px}
+.kl{font-size:12px;color:#6B6475}
+.kv{font-family:'Sora',sans-serif;font-size:22px;font-weight:600;margin-top:4px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:10px;border:1px solid #6B2C5C;background:#6B2C5C;color:#fff;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn:hover{background:#56224A}
+.btn.ghost{background:#fff;color:#5A2350;border-color:#D8CFDD}
+.btn.ghost:hover{background:#FAF5F9}
+.btn.sm{min-height:36px;padding:0 12px;font-size:13px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.stack{display:flex;flex-direction:column;gap:16px}
+.muted{color:#6B6475}
+.small{font-size:13px}
+.tbox{overflow-x:auto;border:1px solid #E4E1E8;border-radius:14px;background:#fff}
+.tr{display:grid;gap:12px;align-items:center;padding:10px 16px;border-bottom:1px solid #F0EEF2}
+.tr:last-child{border-bottom:0}
+.tr.on{background:#FAF5F9;box-shadow:inset 3px 0 0 #6B2C5C}
+.th{font-size:12px;font-weight:600;color:#6B6475;text-transform:uppercase;letter-spacing:.05em;background:#FAF9FB;padding-top:12px;padding-bottom:12px}
+.lnk{background:none;border:0;padding:0;font:inherit;font-weight:600;color:#1C1724;cursor:pointer;text-align:left;min-height:32px;display:flex;gap:10px;align-items:center}
+.lnk:hover{color:#6B2C5C}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;width:max-content}
+.p-plum{background:#F3E8F0;color:#5A2350}.p-sage{background:#E3F0EB;color:#245647}.p-amber{background:#FBF0DC;color:#7A4710}.p-red{background:#FBE6E4;color:#8E2A25}.p-grey{background:#EEECF1;color:#4C4556}
+.field{display:flex;flex-direction:column;gap:6px}
+label{font-size:13px;font-weight:600}
+input,select,textarea{font:inherit;min-height:44px;padding:10px 12px;border:1px solid #D8D3DE;border-radius:10px;background:#fff;color:#1C1724;width:100%}
+textarea{min-height:92px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid #C48BB4;outline-offset:1px;border-color:#6B2C5C}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.full{grid-column:1/-1}
+.chk{display:flex;gap:10px;align-items:flex-start;font-weight:500;font-size:14px}
+.chk input{width:20px;min-height:20px;height:20px;margin:2px 0 0;accent-color:#6B2C5C;flex:none}
+.li{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid #F0EEF2}
+.li:last-child{border-bottom:0}
+.seg{display:inline-flex;background:#EEECF1;border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;font:inherit;font-weight:600;font-size:13px;color:#4C4556;padding:0 12px;min-height:36px;border-radius:8px;cursor:pointer}
+.seg button.on{background:#fff;color:#5A2350;box-shadow:0 1px 2px rgba(28,23,36,.12)}
+.sk{border-radius:12px;background:linear-gradient(90deg,#ECE9EF 0%,#F6F4F8 50%,#ECE9EF 100%);background-size:200% 100%;animation:sh 1s linear infinite}
+@keyframes sh{from{background-position:200% 0}to{background-position:-200% 0}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.split{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+.splitmain{flex:999 1 600px;min-width:0}
+.panel{flex:1 1 300px;background:#fff;border:1px solid #E4E1E8;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.searchbox{position:relative;flex:1 1 300px;max-width:460px}
+.searchbox input{padding-left:40px}
+.searchbox svg{position:absolute;left:13px;top:14px}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.hero{display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between;background:#fff;border:1px solid #E4E1E8;border-radius:16px;padding:20px;margin-bottom:18px}
+.stat{display:flex;flex-direction:column;gap:2px;padding:0 18px;border-left:1px solid #F0EEF2}
+.stat:first-child{border-left:0;padding-left:0}
+.sig{height:110px;border:1.5px dashed #C9C2D1;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#6B6475;background:#FAF9FB}
+.rec{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;padding:12px;border:1px solid #E4E1E8;border-radius:12px;background:#fff;font:inherit;text-align:left;cursor:pointer;margin-bottom:8px;min-height:56px}
+.rec.on{border-color:#6B2C5C;background:#FAF5F9}
+.vt{display:flex;flex-direction:column}
+.vti{display:flex;gap:14px;padding-bottom:18px}
+.vdot{width:12px;height:12px;border-radius:50%;margin-top:5px;flex:none;background:#2F6F5E}
+.vdot.red{background:#A3312B}
+.note{background:#FBF0DC;color:#6A3D0C;border-radius:12px;padding:12px 14px;font-size:13px}
+.ok{background:#E3F0EB;color:#1E4A3D;border-radius:12px;padding:12px 14px;font-size:13px}
+.meter{height:8px;border-radius:99px;background:#EEECF1;overflow:hidden}
+.meter div{height:100%;background:#2F6F5E;border-radius:99px}
+</style>
+</helmet>
+<div class="app">
+<aside class="side" aria-label="Main navigation">
+<div class="brand"><div class="logo" aria-hidden="true">VR</div><div><p class="bname">Velvet Room Salon</p><p class="btype">Hair &amp; beauty salon</p></div></div>
+<nav class="navg" aria-label="Front desk"><p class="navh">Front desk</p>
+<button class="nav"><span class="ndot"></span>Overview</button>
+<button class="nav"><span class="ndot"></span>Calendar</button>
+<button class="nav on" aria-current="page" onClick="{{goList}}"><span class="ndot"></span>Customers</button>
+<button class="nav"><span class="ndot"></span>Point of sale</button>
+</nav>
+<nav class="navg" aria-label="Business"><p class="navh">Business</p>
+<button class="nav"><span class="ndot"></span>Services &amp; pricing</button>
+<button class="nav"><span class="ndot"></span>Payroll</button>
+<button class="nav"><span class="ndot"></span>Reports</button>
+<button class="nav"><span class="ndot"></span>Team</button>
+<button class="nav"><span class="ndot"></span>Audit log</button>
+<button class="nav"><span class="ndot"></span>Settings</button>
+</nav>
+<nav class="navg" aria-label="You"><p class="navh">You</p>
+<button class="nav"><span class="ndot"></span>My earnings</button>
+<button class="nav"><span class="ndot"></span>My account</button>
+</nav>
+<div class="user"><div class="av" aria-hidden="true">BA</div><div><div style="font-weight: 600; color: #fff">Bilal Ahmed</div><div style="font-size: 12px; color: #B7AEC2">Front desk</div></div></div>
+</aside>
+
+<main class="main">
+<div class="top">
+<span class="muted small">Mon 12 Oct 2026 · 14:05 · Asia/Karachi</span>
+<div class="row"><button class="btn ghost sm" onClick="{{goAdd}}">Add customer</button><button class="btn sm">New booking</button></div>
+</div>
+<div class="wrap">
+
+<sc-if value="{{isList}}" hint-placeholder-val="{{ true }}">
+<div class="ph"><div><h1>Customers</h1><p class="sub">Search, browse and add clients</p></div></div>
+</sc-if>
+<sc-if value="{{isProfile}}" hint-placeholder-val="{{ false }}">
+<div class="crumb"><button onClick="{{goList}}">Customers</button><span aria-hidden="true">/</span><span>{{c.name}}</span></div>
+<div class="hero">
+<div class="row" style="gap: 16px">
+<div class="av lg" aria-hidden="true">{{c.ini}}</div>
+<div><h1 style="margin: 0">{{c.name}}</h1><p class="sub">{{c.phone}} · client since {{c.since}}</p><div class="tags" style="margin-top: 8px"><sc-for list="{{c.tags}}" as="t" hint-placeholder-count="2"><span class="pill p-plum">{{t}}</span></sc-for></div></div>
+</div>
+<div class="row" style="gap: 0">
+<div class="stat"><span class="kl">Visits</span><span class="disp" style="font-size: 20px; font-weight: 600">{{c.visits}}</span></div>
+<div class="stat"><span class="kl">Lifetime spend</span><span class="disp" style="font-size: 20px; font-weight: 600">{{c.spend}}</span></div>
+<div class="stat"><span class="kl">Loyalty balance</span><span class="disp" style="font-size: 20px; font-weight: 600; color: #245647">{{c.pts}}</span></div>
+</div>
+<div class="row"><button class="btn ghost sm">Book</button><button class="btn sm">Start sale</button></div>
+</div>
+</sc-if>
+
+<div class="tabs" role="tablist" aria-label="Sections">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="2"><button role="tab" class="{{t.cls}}" aria-selected="{{t.sel}}" onClick="{{t.go}}">{{t.label}}<sc-if value="{{t.hasCnt}}" hint-placeholder-val="{{ false }}"><span class="cnt">{{t.cnt}}</span></sc-if></button></sc-for>
+</div>
+
+<sc-if value="{{loading}}" hint-placeholder-val="{{ false }}">
+<div class="stack" aria-live="polite"><span class="sr">Loading…</span><div class="sk" style="height: 54px"></div><div class="sk" style="height: 380px"></div></div>
+</sc-if>
+
+<!-- DIRECTORY -->
+<sc-if value="{{t_directory}}" hint-placeholder-val="{{ true }}">
+<div class="kpis">
+<div class="kpi"><div class="kl">Total customers</div><div class="kv">618</div></div>
+<div class="kpi"><div class="kl">New this month</div><div class="kv">37</div></div>
+<div class="kpi"><div class="kl">Visited in last 60 days</div><div class="kv">284</div></div>
+<div class="kpi"><div class="kl">Loyalty credit held</div><div class="kv">$4,912</div></div>
+</div>
+<div class="row between" style="margin-bottom: 14px">
+<div class="searchbox">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6475" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+<label class="sr" for="csearch">Search customers</label>
+<input id="csearch" type="search" placeholder="Search by phone or name — try “Raza” or “0333”" onInput="{{onSearch}}" />
+</div>
+<div class="seg" role="group" aria-label="Show"><sc-for list="{{segs}}" as="g" hint-placeholder-count="3"><button class="{{g.cls}}" onClick="{{g.go}}" aria-pressed="{{g.sel}}">{{g.label}}</button></sc-for></div>
+</div>
+<div class="split">
+<div class="splitmain">
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1.8fr 1.3fr 1fr 0.6fr 0.9fr; min-width: 620px">Name<span>Phone</span><span>Last visit</span><span>Visits</span><span>Loyalty</span></div>
+<sc-for list="{{list}}" as="r" hint-placeholder-count="8">
+<div class="{{r.cls}}" style="grid-template-columns: 1.8fr 1.3fr 1fr 0.6fr 0.9fr; min-width: 620px"><button class="lnk" onClick="{{r.pick}}" aria-pressed="{{r.pressed}}"><span class="av sm" aria-hidden="true">{{r.ini}}</span>{{r.name}}</button><span class="muted">{{r.phone}}</span><span>{{r.last}}</span><span>{{r.visits}}</span><span>{{r.pts}}</span></div>
+</sc-for>
+<sc-if value="{{noResults}}" hint-placeholder-val="{{ false }}"><div class="tr" style="grid-template-columns: 1fr"><span class="muted">No customers match “{{q}}”.</span><button class="btn ghost sm" style="width: max-content" onClick="{{goAdd}}">Add a new customer</button></div></sc-if>
+</div>
+<p class="muted small" style="margin: 10px 0 0">{{countTxt}}</p>
+</div>
+<aside class="panel" aria-label="Customer preview">
+<div class="row" style="gap: 12px"><div class="av md" aria-hidden="true">{{c.ini}}</div><div><div class="disp" style="font-weight: 600; font-size: 17px">{{c.name}}</div><div class="muted small">{{c.phone}}</div></div></div>
+<div class="tags"><sc-for list="{{c.tags}}" as="t" hint-placeholder-count="2"><span class="pill p-plum">{{t}}</span></sc-for></div>
+<div class="li" style="padding-top: 0"><span class="muted">Last visit</span><span>{{c.last}}</span></div>
+<div class="li"><span class="muted">Next booking</span><span>{{c.next}}</span></div>
+<div class="li"><span class="muted">Visits</span><span>{{c.visits}}</span></div>
+<div class="li"><span class="muted">Loyalty</span><strong style="color: #245647">{{c.pts}}</strong></div>
+<div class="li"><span class="muted">Consent on file</span><span>{{c.consent}}</span></div>
+<button class="btn" onClick="{{goProfile}}">Open profile</button>
+<div class="row" style="gap: 8px"><button class="btn ghost sm" style="flex: 1">Book</button><button class="btn ghost sm" style="flex: 1">Start sale</button></div>
+</aside>
+</div>
+</sc-if>
+
+<!-- ADD -->
+<sc-if value="{{t_add}}" hint-placeholder-val="{{ false }}">
+<div class="split">
+<div class="splitmain card">
+<h2 class="h3">New customer</h2>
+<div class="form">
+<div class="field"><label for="nc-f">Full name</label><input id="nc-f" placeholder="Full name" /></div>
+<div class="field"><label for="nc-p">Phone</label><input id="nc-p" type="tel" placeholder="+92 3xx xxxxxxx" /></div>
+<div class="field"><label for="nc-e">Email (optional)</label><input id="nc-e" type="email" placeholder="name@example.com" /></div>
+<div class="field"><label for="nc-b">Birthday (optional)</label><input id="nc-b" type="date" /></div>
+<div class="field full"><label for="nc-n">Notes</label><textarea id="nc-n" placeholder="Preferences, sensitivities, anything the team should know"></textarea></div>
+<label class="chk full"><input type="checkbox" />Customer agrees to receive appointment reminders by SMS</label>
+</div>
+<div class="row" style="margin-top: 18px"><button class="btn">Save customer</button><button class="btn ghost">Save &amp; book appointment</button></div>
+</div>
+<aside class="panel">
+<h2 class="h3" style="margin: 0">Before you add</h2>
+<div class="note">Search by phone first — the same number can't be used for two customers.</div>
+<p class="muted small" style="margin: 0">New customers start with a $0.00 loyalty balance and earn 5% of every receipt.</p>
+</aside>
+</div>
+</sc-if>
+
+<!-- PROFILE -->
+<sc-if value="{{t_profile}}" hint-placeholder-val="{{ false }}">
+<div class="g2">
+<div class="card"><h2 class="h3">Details</h2>
+<div class="form">
+<div class="field"><label for="cp-n">Name</label><input id="cp-n" placeholder="{{c.name}}" /></div>
+<div class="field"><label for="cp-p">Phone</label><input id="cp-p" placeholder="{{c.phone}}" /></div>
+<div class="field"><label for="cp-e">Email</label><input id="cp-e" placeholder="{{c.email}}" /></div>
+<div class="field"><label for="cp-b">Birthday</label><input id="cp-b" type="date" /></div>
+<div class="field full"><label for="cp-no">Notes</label><textarea id="cp-no" placeholder="{{c.notes}}"></textarea></div>
+</div>
+<div class="row" style="margin-top: 14px"><button class="btn">Save details</button></div>
+</div>
+<div class="stack">
+<div class="card"><h2 class="h3">Upcoming</h2><div class="li"><div><strong>{{c.next}}</strong><div class="muted small">{{c.nextSvc}}</div></div><span class="pill p-amber">Confirmed</span></div></div>
+<div class="card"><h2 class="h3">Favourite services</h2>
+<sc-for list="{{favs}}" as="f" hint-placeholder-count="3"><div style="margin-bottom: 12px"><div class="row between small" style="margin-bottom: 4px"><span>{{f.name}}</span><span class="muted">{{f.n}} visits</span></div><div class="meter" aria-hidden="true"><div style="width: {{f.w}}%"></div></div></div></sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{t_loyalty}}" hint-placeholder-val="{{ false }}">
+<div class="kpis"><div class="kpi"><div class="kl">Balance</div><div class="kv" style="color: #245647">{{c.pts}}</div></div><div class="kpi"><div class="kl">Earned (all time)</div><div class="kv">$92.10</div></div><div class="kpi"><div class="kl">Redeemed</div><div class="kv">$79.70</div></div><div class="kpi"><div class="kl">Earn rate</div><div class="kv">5%</div></div></div>
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1fr 2fr 1fr 1fr; min-width: 560px">Date<span>Entry</span><span>Change</span><span>Balance</span></div>
+<sc-for list="{{ledger}}" as="l" hint-placeholder-count="5"><div class="tr" style="grid-template-columns: 1fr 2fr 1fr 1fr; min-width: 560px"><span class="muted">{{l.date}}</span><span>{{l.what}}</span><span class="{{l.pcls}}">{{l.amt}}</span><span>{{l.bal}}</span></div></sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{t_receipts}}" hint-placeholder-val="{{ false }}">
+<div class="tbox">
+<div class="tr th" style="grid-template-columns: 1fr 1fr 2fr 1fr 1fr; min-width: 640px">Receipt<span>Date</span><span>Items</span><span>Total</span><span>Status</span></div>
+<sc-for list="{{receipts}}" as="r" hint-placeholder-count="4"><div class="tr" style="grid-template-columns: 1fr 1fr 2fr 1fr 1fr; min-width: 640px"><a href="#">{{r.no}}</a><span class="muted">{{r.date}}</span><span>{{r.items}}</span><strong>{{r.total}}</strong><span class="{{r.pcls}}">{{r.status}}</span></div></sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{t_visits}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="max-width: 760px">
+<div class="vt">
+<sc-for list="{{visits}}" as="v" hint-placeholder-count="5">
+<div class="vti"><span class="{{v.dot}}" aria-hidden="true"></span><div style="flex: 1"><div class="row between"><strong>{{v.svc}}</strong><span class="{{v.pcls}}">{{v.status}}</span></div><div class="muted small">{{v.date}} · with {{v.staff}} · {{v.amt}}</div></div></div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{t_consent}}" hint-placeholder-val="{{ false }}">
+<div class="split">
+<div style="flex: 1 1 280px; min-width: 0">
+<sc-for list="{{records}}" as="r" hint-placeholder-count="3"><button class="{{r.cls}}" onClick="{{r.pick}}" aria-pressed="{{r.pressed}}"><span><strong>{{r.name}}</strong><br /><span class="muted small">{{r.date}} · {{r.by}}</span></span><span class="pill p-sage">Signed</span></button></sc-for>
+</div>
+<div class="card" style="flex: 999 1 420px">
+<div class="row between"><h2 class="h3" style="margin: 0">{{rec.name}}</h2><span class="muted small">{{rec.ver}}</span></div>
+<div style="margin-top: 12px">
+<sc-for list="{{rec.answers}}" as="a" hint-placeholder-count="3"><div class="li"><span>{{a.q}}</span><strong style="white-space: nowrap">{{a.a}}</strong></div></sc-for>
+<div class="li"><span>Attachments</span><a href="#">{{rec.file}}</a></div>
+</div>
+<p class="small" style="font-weight: 600; margin: 14px 0 6px">Signature</p>
+<div class="sig" style="font-family: 'Sora', sans-serif; font-style: italic; font-size: 26px; color: #1C1724">{{c.sig}}</div>
+<p class="muted small" style="margin: 8px 0 0">Signed {{rec.date}} · witnessed by {{rec.by}}</p>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{t_newconsent}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="max-width: 760px"><h2 class="h3">Collect consent</h2>
+<div class="field" style="margin-bottom: 16px"><label for="ncs-t">Template</label><select id="ncs-t"><option>Chemical peel consent</option><option>Medical intake</option><option>Hair colour patch test</option></select></div>
+<div class="stack" style="gap: 12px">
+<label class="chk"><input type="checkbox" />I have disclosed all medications and skin conditions.</label>
+<label class="chk"><input type="checkbox" />I understand redness may last up to 48 hours.</label>
+<label class="chk"><input type="checkbox" />I agree to follow the aftercare instructions provided.</label>
+<div class="field"><label for="ncs-q">Any recent skin treatments?</label><input id="ncs-q" placeholder="Type the customer's answer" /></div>
+<div class="field"><label for="ncs-f">Attachment (optional)</label><input id="ncs-f" type="file" /></div>
+</div>
+<p class="small" style="font-weight: 600; margin: 16px 0 6px">Customer signature</p>
+<div class="sig">Sign here</div>
+<div class="row" style="margin-top: 16px"><button class="btn">Save consent record</button><button class="btn ghost">Clear signature</button></div>
+</div>
+</sc-if>
+
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { page: 'list', tab: 'directory', loading: false, sel: 'c1', q: '', seg: 'recent', rec: 'r1' };
+  }
+  componentWillUnmount() { clearTimeout(this.tm); }
+  nav(page, tab) {
+    this.setState({ page, tab, loading: true });
+    clearTimeout(this.tm);
+    this.tm = setTimeout(() => this.setState({ loading: false }), 380);
+  }
+  renderVals() {
+    const s = this.state;
+    const v = {};
+    const C = [
+      ['c1', 'Mehwish Raza', '+92 300 1234567', '2 Oct 2026', 23, '$12.40', 'Mar 2025', 'Tue 13 Oct · 11:00', 'Cut & style, blow-dry · Sana', '$1,842', ['Regular', 'Sensitive scalp'], '3 records', 'Mehwish R.', 3],
+      ['c2', 'Rabia Iqbal', '+92 321 5550192', 'Today', 8, '$4.10', 'Jan 2026', 'None booked', '—', '$612', ['Colour client'], '1 record', 'Rabia I.', 0],
+      ['c3', 'Noor Fatima', '+92 333 8881204', '28 Sep 2026', 15, '$9.75', 'Jun 2025', 'Mon 12 Oct · 15:15', 'Hydrating facial · Maria', '$1,210', ['Regular'], '2 records', 'Noor F.', 1],
+      ['c4', 'Amna Tariq', '+92 345 2209981', '19 Sep 2026', 4, '$1.20', 'Aug 2026', 'Mon 12 Oct · 16:00', 'Gel manicure · Zoya', '$168', ['New'], 'None', 'Amna T.', 2],
+      ['c5', 'Hiba Kamal', '+92 301 7712345', 'Today', 11, '$6.55', 'Nov 2025', 'Fri 30 Oct · 10:00', 'Cut · Sana', '$540', ['Regular'], '1 record', 'Hiba K.', 1],
+      ['c6', 'Iqra Javed', '+92 322 4401287', '30 Sep 2026', 6, '$3.00', 'Apr 2026', 'Wed 14 Oct · 10:30', 'Chemical peel · Maria', '$402', ['Skin client'], '2 records', 'Iqra J.', 1],
+      ['c7', 'Sadia Noor', '+92 345 1200987', 'Today', 9, '$7.00', 'Feb 2026', 'None booked', '—', '$1,120', ['Colour client'], '1 record', 'Sadia N.', 0],
+      ['c8', 'Laiba Shah', '+92 311 2233445', '14 Jun 2026', 2, '$0.80', 'May 2026', 'None booked', '—', '$40', ['Lapsed'], 'None', 'Laiba S.', 4],
+      ['c9', 'Kinza Rauf', '+92 300 7765432', '9 Oct 2026', 7, '$2.15', 'Mar 2026', 'Mon 12 Oct · 16:30', 'Toner refresh · Hira', '$330', ['Colour client'], '1 record', 'Kinza R.', 1],
+      ['c10', 'Zara Butt', '+92 333 1029384', '3 Jul 2026', 3, '$1.45', 'Jan 2026', 'None booked', '—', '$190', ['Lapsed'], 'None', 'Zara B.', 4]
+    ].map(([id, name, phone, last, visits, pts, since, next, nextSvc, spend, tags, consent, sig, order]) => ({
+      id, name, phone, last, visits, pts, since, next, nextSvc, spend, tags, consent, sig, order,
+      ini: name.split(' ').map((w) => w[0]).join(''),
+      email: name.split(' ')[0].toLowerCase() + '@example.com',
+      notes: id === 'c1' ? 'Prefers a lighter blow-dry finish. Sensitive scalp.' : 'No notes yet'
+    }));
+    const c = C.find((x) => x.id === s.sel) || C[0];
+    v.c = c;
+    v.isList = s.page === 'list'; v.isProfile = s.page === 'profile'; v.loading = s.loading;
+
+    const LT = [['directory', 'Directory', '618'], ['add', 'Add customer', '']];
+    const PT = [['profile', 'Profile', ''], ['loyalty', 'Loyalty', ''], ['receipts', 'Receipts', '4'], ['visits', 'Visits', String(c.visits)], ['consent', 'Consent records', '3'], ['newconsent', 'New consent', '']];
+    const T = v.isList ? LT : PT;
+    v.tabs = T.map(([id, label, cnt]) => ({ label, cnt, hasCnt: !!cnt, cls: s.tab === id ? 'tab on' : 'tab', sel: s.tab === id ? 'true' : 'false', go: () => { if (s.tab !== id) this.nav(s.page, id); } }));
+    LT.forEach(([id]) => { v['t_' + id] = v.isList && s.tab === id && !s.loading; });
+    PT.forEach(([id]) => { v['t_' + id] = v.isProfile && s.tab === id && !s.loading; });
+
+    v.goList = () => this.nav('list', 'directory');
+    v.goAdd = () => this.nav('list', 'add');
+    v.goProfile = () => this.nav('profile', 'profile');
+    v.onSearch = (e) => this.setState({ q: e.target.value });
+
+    v.segs = [['recent', 'Recent'], ['upcoming', 'Booked ahead'], ['lapsed', 'Lapsed']].map(([id, label]) => ({ label, cls: s.seg === id ? 'on' : '', sel: s.seg === id ? 'true' : 'false', go: () => this.setState({ seg: id }) }));
+    const q = s.q.trim().toLowerCase();
+    const digits = q.replace(/\D/g, '');
+    let rows = C.filter((x) => {
+      if (s.seg === 'upcoming' && x.next === 'None booked') return false;
+      if (s.seg === 'lapsed' && !x.tags.includes('Lapsed')) return false;
+      if (!q) return true;
+      return x.name.toLowerCase().includes(q) || (digits.length > 0 && x.phone.replace(/\D/g, '').includes(digits));
+    });
+    v.list = rows.map((x) => ({ ...x, cls: x.id === s.sel ? 'tr on' : 'tr', pressed: x.id === s.sel ? 'true' : 'false', pick: () => this.setState({ sel: x.id }) }));
+    v.noResults = rows.length === 0;
+    v.q = s.q;
+    v.countTxt = q ? rows.length + ' match' + (rows.length === 1 ? '' : 'es') + ' for “' + s.q + '”' : 'Showing ' + rows.length + ' of 618 customers';
+
+    v.favs = [['Cut & style', 12], ['Blow-dry', 7], ['Chemical peel', 3]].map(([name, n]) => ({ name, n, w: Math.round(n / 12 * 100) }));
+    v.ledger = [
+      ['12 Oct 2026', 'Earned on receipt #R-1048', '+$2.90', c.pts, 'pill p-sage'], ['12 Oct 2026', 'Redeemed on receipt #R-1048', '−$5.00', '$9.50', 'pill p-plum'],
+      ['2 Oct 2026', 'Earned on receipt #R-1011', '+$3.20', '$14.50', 'pill p-sage'], ['18 Sep 2026', 'Earned on receipt #R-0974', '+$4.75', '$11.30', 'pill p-sage'], ['1 Sep 2026', 'Earned on receipt #R-0921', '+$2.25', '$6.55', 'pill p-sage']
+    ].map(([date, what, amt, bal, pcls]) => ({ date, what, amt, bal, pcls }));
+    v.receipts = [
+      ['#R-1048', '12 Oct 2026', 'Cut & style, blow-dry', '$58.00', 'Issued'], ['#R-1011', '2 Oct 2026', 'Chemical peel', '$64.00', 'Issued'],
+      ['#R-0974', '18 Sep 2026', 'Full colour', '$95.00', 'Issued'], ['#R-0950', '10 Sep 2026', 'Blow-dry', '$25.00', 'Voided']
+    ].map(([no, date, items, total, status]) => ({ no, date, items, total, status, pcls: status === 'Issued' ? 'pill p-sage' : 'pill p-red' }));
+    v.visits = [
+      ['12 Oct 2026', 'Cut & style, blow-dry', 'Sana', 'Completed', '$58.00'], ['2 Oct 2026', 'Chemical peel', 'Hira', 'Completed', '$64.00'],
+      ['18 Sep 2026', 'Full colour', 'Hira', 'Completed', '$95.00'], ['26 Aug 2026', 'Cut & style', 'Sana', 'No-show', '—'], ['12 Aug 2026', 'Cut & style', 'Sana', 'Completed', '$45.00']
+    ].map(([date, svc, staff, status, amt]) => ({ date, svc, staff, status, amt, dot: status === 'No-show' ? 'vdot red' : 'vdot', pcls: status === 'No-show' ? 'pill p-red' : 'pill p-sage' }));
+    const R = [
+      { id: 'r1', name: 'Chemical peel consent', date: '2 Oct 2026', by: 'Hira', ver: 'Template v3', file: 'skin-photo-before.jpg', answers: [['Disclosed all medications and skin conditions', 'Agreed'], ['Redness may last up to 48 hours', 'Agreed'], ['Pregnant or breastfeeding?', 'No']] },
+      { id: 'r2', name: 'Medical intake', date: '14 Mar 2025', by: 'Ayesha', ver: 'Template v2', file: 'intake-scan.pdf', answers: [['Current medications', 'None'], ['Known allergies', 'None reported'], ['Skin conditions', 'Sensitive scalp']] },
+      { id: 'r3', name: 'Hair colour patch test', date: '2 Mar 2025', by: 'Sana', ver: 'Template v1', file: 'patch-test.jpg', answers: [['Patch test 48h before service', 'Done'], ['Reaction observed', 'None']] }
+    ];
+    v.records = R.map((r) => ({ ...r, cls: r.id === s.rec ? 'rec on' : 'rec', pressed: r.id === s.rec ? 'true' : 'false', pick: () => this.setState({ rec: r.id }) }));
+    const rec = R.find((r) => r.id === s.rec) || R[0];
+    v.rec = { ...rec, answers: rec.answers.map(([q2, a]) => ({ q: q2, a })) };
+    return v;
+  }
+}
+</script>
+</body>
+</html>
