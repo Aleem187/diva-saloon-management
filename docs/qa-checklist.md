@@ -73,6 +73,14 @@ Also, for every page:
 - [ ] No page scrolls sideways at 390 px. Wide tables scroll inside their own container.
 - [ ] Every icon-only button has a tooltip or label read by a screen reader (automated check found none missing).
 
+## 1a. Password reset (signed out)
+
+- [ ] `/login`: "Forgot password?" sits at the right of the Password label, and tabbing and sign-in still work.
+- [ ] `/forgot-password`: a real and an unknown email show the same "Check your email" message; a malformed email shows a field error.
+- [ ] The emailed link opens `/auth/callback`, then `/reset-password` with "Signed in as …". Set a new password, land on the dashboard, sign out, sign in with the new one.
+- [ ] Reusing the link, or opening `/reset-password` signed out, shows "This reset link is no longer valid".
+- [ ] Supabase Auth › URL configuration lists `<site>/auth/callback` as an allowed redirect URL.
+
 ## 2. Role-specific spot checks
 
 **Owner**

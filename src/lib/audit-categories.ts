@@ -88,7 +88,7 @@ export function actionLabel(action: string): string {
 export const AUDIT_CATEGORIES = [
   { id: "sales", label: "Sales & payments" },
   { id: "payroll", label: "Payroll" },
-  { id: "calendar", label: "Calendar" },
+  { id: "calendar", label: "Appointments" },
   { id: "customers", label: "Customers & consent" },
   { id: "services", label: "Services" },
   { id: "team", label: "Team & access" },

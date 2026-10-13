@@ -18,14 +18,19 @@ import { supabasePublishableKey, supabaseUrl } from "@/lib/env";
  */
 
 /** Routes reachable without a session. */
-const PUBLIC_PATHS = ["/login", "/signup", "/forgot-password", "/reset-password"];
+const PUBLIC_PATHS = ["/login", "/signup", "/forgot-password"];
 
 /**
  * Auth plumbing that must stay reachable in both states, and the Stripe webhook:
  * Stripe has no session, and the route authenticates by verifying the request's
  * signature instead.
+ *
+ * `/reset-password` is here, not in PUBLIC_PATHS, because a recovery link signs
+ * the person in BEFORE sending them there: a signed-out-only route would bounce
+ * them to the dashboard and they could never set the new password. The page
+ * itself says "link expired" when there is no session.
  */
-const ALWAYS_ALLOWED_PREFIXES = ["/auth/", "/api/stripe/webhook"];
+const ALWAYS_ALLOWED_PREFIXES = ["/auth/", "/api/stripe/webhook", "/reset-password"];
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));

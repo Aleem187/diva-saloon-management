@@ -5,7 +5,14 @@ import { revalidatePath } from "next/cache";
 
 import { siteUrl } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
-import { fieldErrors, setPasswordSchema, signInSchema, signUpSchema } from "@/lib/validation";
+import {
+  fieldErrors,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  setPasswordSchema,
+  signInSchema,
+  signUpSchema,
+} from "@/lib/validation";
 import { submittedValues } from "@/lib/form-values";
 
 export interface FormState {
@@ -21,6 +28,8 @@ export interface FormState {
   values?: Record<string, string>;
   /** Set when signup succeeded but the account still needs email confirmation. */
   pendingConfirmation?: string;
+  /** Set when a password-reset request was accepted (whether or not the account exists). */
+  resetRequested?: string;
 }
 
 /**
@@ -170,6 +179,81 @@ export async function acceptInviteAction(
 
   if (profileError) {
     return { message: profileError.message };
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/dashboard");
+}
+
+/**
+ * Ask for a password-reset email.
+ *
+ * The answer is the same whether or not the address belongs to an account, so
+ * this form cannot be used to find out who has one -- the same reasoning as the
+ * deliberately vague sign-in error. Only a failure to SEND (rate limit, mail
+ * outage) says anything different, and that reveals nothing about the account.
+ *
+ * The link lands on /auth/callback, which handles every shape of emailed token
+ * (fragment, code, token hash) and then moves on to `next`.
+ */
+export async function forgotPasswordAction(
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const parsed = forgotPasswordSchema.safeParse({ email: formData.get("email") });
+
+  if (!parsed.success) {
+    return { errors: fieldErrors(parsed.error), values: submittedValues(formData) };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: `${siteUrl()}/auth/callback?next=${encodeURIComponent("/reset-password")}`,
+  });
+
+  if (error) {
+    return {
+      message: "We could not send the email just now. Please try again in a few minutes.",
+      values: submittedValues(formData),
+    };
+  }
+
+  return { resetRequested: parsed.data.email };
+}
+
+/**
+ * Set a new password for the person the emailed link signed in.
+ *
+ * The recovery link has already created a session by the time they get here;
+ * without one there is nothing to change, so the action refuses rather than
+ * trusting the form. Nobody's password is changed except the signed-in user's.
+ */
+export async function resetPasswordAction(
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const parsed = resetPasswordSchema.safeParse({
+    password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
+  });
+
+  if (!parsed.success) {
+    return { errors: fieldErrors(parsed.error) };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { message: "This reset link has expired. Request a new one from the sign-in page." };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
+
+  if (error) {
+    return { message: error.message };
   }
 
   revalidatePath("/", "layout");

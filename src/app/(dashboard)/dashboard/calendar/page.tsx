@@ -15,7 +15,7 @@ import { requireSession } from "@/lib/auth/session";
 import { resolveTabs, type TabDefinition } from "@/lib/tabs";
 import { formatDayLabel, formatLongDayLabel } from "@/lib/time";
 
-export const metadata: Metadata = { title: "Calendar" };
+export const metadata: Metadata = { title: "Appointments" };
 
 /*
  * Booking is the front desk's (the legacy test the page has always used; the
@@ -24,7 +24,7 @@ export const metadata: Metadata = { title: "Calendar" };
 const TABS: TabDefinition[] = [
   { id: "day", label: "Day" },
   { id: "week", label: "Week" },
-  { id: "agenda", label: "Agenda" },
+  { id: "agenda", label: "Bookings" },
   { id: "book", label: "New booking", visibleFor: isFrontDeskSession },
 ];
 
@@ -49,7 +49,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/dashboa
 
   return (
     <>
-      <PageHeader title="Calendar" subtitle={subtitle} />
+      <PageHeader title="Appointments" subtitle={subtitle} />
 
       <PageFlash />
 

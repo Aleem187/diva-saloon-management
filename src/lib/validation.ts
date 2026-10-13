@@ -95,6 +95,18 @@ export const setPasswordSchema = z
     path: ["confirmPassword"],
   });
 
+export const forgotPasswordSchema = z.object({ email });
+
+export const resetPasswordSchema = z
+  .object({
+    password,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
 const timeOfDay = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Use HH:MM");
 
 const businessHoursDay = z.object({

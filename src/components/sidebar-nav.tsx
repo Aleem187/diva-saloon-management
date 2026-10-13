@@ -28,7 +28,7 @@ const NAV: NavGroup[] = [
     name: "Front desk",
     items: [
       { href: "/dashboard", label: "Overview" },
-      { href: "/dashboard/calendar", label: "Calendar" },
+      { href: "/dashboard/calendar", label: "Appointments" },
       { href: "/dashboard/customers", label: "Customers", module: "customers" },
       { href: "/dashboard/pos", label: "Point of sale", module: "pos" },
     ],

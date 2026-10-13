@@ -60,19 +60,36 @@ export function Field({
   error,
   required,
   requiredMark = true,
+  labelAction,
   className,
   children,
-}: FieldChrome & { htmlFor: string; children: ReactNode }) {
+}: FieldChrome & {
+  htmlFor: string;
+  children: ReactNode;
+  /** A link or button on the right of the label row, e.g. "Forgot password?". */
+  labelAction?: ReactNode;
+}) {
+  const labelElement = (
+    <label htmlFor={htmlFor} className="text-small font-semibold text-ink">
+      {label}
+      {required && requiredMark ? (
+        <span aria-hidden className="ml-0.5 text-critical">
+          *
+        </span>
+      ) : null}
+    </label>
+  );
+
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
-      <label htmlFor={htmlFor} className="text-small font-semibold text-ink">
-        {label}
-        {required && requiredMark ? (
-          <span aria-hidden className="ml-0.5 text-critical">
-            *
-          </span>
-        ) : null}
-      </label>
+      {labelAction ? (
+        <div className="flex items-baseline justify-between gap-3">
+          {labelElement}
+          {labelAction}
+        </div>
+      ) : (
+        labelElement
+      )}
       {children}
       {error ? (
         <p id={`${htmlFor}-error`} role="alert" className="text-fine text-critical-fg">
@@ -107,13 +124,14 @@ export function TextField({
   error,
   required,
   requiredMark,
+  labelAction,
   className,
   id,
   ...props
-}: FieldChrome & Omit<ComponentProps<"input">, "className">) {
+}: FieldChrome & { labelAction?: ReactNode } & Omit<ComponentProps<"input">, "className">) {
   const { fieldId, control } = useWiring(id, hint, error);
   return (
-    <Field label={label} htmlFor={fieldId} hint={hint} error={error} required={required} requiredMark={requiredMark} className={className}>
+    <Field label={label} htmlFor={fieldId} hint={hint} error={error} required={required} requiredMark={requiredMark} labelAction={labelAction} className={className}>
       <Input required={required} {...control} {...props} />
     </Field>
   );

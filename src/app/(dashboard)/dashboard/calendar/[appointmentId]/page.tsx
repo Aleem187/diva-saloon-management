@@ -101,7 +101,7 @@ export default async function AppointmentPage({
     <>
       <PageHeader
         breadcrumb={[
-          { label: "Calendar", href: `/dashboard/calendar?tab=day&date=${localDate}` },
+          { label: "Appointments", href: `/dashboard/calendar?tab=day&date=${localDate}` },
           { label: "Appointment" },
         ]}
         title={`${localStart}–${localEnd}`}

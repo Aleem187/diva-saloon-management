@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 
 import { signInAction, type FormState } from "../actions";
@@ -30,6 +31,11 @@ export function LoginForm({ next }: { next?: string }) {
 
       <TextField
         label="Password"
+        labelAction={
+          <Link href="/forgot-password" className="text-small font-semibold text-accent hover:underline">
+            Forgot password?
+          </Link>
+        }
         id="password"
         name="password"
         type="password"
