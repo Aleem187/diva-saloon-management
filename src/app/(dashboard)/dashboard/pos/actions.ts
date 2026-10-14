@@ -70,6 +70,9 @@ export async function checkoutAction(
     cardAmount: formData.get("cardAmount") || 0,
     transferAmount: formData.get("transferAmount") || 0,
     loyaltyRedeem: formData.get("loyaltyRedeem") || 0,
+    manualDiscountType: formData.get("manualDiscountType") ?? "",
+    manualDiscountValue: formData.get("manualDiscountValue") || 0,
+    manualDiscountReason: formData.get("manualDiscountReason") ?? "",
     notes: formData.get("notes") ?? "",
     appointmentId: formData.get("appointmentId") || null,
     lines,
@@ -102,6 +105,20 @@ export async function checkoutAction(
     // Linking the sale to the visit is what nets off any deposit already taken
     // and lets the completed appointment show its bill.
     p_appointment_id: input.appointmentId || null,
+    /*
+     * A discount is a kind, a figure and a reason; the amount is worked out in
+     * Postgres. The three are sent only when there IS a discount, so an
+     * ordinary sale calls create_receipt() exactly as it always has -- which
+     * also means a sale with no discount keeps working on a database that has
+     * not had the discount migration applied yet.
+     */
+    ...(input.manualDiscountType
+      ? {
+          p_manual_discount_type: input.manualDiscountType,
+          p_manual_discount_value: input.manualDiscountValue,
+          p_manual_discount_reason: input.manualDiscountReason,
+        }
+      : {}),
   });
 
   if (error) {

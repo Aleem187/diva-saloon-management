@@ -967,6 +967,41 @@ async function main() {
     `rendered ${countRows(unfiltered.body)} of ${allRows.length}`,
   );
 
+  // The page covers the last 14 days only. An older entry exists in the log but
+  // is never shown, and a From earlier than the window cannot reach past it.
+  const twentyDaysAgo = new Date(Date.now() - 20 * 86400000);
+  const { error: oldInsertError } = await admin.from("audit_logs").insert({
+    salon_id: SALON_ID,
+    action: "salon.settings_changed",
+    entity_type: "salon",
+    metadata: { probe: "older than the 14-day window" },
+    created_at: twentyDaysAgo.toISOString(),
+  });
+  check("an entry from 20 days ago can be seeded", !oldInsertError, oldInsertError?.message);
+  const inWindow = Math.min(allRows.length, 50);
+  const afterOld = await get(owner, "/dashboard/audit");
+  check(
+    "an entry from 20 days ago is not shown",
+    countRows(afterOld.body) === inWindow,
+    `rendered ${countRows(afterOld.body)}, expected ${inWindow}`,
+  );
+  const reachBack = await get(owner, `/dashboard/audit?from=${twentyDaysAgo.toISOString().slice(0, 10)}`);
+  check(
+    "and a From before the window does not reach it",
+    countRows(reachBack.body) === inWindow,
+    `rendered ${countRows(reachBack.body)}, expected ${inWindow}`,
+  );
+  // Each entry renders its own <time dateTime="...">, so the old one is easy to look for.
+  const oldStamp = `dateTime="${twentyDaysAgo.toISOString().slice(0, 10)}`;
+  check("the old entry is absent from All activity", !afterOld.body.includes(oldStamp));
+  const sensitiveOld = await get(owner, "/dashboard/audit?tab=sensitive");
+  check(
+    "and from Sensitive actions, which keeps to the same window",
+    sensitiveOld.status === 200 && !sensitiveOld.body.includes(oldStamp),
+  );
+  const peopleOld = await get(owner, "/dashboard/audit?tab=people");
+  check("and By person still renders", peopleOld.status === 200);
+
 /* ================================================================ */
   console.log("\nThe log cannot be rewritten\n");
 

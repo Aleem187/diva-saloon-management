@@ -1,10 +1,24 @@
 import "server-only";
 
 import { cache } from "react";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import {
+  claimTeamSession,
+  TEAM_SESSION_COOKIE,
+  teamEndedHref,
+  type TeamEndedReason,
+} from "@/lib/auth/team-login";
 import { createClient } from "@/lib/supabase/server";
-import type { AppModule, ProfileRow, RoleRow, SalonRow, UserRole } from "@/lib/types/database";
+import type {
+  AppModule,
+  ProfileRow,
+  RoleRow,
+  SalonRow,
+  TeamLoginRow,
+  UserRole,
+} from "@/lib/types/database";
 
 export interface SessionContext {
   userId: string;
@@ -26,6 +40,8 @@ export interface SessionContext {
   modules: Set<AppModule>;
   /** Owner of this salon: holds everything, and cannot be assigned. */
   isOwner: boolean;
+  /** Set when this login is the salon's shared team login (its sessions are capped). */
+  teamLogin: TeamLoginRow | null;
 }
 
 /** Every module, for the owner -- who holds all of them by definition. */
@@ -70,13 +86,34 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
   // No profile, or a deactivated one: no tenant, therefore no access.
   if (!profile || !profile.is_active) return null;
 
-  const { data: salon } = await supabase
-    .from("salons")
-    .select("*")
-    .eq("id", profile.salon_id)
-    .maybeSingle();
+  // Read alongside the salon: whether this is the shared login decides below
+  // whether the session is checked against its device limit.
+  const [{ data: salon }, { data: teamLogin }] = await Promise.all([
+    supabase.from("salons").select("*").eq("id", profile.salon_id).maybeSingle(),
+    supabase.from("team_logins").select("*").eq("profile_id", user.id).maybeSingle(),
+  ]);
 
   if (!salon) return null;
+
+  /*
+   * The shared team login may be signed in on a limited number of devices at
+   * once. Every dashboard render and Server Action passes through here, so this
+   * is where a device over the limit, or one the owner has signed out, is
+   * stopped. It is sent to a handler that signs it out first -- a plain
+   * redirect to /login would be bounced straight back by the proxy, because the
+   * session is still live. A missing cookie counts as ended: the only way to
+   * hold one is to have signed in through the sign-in form.
+   */
+  if (teamLogin) {
+    const key = (await cookies()).get(TEAM_SESSION_COOKIE)?.value;
+    let outcome: "ok" | TeamEndedReason = "missing";
+    if (key) {
+      const userAgent = (await headers()).get("user-agent") ?? "";
+      const claimed = await claimTeamSession(supabase, key, userAgent);
+      outcome = claimed === "ok" || claimed === "not_team" ? "ok" : claimed;
+    }
+    if (outcome !== "ok") redirect(teamEndedHref(outcome));
+  }
 
   /*
    * The role and its modules, read once per request.
@@ -108,6 +145,7 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
     role: (role as RoleRow | null) ?? null,
     modules,
     isOwner,
+    teamLogin: (teamLogin as TeamLoginRow | null) ?? null,
   };
 });
 

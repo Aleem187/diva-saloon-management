@@ -17,6 +17,15 @@ import type { DealRow, ServiceRow } from "@/lib/types/database";
 
 type PayMethod = "cash" | "card" | "bank_transfer" | "split";
 
+/** A discretionary discount at the till: nothing, a percentage, or a fixed amount. */
+type DiscountKind = "" | "percentage" | "fixed_amount";
+
+const DISCOUNT_KINDS: { value: DiscountKind; label: string }[] = [
+  { value: "", label: "None" },
+  { value: "percentage", label: "Percent %" },
+  { value: "fixed_amount", label: "Amount" },
+];
+
 const PAY_METHODS: { value: PayMethod; label: string }[] = [
   { value: "cash", label: "Cash" },
   { value: "card", label: "Card" },
@@ -98,6 +107,11 @@ export function Till({
     }));
   });
   const [dealId, setDealId] = useState(was("dealId"));
+  const [discountKind, setDiscountKind] = useState<DiscountKind>(
+    (DISCOUNT_KINDS.find((k) => k.value === was("manualDiscountType"))?.value ?? "") as DiscountKind,
+  );
+  const [discountValue, setDiscountValue] = useState(was("manualDiscountValue"));
+  const [discountReason, setDiscountReason] = useState(was("manualDiscountReason"));
   const [redeem, setRedeem] = useState(was("loyaltyRedeem", "0"));
   const [paymentMethod, setPaymentMethod] = useState<PayMethod>(
     (PAY_METHODS.find((m) => m.value === was("paymentMethod"))?.value ?? "cash") as PayMethod,
@@ -189,7 +203,17 @@ export function Till({
     }
   }
 
-  const bill = Math.max(0, Math.round((gross - discount) * 100) / 100);
+  // A discount at the till comes off what is left after the deal. It is capped
+  // at that, as the server refuses more; the loyalty maximum below follows it.
+  const afterDeal = Math.max(0, Math.round((gross - discount) * 100) / 100);
+  const discountInput = Math.max(0, Number(discountValue) || 0);
+  const manualDiscount =
+    discountKind === "percentage"
+      ? Math.round(afterDeal * Math.min(discountInput, 100)) / 100
+      : discountKind === "fixed_amount"
+        ? Math.min(discountInput, afterDeal)
+        : 0;
+  const bill = Math.max(0, Math.round((afterDeal - manualDiscount) * 100) / 100);
   const maxRedeem = Math.min(balance, bill);
   const redeemValue = Math.min(Math.max(Number(redeem) || 0, 0), maxRedeem);
   const total = Math.round((bill - redeemValue) * 100) / 100;
@@ -227,6 +251,7 @@ export function Till({
       <input type="hidden" name="lines" value={linesJson} />
       <input type="hidden" name="loyaltyRedeem" value={redeemValue} />
       <input type="hidden" name="paymentMethod" value={paymentMethod} />
+      <input type="hidden" name="manualDiscountType" value={discountKind} />
       {/*
         The customer stays editable -- the wrong booking can be opened, and a
         locked field would leave no way out. But changing it away from the
@@ -380,6 +405,60 @@ export function Till({
           </Select>
         </Field>
 
+        <div>
+          <p className="mb-1.5 text-small font-semibold">Discount</p>
+          <SegmentedControl
+            aria-label="Discount type"
+            fullWidth
+            options={DISCOUNT_KINDS}
+            value={discountKind}
+            onValueChange={setDiscountKind}
+          />
+        </div>
+
+        {discountKind ? (
+          <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(140px,1fr))]">
+            <Field
+              label={discountKind === "percentage" ? "Percent off" : `Amount off (${currency})`}
+              htmlFor="pos-discount-value"
+              error={state.errors?.manualDiscountValue}
+              hint={
+                discountKind === "percentage"
+                  ? "0 to 100, taken off after any deal."
+                  : `Up to ${formatMoney(afterDeal, currency)}, after any deal.`
+              }
+            >
+              <Input
+                id="pos-discount-value"
+                name="manualDiscountValue"
+                type="number"
+                step="0.01"
+                min="0"
+                max={discountKind === "percentage" ? 100 : afterDeal}
+                value={discountValue}
+                onChange={(event) => setDiscountValue(event.target.value)}
+                required
+              />
+            </Field>
+            <Field
+              label="Reason"
+              htmlFor="pos-discount-reason"
+              error={state.errors?.manualDiscountReason}
+              hint="Kept on the receipt and in the audit log."
+            >
+              <Input
+                id="pos-discount-reason"
+                name="manualDiscountReason"
+                maxLength={200}
+                value={discountReason}
+                onChange={(event) => setDiscountReason(event.target.value)}
+                placeholder="e.g. Regular customer"
+                required
+              />
+            </Field>
+          </div>
+        ) : null}
+
         <Field
           label="Redeem loyalty"
           htmlFor="pos-redeem"
@@ -411,6 +490,16 @@ export function Till({
           <Row label="Subtotal" value={formatMoney(gross, currency)} />
           {discount > 0 ? (
             <Row label={`Deal (${deal?.name})`} value={`− ${formatMoney(discount, currency)}`} />
+          ) : null}
+          {manualDiscount > 0 ? (
+            <Row
+              label={
+                discountKind === "percentage"
+                  ? `Discount (${discountInput}%)`
+                  : "Discount"
+              }
+              value={`− ${formatMoney(manualDiscount, currency)}`}
+            />
           ) : null}
           {redeemValue > 0 ? (
             <Row label="Loyalty redeemed" value={`− ${formatMoney(redeemValue, currency)}`} />

@@ -81,6 +81,10 @@ Also, for every page:
 - [ ] Reusing the link, or opening `/reset-password` signed out, shows "This reset link is no longer valid".
 - [ ] Supabase Auth › URL configuration lists `<site>/auth/callback` as an allowed redirect URL.
 
+## 1b. Team login
+
+- [ ] Follow the checks in `docs/team-login.md` (three devices in, fourth refused, owner sign-out, password change, no owner-only access).
+
 ## 2. Role-specific spot checks
 
 **Owner**
@@ -117,6 +121,8 @@ For each sale, afterwards check **Receipts**, the **customer's Loyalty tab**, th
 11. [ ] **Refund / record payment** on an appointment from Calendar › Payments; Payment history on the receipt shows both.
 12. [ ] **Print** the receipt: black on white in all six schemes, no sidebar or buttons, readable at A4 and 80 mm.
 13. [ ] **Two tills at once**: two browsers book the same slot; exactly one succeeds.
+14. [ ] **Discount at the till** (needs migration 20261014000042): Percent 10 on a 100 sale gives a total of 90 and the Current sale panel updates as you type; Amount 15 gives 85; a deal plus a percentage takes the percentage off what the deal left. A reason is required. Over 100 %, more than the bill, zero and a blank reason are refused. The receipt shows "Includes a 10% discount" with the reason on screen but not in the print preview. Payroll commission for the sale uses the discounted line totals. The Audit log shows "Discount given at the till" (marked Sensitive) with the reason, and "Receipt issued" still appears.
+15. [ ] **Taxes and fees**: there are none in the product. Totals are the bill less discounts and loyalty.
 
 ## 4. Accessibility spot checks
 

@@ -7,6 +7,31 @@ import { createClient } from "@/lib/supabase/server";
 import { addDays, endOfMonth, salonTimeToInstant, salonToday, startOfMonth } from "@/lib/time";
 import type { PayrollEntryRow, StaffCompensationRow } from "@/lib/types/database";
 
+/** PostgREST returns at most this many rows per request, silently. */
+const PAGE = 1000;
+
+/**
+ * Every row of a query, a page at a time. A bare select stops at the server's
+ * row cap without saying so, which for a count would be a quietly wrong number.
+ */
+async function fetchAll<T>(
+  page: (from: number, to: number) => PromiseLike<{ data: T[] | null }>,
+): Promise<T[]> {
+  const rows: T[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data } = await page(from, from + PAGE - 1);
+    rows.push(...(data ?? []));
+    if (!data || data.length < PAGE) return rows;
+  }
+}
+
+/** Money summed in whole cents, so ten 0.10s add up to 1.00 and not 0.9999999999999999. */
+const sumMoney = (values: Iterable<number | string>): number => {
+  let cents = 0;
+  for (const v of values) cents += Math.round(Number(v) * 100);
+  return cents / 100;
+};
+
 /** My earnings › Summary: what has been paid, what is pending, and how you are paid. */
 export async function SummaryTab() {
   const session = await requireRole("staff", "owner");
@@ -23,7 +48,7 @@ export async function SummaryTab() {
   const monthStartsAt = salonTimeToInstant(startOfMonth(today), "00:00", timeZone).toISOString();
   const monthEndsAt = salonTimeToInstant(addDays(endOfMonth(today), 1), "00:00", timeZone).toISOString();
 
-  const [{ data: compensation }, { data: entries }, { data: monthLines }] = rosterId
+  const [{ data: compensation }, { data: entries }, monthLines, voidedIds] = rosterId
     ? await Promise.all([
         supabase.from("staff_compensation").select("*").eq("staff_id", rosterId).maybeSingle(),
         supabase
@@ -31,29 +56,51 @@ export async function SummaryTab() {
           .select("*")
           .eq("staff_id", rosterId)
           .order("period_starts_on", { ascending: false }),
-        supabase
-          .from("receipt_line_items")
-          .select("quantity")
-          .eq("staff_id", rosterId)
-          .gte("performed_at", monthStartsAt)
-          .lt("performed_at", monthEndsAt),
+        fetchAll<{ receipt_id: string; quantity: number }>((from, to) =>
+          supabase
+            .from("receipt_line_items")
+            .select("receipt_id, quantity")
+            .eq("staff_id", rosterId)
+            .gte("performed_at", monthStartsAt)
+            .lt("performed_at", monthEndsAt)
+            .order("performed_at")
+            .range(from, to),
+        ),
+        /*
+         * A therapist cannot read the receipt header, so cannot tell which of
+         * their lines belong to a voided sale. Someone who can take payment can,
+         * and payroll leaves voided sales out, so for them the count does too. A
+         * line is stamped with its receipt's own time, so the month's voided
+         * receipts are found by the same range.
+         */
+        session.modules.has("pos")
+          ? fetchAll<{ id: string }>((from, to) =>
+              supabase
+                .from("receipts")
+                .select("id")
+                .eq("status", "voided")
+                .gte("created_at", monthStartsAt)
+                .lt("created_at", monthEndsAt)
+                .order("created_at")
+                .range(from, to),
+            ).then((rows) => new Set(rows.map((r) => r.id)))
+          : Promise.resolve(null),
       ])
-    : [{ data: null }, { data: [] }, { data: [] }];
+    : [{ data: null }, { data: [] }, [], null];
 
   const payrollEntries = (entries ?? []) as PayrollEntryRow[];
   const drafts = payrollEntries.filter((e) => e.status === "draft");
 
   // Sums of amounts the server already computed and stored per period.
-  const paidToDate = payrollEntries
-    .filter((e) => e.status === "paid")
-    .reduce((sum, e) => sum + Number(e.commission_amount), 0);
-  const pending = drafts.reduce((sum, e) => sum + Number(e.commission_amount), 0);
+  const paidToDate = sumMoney(
+    payrollEntries.filter((e) => e.status === "paid").map((e) => e.commission_amount),
+  );
+  const pending = sumMoney(drafts.map((e) => e.commission_amount));
 
   // A count of services, in the unit payroll uses (the quantity on each line).
-  const servicesThisMonth = ((monthLines ?? []) as { quantity: number }[]).reduce(
-    (sum, line) => sum + Number(line.quantity),
-    0,
-  );
+  const servicesThisMonth = monthLines
+    .filter((line) => !voidedIds?.has(line.receipt_id))
+    .reduce((sum, line) => sum + Number(line.quantity), 0);
 
   const arrangement = describeArrangement(
     (compensation as StaffCompensationRow | null) ?? null,
@@ -82,7 +129,11 @@ export async function SummaryTab() {
         <StatTile
           label="Services this month"
           value={String(servicesThisMonth)}
-          hint="Sales that are later voided are counted until payroll runs"
+          hint={
+            voidedIds
+              ? "Voided sales are not counted"
+              : "Sales that are later voided are counted until payroll runs"
+          }
         />
       </div>
 

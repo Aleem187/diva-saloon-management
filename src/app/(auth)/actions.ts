@@ -1,8 +1,18 @@
 "use server";
 
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
+import { AUDIT_ACTIONS } from "@/lib/audit";
+import {
+  claimTeamSession,
+  isTeamLoginUser,
+  newSessionKey,
+  TEAM_COOKIE_OPTIONS,
+  TEAM_ENDED_MESSAGES,
+  TEAM_SESSION_COOKIE,
+} from "@/lib/auth/team-login";
 import { siteUrl } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -108,11 +118,52 @@ export async function signInAction(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data: signedIn, error } = await supabase.auth.signInWithPassword(parsed.data);
 
-  if (error) {
+  if (error || !signedIn.user) {
     // Deliberately vague: do not confirm whether an email exists.
     return { message: "Incorrect email or password." };
+  }
+
+  /*
+   * The shared team login may be open on a limited number of devices at once.
+   * Taking a place happens here, at sign-in, because only here can the device's
+   * key cookie be set; every later request just re-checks it. The password was
+   * right, so telling this person the limit is reached leaks nothing.
+   */
+  if (await isTeamLoginUser(supabase, signedIn.user.id)) {
+    const key = newSessionKey();
+    const userAgent = (await headers()).get("user-agent") ?? "";
+    const outcome = await claimTeamSession(supabase, key, userAgent);
+
+    if (outcome !== "ok") {
+      // Leave a trace for the owner, while the refused device still has the
+      // access to write one. (Written as the team login itself: the policy only
+      // lets an actor record entries as themselves.)
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("salon_id, role")
+        .eq("id", signedIn.user.id)
+        .maybeSingle();
+      if (profile) {
+        await supabase.from("audit_logs").insert({
+          salon_id: profile.salon_id,
+          actor_id: signedIn.user.id,
+          actor_email: signedIn.user.email ?? null,
+          actor_role: profile.role,
+          action: AUDIT_ACTIONS.TEAM_LOGIN_LIMIT_REACHED,
+          entity_type: "profile",
+          entity_id: signedIn.user.id,
+          metadata: {},
+        });
+      }
+      // "local": end only THIS device's session. The default would sign the
+      // login out everywhere, including the devices legitimately using it.
+      await supabase.auth.signOut({ scope: "local" });
+      return { message: TEAM_ENDED_MESSAGES.limit };
+    }
+
+    (await cookies()).set(TEAM_SESSION_COOKIE, key, TEAM_COOKIE_OPTIONS);
   }
 
   const next = formData.get("next");

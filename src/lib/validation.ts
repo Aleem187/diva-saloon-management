@@ -95,6 +95,19 @@ export const setPasswordSchema = z
     path: ["confirmPassword"],
   });
 
+/** The salon's shared team login: whose email it is, which role it holds, its password. */
+export const teamLoginSchema = z
+  .object({
+    email,
+    roleId: z.string().uuid("Choose a role"),
+    password,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
 export const forgotPasswordSchema = z.object({ email });
 
 export const resetPasswordSchema = z
@@ -420,6 +433,13 @@ export const checkoutSchema = z.object({
   cardAmount: z.coerce.number().min(0).max(9_999_999).default(0),
   transferAmount: z.coerce.number().min(0).max(9_999_999).default(0),
   loyaltyRedeem: z.coerce.number().min(0, "Cannot be negative").max(9_999_999).default(0),
+  /**
+   * A discretionary discount: what KIND and how much, never an amount that
+   * lands on the receipt -- create_receipt() works that out. "" means none.
+   */
+  manualDiscountType: z.enum(["", "percentage", "fixed_amount"]).default(""),
+  manualDiscountValue: z.coerce.number().min(0, "Cannot be negative").max(9_999_999).default(0),
+  manualDiscountReason: z.string().trim().max(200, "Keep the reason under 200 characters").default(""),
   notes: z.string().trim().max(2000).default(""),
   /** The booking this sale settles, when it came from the diary. */
   appointmentId: z.string().uuid().nullish().or(z.literal("")),
@@ -433,7 +453,33 @@ export const checkoutSchema = z.object({
       }),
     )
     .min(1, "Add at least one service"),
-});
+})
+  // The database enforces all of this too; these give the till a message next to
+  // the field instead of a sentence at the top.
+  .superRefine((d, ctx) => {
+    if (d.manualDiscountType === "") return;
+    if (!(d.manualDiscountValue > 0)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["manualDiscountValue"],
+        message: "Enter a discount greater than zero",
+      });
+    }
+    if (d.manualDiscountType === "percentage" && d.manualDiscountValue > 100) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["manualDiscountValue"],
+        message: "A percentage cannot exceed 100",
+      });
+    }
+    if (d.manualDiscountReason.length < 3) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["manualDiscountReason"],
+        message: "Give a reason for the discount",
+      });
+    }
+  });
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 
 export const voidReceiptSchema = z.object({

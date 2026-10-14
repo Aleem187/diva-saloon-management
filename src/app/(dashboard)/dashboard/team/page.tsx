@@ -5,13 +5,14 @@ import { AccountsTab } from "./accounts-tab";
 import { InvitesTab } from "./invites-tab";
 import { RolesTab } from "./roles-tab";
 import { RosterTab } from "./roster-tab";
+import { TeamLoginTab } from "./team-login-tab";
 import { PageFlash } from "@/components/page-flash";
 import { PageHeader } from "@/components/ui/page-header";
 import { PageTabs } from "@/components/ui/page-tabs";
 import { TabFallback } from "@/components/ui/tab-fallback";
 import { TabPanel } from "@/components/ui/tab-panel";
 import { requireModule } from "@/lib/auth/session";
-import { resolveTabs, type TabDefinition } from "@/lib/tabs";
+import { ownerOnly, resolveTabs, type TabDefinition } from "@/lib/tabs";
 
 export const metadata: Metadata = { title: "Team" };
 
@@ -20,6 +21,8 @@ const TABS: TabDefinition[] = [
   { id: "invites", label: "Invitations" },
   { id: "roles", label: "Roles & permissions" },
   { id: "accounts", label: "Linked accounts" },
+  // The shared login hands a credential to many people: the owner alone sets it up.
+  { id: "teamlogin", label: "Team login", visibleFor: ownerOnly },
 ];
 
 export default async function TeamPage({ searchParams }: PageProps<"/dashboard/team">) {
@@ -48,6 +51,7 @@ export default async function TeamPage({ searchParams }: PageProps<"/dashboard/t
               {active === "invites" ? <InvitesTab /> : null}
               {active === "roles" ? <RolesTab /> : null}
               {active === "accounts" ? <AccountsTab /> : null}
+              {active === "teamlogin" ? <TeamLoginTab /> : null}
             </Suspense>
           </TabPanel>
         </>

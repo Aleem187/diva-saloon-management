@@ -1,5 +1,5 @@
 import { AuditFeed } from "./audit-feed";
-import { loadEntries, PAGE_SIZE, type Actor, type AuditFilters } from "./query";
+import { AUDIT_WINDOW_DAYS, loadEntries, PAGE_SIZE, type Actor, type AuditFilters } from "./query";
 import { requireModule } from "@/lib/auth/session";
 
 /**
@@ -17,7 +17,7 @@ export async function SensitiveTab({
   actors: Actor[];
 }) {
   const session = await requireModule("audit");
-  const rows = await loadEntries(filters, { sensitiveOnly: true });
+  const rows = await loadEntries(filters, session.salon.timezone, { sensitiveOnly: true });
 
   return (
     <AuditFeed
@@ -28,8 +28,8 @@ export async function SensitiveTab({
       tab="sensitive"
       entryId={entryId}
       actors={actors}
-      intro={`Voids, refunds, payroll and pay changes, roles and access, views of protected records, settings and billing changes. The newest ${PAGE_SIZE} matching (${rows.length} shown).`}
-      emptyText="No sensitive actions match those filters."
+      intro={`Voids, refunds, payroll and pay changes, roles and access, views of protected records, settings and billing changes. The newest ${PAGE_SIZE} matching from the last ${AUDIT_WINDOW_DAYS} days (${rows.length} shown).`}
+      emptyText={`No sensitive actions in the last ${AUDIT_WINDOW_DAYS} days match those filters.`}
     />
   );
 }

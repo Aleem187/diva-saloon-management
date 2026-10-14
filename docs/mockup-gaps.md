@@ -114,7 +114,7 @@ Not in this list, because they need no backend: the Auth "Message preview" and "
 | G-PAY-7 | Pay-settings example sentence ("in a month with $4,000 of revenue…") | no-data | A client-side money calculation (CLAUDE.md rule 4). | no | omit |
 | G-ERN-1 | "October so far (estimate)" running estimate | no-data | No live estimate; payroll is computed server-side when a period is generated. | no | omit |
 | G-ERN-3 | Recent services: Customer name and "Your commission" per line | no-data | A therapist cannot read the receipt header (by policy), and `receipt_line_items` holds no per-line commission. | yes | date, service, revenue (the line total) |
-| G-ERN-4 | "Services this month" excluding voided sales | no-data | A therapist cannot read the receipt header, and `receipt_line_items` carries no voided flag, so the count (sum of line quantities, the unit payroll uses) includes sales that are later voided until payroll runs. Shown with that note. | yes | count as built, with the note |
+| G-ERN-4 | "Services this month" excluding voided sales | no-data | Done for anyone who can take payment (they can read receipts, so voided sales are left out, as payroll does). A therapist cannot read the receipt header and `receipt_line_items` carries no voided flag, so for them the count includes sales that are later voided until payroll runs, and the card says so. Closing it for therapists needs a database change. | yes | as built |
 
 ## Reports
 
@@ -122,7 +122,7 @@ Not in this list, because they need no backend: the Auth "Message preview" and "
 | --- | --- | --- | --- | --- | --- |
 | G-REP-1 | KPI deltas vs the previous period (▲ 8.4 %) | no-query | The same RPCs could be called for the prior range. No such call is made. | no | omit |
 | G-REP-2 | "How customers paid" (card / cash / split mix) | no-query | No report function over payment method. | yes (new function) | omit |
-| G-REP-3 | "Manual discounts" line in Discounts given | no-data | The till has deals and loyalty only. Deals and loyalty redeemed are in the revenue buckets. | yes | Deals and Loyalty only |
+| G-REP-3 | "Manual discounts" line in Discounts given | no-query | **Data now exists**: the till records a discretionary discount in `receipts.manual_discount_amount` (migration 20261014000042). No report function reads it yet, so the line is still omitted; a new function would be needed. | yes (new function) | Deals and Loyalty only |
 | G-REP-4 | Loyalty "Highest balances" | no-query | No report function. | yes (new function) | omit |
 | G-REP-5 | Retention: "Back within 60 days" and the cohort grid | no-query | `report_customer_retention` returns new / returning / repeat rate / visits per customer. | yes (new function) | the four existing figures |
 | G-REP-6 | Peak times by **Revenue**; the written insight under the heat map | no-query / no-data | `report_peak_times` counts appointments only. | yes | Bookings only; omit the sentence |

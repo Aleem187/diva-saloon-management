@@ -288,6 +288,16 @@ export type ReceiptRow = {
    * this always equals total -- the receipt states its own settlement.
    */
   deposit_applied: number;
+  /**
+   * A discretionary discount given at the till, on top of any deal. Always part
+   * of discount_total. Null type means none; the amount is then 0.
+   */
+  manual_discount_type: "percentage" | "fixed_amount" | null;
+  /** What was asked for: 10 for "10%", or 15 for "15 off". */
+  manual_discount_value: number | null;
+  /** What it came to, as worked out by create_receipt(). */
+  manual_discount_amount: number;
+  manual_discount_reason: string;
   void_reason: string | null;
   voided_at: string | null;
   voided_by: string | null;
@@ -378,6 +388,32 @@ export type SubscriptionRow = {
 };
 
 /** Mirror of a Stripe invoice. Amounts are in the currency's minor unit. */
+/** The salon's one shared login, and the cap on how many devices may use it at once. */
+export type TeamLoginRow = {
+  profile_id: string;
+  salon_id: string;
+  created_by: string | null;
+  max_sessions: number;
+  idle_minutes: number;
+  created_at: string;
+};
+
+/** One device signed in with the team login. Written only by the database functions. */
+export type TeamLoginSessionRow = {
+  id: string;
+  salon_id: string;
+  profile_id: string;
+  /** SHA-256 of the device's cookie; the cookie itself is never stored. */
+  key_hash: string;
+  user_agent: string;
+  created_at: string;
+  last_seen_at: string;
+  revoked_at: string | null;
+};
+
+/** What claim_team_session() says about the calling device. */
+export type TeamSessionOutcome = "ok" | "limit" | "revoked" | "not_team";
+
 export type InvoiceRow = {
   id: string;
   salon_id: string;
@@ -697,6 +733,8 @@ export type Database = {
       payroll_entries: Table<PayrollEntryRow>;
       subscriptions: Table<SubscriptionRow>;
       invoices: Table<InvoiceRow>;
+      team_logins: Table<TeamLoginRow>;
+      team_login_sessions: Table<TeamLoginSessionRow>;
     };
     Views: Record<never, never>;
     Functions: {
@@ -711,6 +749,12 @@ export type Database = {
         Returns: string;
       };
       mark_payroll_paid: { Args: { p_period_id: string }; Returns: undefined };
+      claim_team_session: {
+        Args: { p_key_hash: string; p_user_agent?: string };
+        Returns: TeamSessionOutcome;
+      };
+      release_team_session: { Args: { p_key_hash: string }; Returns: undefined };
+      revoke_team_sessions: { Args: { p_session_id?: string | null }; Returns: number };
       appointment_balance: {
         Args: { p_appointment_id: string };
         Returns: AppointmentBalance[];
@@ -800,6 +844,9 @@ export type Database = {
           p_new_customer_phone?: string | null;
           p_appointment_id?: string | null;
           p_transfer_amount?: number;
+          p_manual_discount_type?: "percentage" | "fixed_amount" | null;
+          p_manual_discount_value?: number | null;
+          p_manual_discount_reason?: string | null;
         };
         Returns: string;
       };

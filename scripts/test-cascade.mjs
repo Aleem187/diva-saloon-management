@@ -71,6 +71,7 @@ const salonId = profile.salon_id;
 const rosterId = profile.team_member_id;
 check("a new salon's owner lands on the roster", Boolean(rosterId));
 
+let teamUserId;
 try {
   const { data: service } = await admin
     .from("services")
@@ -174,6 +175,37 @@ try {
   });
   check("an invoice can be seeded for the probe", !invError, invError?.message);
 
+  // Team login: a shared login in the salon, with one device signed in on it.
+  const teamEmail = `cascade-team-${randomUUID().slice(0, 8)}@rls-test.local`;
+  await admin.from("invitations").insert({
+    salon_id: salonId,
+    email: teamEmail,
+    role: "receptionist",
+    full_name: "Team login",
+    invited_by: userId,
+    create_roster_entry: false,
+  });
+  const { data: teamUser, error: teamUserError } = await admin.auth.admin.createUser({
+    email: teamEmail,
+    password: `Cascade-${randomUUID().slice(0, 10)}!`,
+    email_confirm: true,
+    user_metadata: { full_name: "Team login" },
+  });
+  check("a team login user can be created for the probe", !teamUserError, teamUserError?.message);
+  teamUserId = teamUser?.user?.id;
+  const { error: teamLoginError } = await admin.from("team_logins").insert({
+    profile_id: teamUserId,
+    salon_id: salonId,
+    created_by: userId,
+  });
+  check("a team login can be seeded for the probe", !teamLoginError, teamLoginError?.message);
+  const { error: teamSessionError } = await admin.from("team_login_sessions").insert({
+    salon_id: salonId,
+    profile_id: teamUserId,
+    key_hash: `cascade-${randomUUID()}`,
+  });
+  check("a team login session can be seeded for the probe", !teamSessionError, teamSessionError?.message);
+
   const { error: deleteError } = await admin.from("salons").delete().eq("id", salonId);
   check("the salon deletes", !deleteError, deleteError?.message);
 
@@ -184,6 +216,8 @@ try {
   check("and is gone", count === 0, `${count} row(s) left`);
 
   for (const table of [
+    "team_login_sessions",
+    "team_logins",
     "team_members",
     "payments",
     "subscriptions",
@@ -204,6 +238,7 @@ try {
 } finally {
   await admin.from("salons").delete().eq("id", salonId);
   await admin.auth.admin.deleteUser(userId);
+  if (teamUserId) await admin.auth.admin.deleteUser(teamUserId);
 }
 
 console.log(`\n${passed} passed, ${failed} failed\n`);

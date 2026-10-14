@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { auditHref, loadEntries, PAGE_SIZE, type Actor, type AuditFilters } from "./query";
+import { AUDIT_WINDOW_DAYS, auditHref, loadEntries, PAGE_SIZE, type Actor, type AuditFilters } from "./query";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
 import {
@@ -31,9 +31,9 @@ export async function PeopleTab({
   actors: Actor[];
 }) {
   const session = await requireModule("audit");
-  const rows = await loadEntries(filters);
+  const rows = await loadEntries(filters, session.salon.timezone);
 
-  if (rows.length === 0) return <EmptyState>No audit entries match those filters.</EmptyState>;
+  if (rows.length === 0) return <EmptyState>No audit entries in the last {AUDIT_WINDOW_DAYS} days match those filters.</EmptyState>;
 
   const nameOf = new Map(actors.map((a) => [a.id, a.full_name || a.email]));
 
@@ -59,7 +59,7 @@ export async function PeopleTab({
   return (
     <div className="space-y-3">
       <p className="text-small text-muted">
-        Counted over the newest {PAGE_SIZE} matching entries ({rows.length} shown), not the whole log.
+        Counted over the newest {PAGE_SIZE} matching entries from the last {AUDIT_WINDOW_DAYS} days ({rows.length} shown), not the whole log.
       </p>
 
       <Table label="Activity by person" className="min-w-[640px]">

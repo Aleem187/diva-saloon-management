@@ -55,6 +55,7 @@ export const AUDIT_ACTION_LABELS: Record<AuditActionValue, string> = {
   "appointment.no_show": "No-show recorded",
   "receipt.created": "Receipt issued",
   "receipt.voided": "Receipt voided",
+  "receipt.discount_applied": "Discount given at the till",
   "loyalty.redeemed": "Loyalty redeemed",
   "payroll.generated": "Payroll generated",
   "payroll.marked_paid": "Payroll marked paid",
@@ -71,6 +72,10 @@ export const AUDIT_ACTION_LABELS: Record<AuditActionValue, string> = {
   "team_member.reactivated": "Team member reactivated",
   "team_member.login_linked": "Login linked to a team member",
   "team_member.login_unlinked": "Login unlinked",
+  "team_login.created": "Team login created",
+  "team_login.password_changed": "Team login password changed",
+  "team_login.sessions_revoked": "Team login devices signed out",
+  "team_login.limit_reached": "Team login refused: device limit reached",
   "role.created": "Role created",
   "role.updated": "Role permissions changed",
   "role.deleted": "Role deleted",
@@ -114,6 +119,7 @@ const CATEGORY_BY_PREFIX: Record<string, AuditCategoryId> = {
   staff: "team",
   team_member: "team",
   role: "team",
+  team_login: "team",
   staff_document: "documents",
   salon: "settings",
   billing: "billing",
@@ -155,6 +161,7 @@ export function actionsInCategory(id: AuditCategoryId): AuditActionValue[] {
 export const SENSITIVE_ACTIONS: readonly AuditActionValue[] = [
   // Money
   "receipt.voided",
+  "receipt.discount_applied",
   "payment.refunded",
   "loyalty.redeemed",
   "payroll.marked_paid",
@@ -162,6 +169,9 @@ export const SENSITIVE_ACTIONS: readonly AuditActionValue[] = [
   // Pay
   "payroll.commission_rate_changed",
   // Access and permissions
+  "team_login.created",
+  "team_login.password_changed",
+  "team_login.sessions_revoked",
   "role.created",
   "role.updated",
   "role.deleted",

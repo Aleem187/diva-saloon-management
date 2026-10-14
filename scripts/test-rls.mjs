@@ -2912,6 +2912,131 @@ async function main() {
   check("an owner cannot delete their subscription", subStillThere === 1);
 
   /* ---------------------------------------------------------------- */
+  console.log("\nTeam login: one shared sign-in, capped at 3 devices\n");
+
+  /*
+   * team_logins marks the salon's shared login; team_login_sessions holds one
+   * row per device signed in with it. Sessions change only through
+   * claim_team_session / release_team_session / revoke_team_sessions, which is
+   * what the cap rests on, so those are exercised as the people who call them.
+   */
+  const teamA = await createMember(salonA.salonId, "receptionist", salonA.userId);
+
+  const { error: staffMarkError } = await asStaffA.from("team_logins").insert({
+    profile_id: teamA.userId,
+    salon_id: salonA.salonId,
+    created_by: staffA.userId,
+  });
+  check("staff cannot mark a login as the team login", Boolean(staffMarkError));
+
+  const { error: ownerSelfMarkError } = await asOwnerB.from("team_logins").insert({
+    profile_id: salonB.userId,
+    salon_id: salonB.salonId,
+    created_by: salonB.userId,
+  });
+  check("the owner cannot be the shared team login", Boolean(ownerSelfMarkError));
+
+  const { error: markError } = await asOwnerA.from("team_logins").insert({
+    profile_id: teamA.userId,
+    salon_id: salonA.salonId,
+    created_by: salonA.userId,
+  });
+  check("the owner can mark a login as the team login", !markError, markError?.message);
+
+  const { error: secondMarkError } = await asOwnerA.from("team_logins").insert({
+    profile_id: staffA.userId,
+    salon_id: salonA.salonId,
+    created_by: salonA.userId,
+  });
+  check("a salon has only one team login", Boolean(secondMarkError));
+
+  const { error: crossSalonMarkError } = await asOwnerA.from("team_logins").insert({
+    profile_id: salonB.userId,
+    salon_id: salonB.salonId,
+    created_by: salonA.userId,
+  });
+  check("an owner cannot mark a login in another salon", Boolean(crossSalonMarkError));
+
+  const { error: capError } = await admin
+    .from("team_logins")
+    .update({ max_sessions: 4 })
+    .eq("profile_id", teamA.userId);
+  check("the cap cannot be raised past 3", Boolean(capError));
+
+  const asTeamA = await clientFor(teamA.email);
+  const { data: ownRow } = await asTeamA.from("team_logins").select("profile_id");
+  check("the team login can read its own marker", (ownRow ?? []).length === 1);
+  const { data: staffSeesMarker } = await asStaffA.from("team_logins").select("profile_id");
+  check("other staff cannot read the marker", (staffSeesMarker ?? []).length === 0);
+  const { data: bSeesMarker } = await asOwnerB.from("team_logins").select("profile_id");
+  check("another salon's owner cannot read it", (bSeesMarker ?? []).length === 0);
+
+  const keys = ["one", "two", "three", "four", "five"].map((n) => `rls-${n}-${randomUUID()}`);
+  const claim = async (client, key) => {
+    const { data, error } = await client.rpc("claim_team_session", {
+      p_key_hash: key,
+      p_user_agent: "rls-test",
+    });
+    return error ? `error: ${error.message}` : data;
+  };
+
+  check("device 1 takes a place", (await claim(asTeamA, keys[0])) === "ok");
+  check("device 2 takes a place", (await claim(asTeamA, keys[1])) === "ok");
+  check("device 3 takes a place", (await claim(asTeamA, keys[2])) === "ok");
+  check("device 4 is refused: the limit is 3", (await claim(asTeamA, keys[3])) === "limit");
+  check("a device already holding a place is still let in", (await claim(asTeamA, keys[0])) === "ok");
+  check("someone who is not the team login is told so", (await claim(asStaffA, keys[0])) === "not_team");
+
+  const { data: ownerSessions } = await asOwnerA
+    .from("team_login_sessions")
+    .select("id, key_hash, salon_id");
+  check("the owner sees the 3 sessions", (ownerSessions ?? []).length === 3);
+  check("and only Salon A's", (ownerSessions ?? []).every((r) => r.salon_id === salonA.salonId));
+  const { data: staffSessions } = await asStaffA.from("team_login_sessions").select("id");
+  check("staff cannot list the sessions", (staffSessions ?? []).length === 0);
+  const { data: teamSessions } = await asTeamA.from("team_login_sessions").select("id");
+  check("nor can the team login itself", (teamSessions ?? []).length === 0);
+  const { data: bSessions } = await asOwnerB.from("team_login_sessions").select("id");
+  check("another salon's owner cannot", (bSessions ?? []).length === 0);
+
+  const { error: forgedSessionError } = await asOwnerA.from("team_login_sessions").insert({
+    salon_id: salonA.salonId,
+    profile_id: teamA.userId,
+    key_hash: `forged-${randomUUID()}`,
+  });
+  check("no one can write a session row directly", Boolean(forgedSessionError));
+
+  const { error: staffRevokeError } = await asStaffA.rpc("revoke_team_sessions", { p_session_id: null });
+  check("staff cannot sign team devices out", Boolean(staffRevokeError));
+
+  const { data: bRevoked } = await asOwnerB.rpc("revoke_team_sessions", { p_session_id: null });
+  check("another salon's owner signs out nothing of ours", bRevoked === 0, `signed out ${bRevoked}`);
+  check("and our device is untouched", (await claim(asTeamA, keys[0])) === "ok");
+
+  const secondSession = (ownerSessions ?? []).find((r) => r.key_hash === keys[1]);
+  const { data: revokedOne } = await asOwnerA.rpc("revoke_team_sessions", {
+    p_session_id: secondSession.id,
+  });
+  check("the owner signs one device out", revokedOne === 1, `signed out ${revokedOne}`);
+  check("that device is told it was signed out", (await claim(asTeamA, keys[1])) === "revoked");
+  check("and its place is free for another", (await claim(asTeamA, keys[3])) === "ok");
+
+  // An idle device stops counting without anyone signing it out.
+  await admin
+    .from("team_login_sessions")
+    .update({ last_seen_at: new Date(Date.now() - 3 * 3600 * 1000).toISOString() })
+    .eq("profile_id", teamA.userId);
+  check("devices idle for hours no longer hold places", (await claim(asTeamA, keys[4])) === "ok");
+
+  await asTeamA.rpc("release_team_session", { p_key_hash: keys[4] });
+  const { count: releasedLeft } = await admin
+    .from("team_login_sessions")
+    .select("id", { count: "exact", head: true })
+    .eq("profile_id", teamA.userId)
+    .eq("key_hash", keys[4]);
+  check("signing out frees the device's place", releasedLeft === 0);
+
+  /* ---------------------------------------------------------------- */
   console.log("\nAnonymous access\n");
 
   const anon = anonClient();

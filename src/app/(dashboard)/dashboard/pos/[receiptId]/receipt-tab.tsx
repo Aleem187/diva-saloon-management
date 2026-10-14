@@ -158,6 +158,21 @@ export async function ReceiptTab({ receipt: r }: { receipt: ReceiptRow }) {
             {Number(r.discount_total) > 0 ? (
               <Row label="Discount" value={`− ${formatMoney(r.discount_total, currency)}`} />
             ) : null}
+            {/*
+              A discretionary discount is already inside the figure above; this
+              says what part of it was given at the till. The reason is for the
+              salon, not the customer, so it is left off the printed copy.
+            */}
+            {Number(r.manual_discount_amount) > 0 ? (
+              <p className="text-fine text-muted">
+                Includes{" "}
+                {r.manual_discount_type === "percentage"
+                  ? `a ${Number(r.manual_discount_value)}% discount`
+                  : "a fixed discount"}{" "}
+                ({`− ${formatMoney(r.manual_discount_amount, currency)}`})
+                <span className="print:hidden"> · {r.manual_discount_reason}</span>
+              </p>
+            ) : null}
             {Number(r.loyalty_redeemed) > 0 ? (
               <Row label="Loyalty redeemed" value={`− ${formatMoney(r.loyalty_redeemed, currency)}`} />
             ) : null}

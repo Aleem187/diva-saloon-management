@@ -5,9 +5,24 @@ import {
   type AuditCategoryId,
 } from "@/lib/audit-categories";
 import { createClient } from "@/lib/supabase/server";
+import { addDays, salonTimeToInstant, salonToday } from "@/lib/time";
 import type { AuditLogRow } from "@/lib/types/database";
 
 export const PAGE_SIZE = 50;
+
+/** The audit page shows this many calendar days, today included. Nothing older is read. */
+export const AUDIT_WINDOW_DAYS = 14;
+
+/**
+ * The window the page covers, in the salon's own timezone: the 14 calendar days
+ * ending today. The entries older than that are not deleted (the log is
+ * append-only); the page simply never asks for them.
+ */
+export function auditWindow(timeZone: string): { startDate: string; today: string; startsAt: string } {
+  const today = salonToday(timeZone);
+  const startDate = addDays(today, -(AUDIT_WINDOW_DAYS - 1));
+  return { startDate, today, startsAt: salonTimeToInstant(startDate, "00:00", timeZone).toISOString() };
+}
 
 export type Params = Record<string, string | string[] | undefined>;
 
@@ -66,14 +81,18 @@ export function auditHref(
 }
 
 /**
- * The newest entries that match, or the newest sensitive ones.
+ * The newest entries that match, or the newest sensitive ones, from the last 14
+ * days only.
  *
  * Owner-only by RLS: audit_logs has no policy that lets other roles read it, so
- * a forged `?tab=` gets rows only if the caller could read them anyway. The
- * date bounds are the same UTC day bounds the page has always used.
+ * a forged `?tab=` gets rows only if the caller could read them anyway. The From
+ * and To filters are the UTC day bounds the page has always used; the 14-day
+ * floor is applied on top, so a From earlier than the window cannot reach past
+ * it, and every tab (they all load through here) covers the same period.
  */
 export async function loadEntries(
   filters: AuditFilters,
+  timeZone: string,
   options: { sensitiveOnly?: boolean } = {},
 ): Promise<AuditLogRow[]> {
   const supabase = await createClient();
@@ -86,7 +105,9 @@ export async function loadEntries(
 
   if (filters.action) query = query.eq("action", filters.action);
   if (filters.actor) query = query.eq("actor_id", filters.actor);
-  if (filters.from) query = query.gte("created_at", `${filters.from}T00:00:00Z`);
+  const { startsAt } = auditWindow(timeZone);
+  const fromAt = filters.from ? `${filters.from}T00:00:00Z` : startsAt;
+  query = query.gte("created_at", fromAt > startsAt ? fromAt : startsAt);
   if (filters.to) query = query.lte("created_at", `${filters.to}T23:59:59Z`);
   if (filters.category) query = query.in("action", actionsInCategory(filters.category));
   if (options.sensitiveOnly) query = query.in("action", [...SENSITIVE_ACTIONS]);

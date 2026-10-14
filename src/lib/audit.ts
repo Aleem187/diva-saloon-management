@@ -65,6 +65,8 @@ export const AUDIT_ACTIONS = {
   // They are listed here so the audit log filter offers them.
   RECEIPT_CREATED: "receipt.created",
   RECEIPT_VOIDED: "receipt.voided",
+  /** A discretionary discount at the till, with the reason given. Written by create_receipt(). */
+  RECEIPT_DISCOUNT_APPLIED: "receipt.discount_applied",
   LOYALTY_REDEEMED: "loyalty.redeemed",
 
   // Phase 5 -- payroll. The first two are written by the Postgres functions.
@@ -91,6 +93,13 @@ export const AUDIT_ACTIONS = {
   TEAM_MEMBER_REACTIVATED: "team_member.reactivated",
   LOGIN_LINKED: "team_member.login_linked",
   LOGIN_UNLINKED: "team_member.login_unlinked",
+
+  // The salon's one shared login. Its password is never recorded, here or anywhere.
+  TEAM_LOGIN_CREATED: "team_login.created",
+  TEAM_LOGIN_PASSWORD_CHANGED: "team_login.password_changed",
+  TEAM_LOGIN_SESSIONS_REVOKED: "team_login.sessions_revoked",
+  // A device was turned away at sign-in because all 3 places were in use.
+  TEAM_LOGIN_LIMIT_REACHED: "team_login.limit_reached",
 
   // Roles and what they may reach.
   ROLE_CREATED: "role.created",

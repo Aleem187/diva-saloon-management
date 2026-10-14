@@ -2009,6 +2009,127 @@ async function main() {
   check("marking it paid is audited", payrollActions.has("payroll.marked_paid"));
 
   /* ---------------------------------------------------------------- */
+  // Last on purpose: these sales add receipts, loyalty and revenue to the salon,
+  // and the payroll sections above total what was written before them.
+  console.log("\nA discretionary discount at the till\n");
+
+  /*
+   * The caller names a kind, a figure and a reason; Postgres works out the
+   * amount and spreads it over the lines, so commission (which reads the lines)
+   * follows the discounted bill. Prices: cut 40, colour 60, odd 33.33.
+   */
+  const lineSum = (r) => r.lines.reduce((sum, l) => sum + Number(l.line_total), 0);
+
+  const { data: pctId, error: pctErr } = await checkout({
+    p_lines: [line(s.cut), line(s.colour)],
+    p_manual_discount_type: "percentage",
+    p_manual_discount_value: 10,
+    p_manual_discount_reason: "Regular customer",
+  });
+  check("a percentage discount is accepted", !pctErr, pctErr?.message);
+  const pct = await readReceipt(pctId);
+  eqMoney("10% of 100 is taken off", pct.discount_total, 10);
+  eqMoney("the total is the bill less the discount", pct.total, 90);
+  eqMoney("cash settles the discounted total", pct.cash_amount, 90);
+  eqMoney("loyalty is earned on the discounted total", pct.loyalty_earned, 4.5);
+  check("the kind and figure asked for are recorded", pct.manual_discount_type === "percentage" && money(pct.manual_discount_value) === "10.00");
+  eqMoney("and what it came to", pct.manual_discount_amount, 10);
+  check("and the reason", pct.manual_discount_reason === "Regular customer");
+  eqMoney("the lines add up to the receipt", lineSum(pct), 90);
+  eqMoney("the cut line carries its share (40 less 10%)", pct.lines.find((l) => l.service_name === "Cut").line_total, 36);
+  eqMoney("the colour line carries its share (60 less 10%)", pct.lines.find((l) => l.service_name === "Colour").line_total, 54);
+
+  const { data: fixedId, error: fixedErr } = await checkout({
+    p_lines: [line(s.cut), line(s.colour)],
+    p_manual_discount_type: "fixed_amount",
+    p_manual_discount_value: 15,
+    p_manual_discount_reason: "Service recovery",
+  });
+  check("a fixed discount is accepted", !fixedErr, fixedErr?.message);
+  const fixed = await readReceipt(fixedId);
+  eqMoney("15 off 100 totals 85", fixed.total, 85);
+  eqMoney("and the lines add up to it", lineSum(fixed), 85);
+
+  // Stacked on a deal: the discount comes off what the deal left.
+  const halfCut = await makeDeal(s.salonId, "Half price cut", "percentage", 50, [s.cut]);
+  const { data: stackedId, error: stackedErr } = await checkout({
+    p_lines: [line(s.cut), line(s.colour)],
+    p_deal_id: halfCut,
+    p_manual_discount_type: "percentage",
+    p_manual_discount_value: 10,
+    p_manual_discount_reason: "Birthday",
+  });
+  check("a discount can follow a deal", !stackedErr, stackedErr?.message);
+  const stacked = await readReceipt(stackedId);
+  eqMoney("deal 20 plus 10% of the remaining 80 is 28", stacked.discount_total, 28);
+  eqMoney("of which the discount at the till is 8", stacked.manual_discount_amount, 8);
+  eqMoney("the total is 72", stacked.total, 72);
+  eqMoney("and the lines add up to it", lineSum(stacked), 72);
+
+  // Rounding: the lines must still add up when the shares do not divide evenly.
+  const { data: oddId, error: oddErr } = await checkout({
+    p_lines: [line(s.cut), line(s.colour), line(s.odd)],
+    p_manual_discount_type: "fixed_amount",
+    p_manual_discount_value: 7.77,
+    p_manual_discount_reason: "Rounding probe",
+  });
+  check("an awkward amount over three lines is accepted", !oddErr, oddErr?.message);
+  const oddR = await readReceipt(oddId);
+  eqMoney("the receipt total is the bill less 7.77", oddR.total, 125.56);
+  eqMoney("and the three lines add up to it exactly", lineSum(oddR), 125.56);
+
+  // Commission follows the discounted line, not the list price.
+  eqMoney("a line's total is its price less its share, which is what payroll reads", pct.lines.find((l) => l.service_name === "Cut").line_total, 36);
+
+  // No discount: nothing recorded.
+  const plain = await readReceipt((await checkout({ p_lines: [line(s.cut)] })).data);
+  check(
+    "a sale with no discount records none",
+    plain.manual_discount_type === null && money(plain.manual_discount_amount) === "0.00" && plain.manual_discount_reason === "",
+  );
+
+  const refused = async (label, overrides, needle) => {
+    const { error } = await checkout({ p_lines: [line(s.cut), line(s.colour)], ...overrides });
+    check(label, Boolean(error) && (!needle || error.message.includes(needle)), error?.message?.slice(0, 80));
+  };
+  await refused("over 100% is refused", { p_manual_discount_type: "percentage", p_manual_discount_value: 101, p_manual_discount_reason: "x y z" }, "100");
+  await refused("a fixed discount above the bill is refused", { p_manual_discount_type: "fixed_amount", p_manual_discount_value: 100.01, p_manual_discount_reason: "too much" }, "exceed");
+  await refused("zero is refused", { p_manual_discount_type: "fixed_amount", p_manual_discount_value: 0, p_manual_discount_reason: "nothing" }, "greater than zero");
+  await refused("a negative figure is refused", { p_manual_discount_type: "percentage", p_manual_discount_value: -5, p_manual_discount_reason: "negative" }, "greater than zero");
+  await refused("a discount without a reason is refused", { p_manual_discount_type: "percentage", p_manual_discount_value: 5, p_manual_discount_reason: "" }, "reason");
+  await refused("an unknown kind is refused", { p_manual_discount_type: "free", p_manual_discount_value: 5, p_manual_discount_reason: "whatever" }, "percentage or a fixed");
+
+  // Loyalty is capped by what is left after the discount, not by the old bill.
+  const { error: overRedeem } = await checkout({
+    p_lines: [line(s.cut), line(s.colour)],
+    p_manual_discount_type: "fixed_amount",
+    p_manual_discount_value: 99.5,
+    p_manual_discount_reason: "Nearly free",
+    p_loyalty_redeem: 5,
+  });
+  check("loyalty cannot exceed the discounted bill", Boolean(overRedeem), overRedeem?.message?.slice(0, 80));
+
+  // The caller cannot name an amount: there is no such parameter, and the
+  // receipt cannot be written directly.
+  const { error: forgedDiscount } = await desk
+    .from("receipts")
+    .update({ manual_discount_amount: 50 })
+    .eq("id", pctId)
+    .select();
+  const stillPct = await readReceipt(pctId);
+  check("the recorded discount cannot be edited afterwards", money(stillPct.manual_discount_amount) === "10.00", forgedDiscount?.message?.slice(0, 60));
+
+  const { data: discountAudit } = await ownerClient
+    .from("audit_logs")
+    .select("action, metadata")
+    .eq("entity_id", pctId);
+  const discountEntry = (discountAudit ?? []).find((a) => a.action === "receipt.discount_applied");
+  check("the discount has its own audit entry", Boolean(discountEntry));
+  check("which records the reason and the amount", discountEntry?.metadata?.reason === "Regular customer" && Number(discountEntry?.metadata?.amount) === 10);
+  const createdEntry = (discountAudit ?? []).find((a) => a.action === "receipt.created");
+  check("and receipt.created still carries the figures", Number(createdEntry?.metadata?.manual_discount_amount) === 10 && Number(createdEntry?.metadata?.total) === 90);
+
+  /* ---------------------------------------------------------------- */
   console.log("\nAudit trail\n");
 
   const { data: auditEntries } = await ownerClient

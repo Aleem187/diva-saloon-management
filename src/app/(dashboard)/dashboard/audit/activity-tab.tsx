@@ -1,5 +1,5 @@
 import { AuditFeed } from "./audit-feed";
-import { auditHref, loadEntries, PAGE_SIZE, type Actor, type AuditFilters } from "./query";
+import { AUDIT_WINDOW_DAYS, auditHref, loadEntries, PAGE_SIZE, type Actor, type AuditFilters } from "./query";
 import { ButtonLink } from "@/components/ui/button";
 import { requireModule } from "@/lib/auth/session";
 import { AUDIT_CATEGORIES } from "@/lib/audit-categories";
@@ -15,7 +15,7 @@ export async function ActivityTab({
   actors: Actor[];
 }) {
   const session = await requireModule("audit");
-  const rows = await loadEntries(filters);
+  const rows = await loadEntries(filters, session.salon.timezone);
 
   return (
     <div className="space-y-4">
@@ -51,8 +51,8 @@ export async function ActivityTab({
         tab="activity"
         entryId={entryId}
         actors={actors}
-        intro={`The newest ${PAGE_SIZE} matching entries (${rows.length} shown). Choose one to see what was recorded.`}
-        emptyText="No audit entries match those filters."
+        intro={`The newest ${PAGE_SIZE} matching entries from the last ${AUDIT_WINDOW_DAYS} days (${rows.length} shown). Choose one to see what was recorded.`}
+        emptyText={`No audit entries in the last ${AUDIT_WINDOW_DAYS} days match those filters.`}
       />
     </div>
   );

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 import { ActivityTab } from "./activity-tab";
 import { PeopleTab } from "./people-tab";
-import { hasFilters, filterParams, readFilters, type Actor } from "./query";
+import { AUDIT_WINDOW_DAYS, auditWindow, hasFilters, filterParams, readFilters, type Actor } from "./query";
 import { SensitiveTab } from "./sensitive-tab";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -29,7 +29,11 @@ export default async function AuditPage({ searchParams }: PageProps<"/dashboard/
   const session = await requireModule("audit");
   const params = await searchParams;
 
-  const filters = readFilters(params);
+  const window = auditWindow(session.salon.timezone);
+  const read = readFilters(params);
+  // A From before the window is shown as the window's first day: that is what
+  // the query will use, and the date box should not claim otherwise.
+  const filters = read.from && read.from < window.startDate ? { ...read, from: window.startDate } : read;
   const entryId = typeof params.entry === "string" ? params.entry : "";
 
   // Only the active tab below is rendered, so nothing else is fetched.
@@ -46,7 +50,7 @@ export default async function AuditPage({ searchParams }: PageProps<"/dashboard/
     <>
       <PageHeader
         title="Audit log"
-        subtitle="Append-only record of sensitive actions. It cannot be edited or deleted, here or anywhere else."
+        subtitle={`The last ${AUDIT_WINDOW_DAYS} days of an append-only record of sensitive actions. It cannot be edited or deleted, here or anywhere else.`}
       />
 
       {active ? (
@@ -86,11 +90,25 @@ export default async function AuditPage({ searchParams }: PageProps<"/dashboard/
               </Field>
 
               <Field label="From" htmlFor="audit-from" className="w-40">
-                <Input id="audit-from" name="from" type="date" defaultValue={filters.from} />
+                <Input
+                  id="audit-from"
+                  name="from"
+                  type="date"
+                  min={window.startDate}
+                  max={window.today}
+                  defaultValue={filters.from}
+                />
               </Field>
 
               <Field label="To" htmlFor="audit-to" className="w-40">
-                <Input id="audit-to" name="to" type="date" defaultValue={filters.to} />
+                <Input
+                  id="audit-to"
+                  name="to"
+                  type="date"
+                  min={window.startDate}
+                  max={window.today}
+                  defaultValue={filters.to}
+                />
               </Field>
 
               <Button type="submit" variant="ghost">
