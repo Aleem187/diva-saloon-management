@@ -22,7 +22,6 @@ For each row: open the route, switch every tab with the mouse **and** the keyboa
 | `/dashboard` | Today | ✅ | ✅ | ✅ | |
 | | Trial & plan | ✅ | 🚫 | 🚫 | Owner only. |
 | | Your access | ✅ | ✅ | ✅ | Lists the modules this person holds. |
-| | Build status | ✅ | 🚫 | 🚫 | Owner only. Phases 9–11 done, 12 (Payroll, My earnings, Reports, Audit redesign) planned. |
 | `/dashboard/calendar` | Day (`?view=day` still works) | ✅ | ✅ | ✅ own only | Therapist sees only their own appointments. |
 | | Week | ✅ | ✅ | ✅ own only | |
 | | Agenda | ✅ | ✅ | ✅ own only | |

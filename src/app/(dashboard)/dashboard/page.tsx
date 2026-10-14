@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 
 import { AccessTab } from "./access-tab";
-import { BuildTab } from "./build-tab";
 import { TodayTab } from "./today-tab";
 import { TrialTab } from "./trial-tab";
 import { Flash } from "@/components/ui/flash";
@@ -19,7 +18,6 @@ const TABS: TabDefinition[] = [
   { id: "today", label: "Today" },
   { id: "trial", label: "Trial & plan", visibleFor: ownerOnly },
   { id: "access", label: "Your access" },
-  { id: "build", label: "Build status", visibleFor: ownerOnly },
 ];
 
 export default async function DashboardPage({ searchParams }: PageProps<"/dashboard">) {
@@ -54,7 +52,6 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
               {active === "today" ? <TodayTab /> : null}
               {active === "trial" ? <TrialTab /> : null}
               {active === "access" ? <AccessTab /> : null}
-              {active === "build" ? <BuildTab /> : null}
             </Suspense>
           </TabPanel>
         </>
