@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useCallback, useEffect, useMemo, useState } from "react";
 
 import { checkoutAction, loyaltyBalanceAction, type PosFormState } from "./actions";
 import { Button } from "@/components/ui/button";
@@ -96,7 +96,10 @@ export function Till({
     try {
       const restored = JSON.parse(was("lines", "[]")) as Omit<BasketLine, "key">[];
       if (restored.length > 0) {
-        return restored.map((line, index) => ({ ...line, key: `restored-${index}` }));
+        return restored.map((line, index) => ({
+          ...line,
+          key: `restored-${index}`,
+        }));
       }
     } catch {
       /* fall through to the booking */
@@ -108,7 +111,8 @@ export function Till({
   });
   const [dealId, setDealId] = useState(was("dealId"));
   const [discountKind, setDiscountKind] = useState<DiscountKind>(
-    (DISCOUNT_KINDS.find((k) => k.value === was("manualDiscountType"))?.value ?? "") as DiscountKind,
+    (DISCOUNT_KINDS.find((k) => k.value === was("manualDiscountType"))?.value ??
+      "") as DiscountKind,
   );
   const [discountValue, setDiscountValue] = useState(was("manualDiscountValue"));
   const [discountReason, setDiscountReason] = useState(was("manualDiscountReason"));
@@ -120,10 +124,7 @@ export function Till({
   const [card, setCard] = useState(was("cardAmount", "0"));
   const [transfer, setTransfer] = useState(was("transferAmount", "0"));
 
-  const serviceById = useMemo(
-    () => new Map(services.map((s) => [s.id, s])),
-    [services],
-  );
+  const serviceById = useMemo(() => new Map(services.map((s) => [s.id, s])), [services]);
 
   // Fetch the balance when the customer changes. Server-side, through RLS.
   // Clearing on deselect happens in the change handler, not here, so this
@@ -150,24 +151,30 @@ export function Till({
 
   const pickable = useMemo(() => toPickable(services), [services]);
 
-  function addServices(ids: string[]) {
-    setLines((current) => {
-      const next = [...current];
-      for (const id of ids) {
-        // The same service twice means two of them, not two rows to scroll past.
-        const existing = next.find((l) => l.serviceId === id);
-        if (existing) existing.quantity = Math.min(99, existing.quantity + 1);
-        else
-          next.push({
-            key: `${id}-${Date.now()}-${next.length}`,
-            serviceId: id,
-            staffId: therapists[0]?.id ?? "",
-            quantity: 1,
-          });
-      }
-      return next;
-    });
-  }
+  const addServices = useCallback(
+    (ids: string[]) => {
+      setLines((current) => {
+        const next = [...current];
+        for (const id of ids) {
+          // The same service twice means two of them, not two rows to scroll past.
+          const existing = next.find((l) => l.serviceId === id);
+          if (existing) existing.quantity = Math.min(99, existing.quantity + 1);
+          else
+            next.push({
+              key: `${id}-${Date.now()}-${next.length}`,
+              serviceId: id,
+              staffId: therapists[0]?.id ?? "",
+              quantity: 1,
+            });
+        }
+        return next;
+      });
+    },
+    [therapists],
+  );
+
+  // A stable handler, so the memoised menu is not redrawn on every keystroke.
+  const addOne = useCallback((id: string) => addServices([id]), [addServices]);
 
   function updateLine(key: string, patch: Partial<BasketLine>) {
     setLines((current) => current.map((l) => (l.key === key ? { ...l, ...patch } : l)));
@@ -221,8 +228,7 @@ export function Till({
   // What the customer has already handed over for this visit, and therefore
   // what is left to take now. Mirrors create_receipt(): nothing is collected
   // when the deposit has overtaken the bill.
-  const deposit =
-    prefill && customerId === prefill.customerId ? prefill.deposit : 0;
+  const deposit = prefill && customerId === prefill.customerId ? prefill.deposit : 0;
   const dueNow = Math.max(0, Math.round((total - deposit) * 100) / 100);
   const overpaid = Math.round((deposit - total) * 100) / 100;
 
@@ -237,14 +243,18 @@ export function Till({
   );
 
   const splitTotal =
-    Math.round(
-      ((Number(cash) || 0) + (Number(card) || 0) + (Number(transfer) || 0)) * 100,
-    ) / 100;
+    Math.round(((Number(cash) || 0) + (Number(card) || 0) + (Number(transfer) || 0)) * 100) / 100;
   const splitMismatch = paymentMethod === "split" && splitTotal !== dueNow;
 
   // How many of each service are in the basket, for the badge on its tile.
-  const counts: Record<string, number> = {};
-  for (const line of lines) counts[line.serviceId] = (counts[line.serviceId] ?? 0) + line.quantity;
+  // Memoised on the basket alone, so typing elsewhere keeps the same object.
+  const counts = useMemo(() => {
+    const byService: Record<string, number> = {};
+    for (const line of lines) {
+      byService[line.serviceId] = (byService[line.serviceId] ?? 0) + line.quantity;
+    }
+    return byService;
+  }, [lines]);
 
   return (
     <form action={formAction} className="flex flex-wrap items-start gap-4">
@@ -267,20 +277,14 @@ export function Till({
       <div className="min-w-0 flex-[999_1_460px] space-y-4">
         {prefill ? (
           <Flash tone="info">
-            Checking out {prefill.customerName}&rsquo;s booking. The services and the customer
-            are filled in from the diary, and anything already paid is taken off what the till
-            asks for.
+            Checking out {prefill.customerName}&rsquo;s booking. The services and the customer are
+            filled in from the diary, and anything already paid is taken off what the till asks for.
           </Flash>
         ) : null}
 
         {state.message ? <Flash tone="error">{state.message}</Flash> : null}
 
-        <ServiceTiles
-          services={pickable}
-          currency={currency}
-          counts={counts}
-          onAdd={(id) => addServices([id])}
-        />
+        <ServiceTiles services={pickable} currency={currency} counts={counts} onAdd={addOne} />
         {state.errors?.lines ? (
           <p className="text-small font-semibold text-critical-fg">{state.errors.lines}</p>
         ) : null}
@@ -356,7 +360,11 @@ export function Till({
                         <Select
                           id={`staff-${line.key}`}
                           value={line.staffId}
-                          onChange={(event) => updateLine(line.key, { staffId: event.target.value })}
+                          onChange={(event) =>
+                            updateLine(line.key, {
+                              staffId: event.target.value,
+                            })
+                          }
                         >
                           {therapists.map((t) => (
                             <option key={t.id} value={t.id}>
@@ -373,7 +381,9 @@ export function Till({
                           max={99}
                           value={line.quantity}
                           onChange={(event) =>
-                            updateLine(line.key, { quantity: Number(event.target.value) || 1 })
+                            updateLine(line.key, {
+                              quantity: Number(event.target.value) || 1,
+                            })
                           }
                           className="w-20"
                         />
@@ -493,11 +503,7 @@ export function Till({
           ) : null}
           {manualDiscount > 0 ? (
             <Row
-              label={
-                discountKind === "percentage"
-                  ? `Discount (${discountInput}%)`
-                  : "Discount"
-              }
+              label={discountKind === "percentage" ? `Discount (${discountInput}%)` : "Discount"}
               value={`− ${formatMoney(manualDiscount, currency)}`}
             />
           ) : null}
@@ -523,8 +529,8 @@ export function Till({
 
           {overpaid > 0 ? (
             <p className="pt-1 text-fine text-warning-fg">
-              The deposit is larger than the bill. The sale will go through collecting nothing,
-              and the difference shows as owed back on the appointment, where it can be refunded.
+              The deposit is larger than the bill. The sale will go through collecting nothing, and
+              the difference shows as owed back on the appointment, where it can be refunded.
             </p>
           ) : null}
 
@@ -534,9 +540,7 @@ export function Till({
         </dl>
 
         <div>
-          <p className="mb-1.5 text-small font-semibold">
-            Payment method
-          </p>
+          <p className="mb-1.5 text-small font-semibold">Payment method</p>
           <SegmentedControl
             aria-label="Payment method"
             fullWidth
@@ -575,7 +579,11 @@ export function Till({
                 onChange={(event) => setCard(event.target.value)}
               />
             </Field>
-            <Field label="Bank transfer" htmlFor="pos-transfer" error={state.errors?.transferAmount}>
+            <Field
+              label="Bank transfer"
+              htmlFor="pos-transfer"
+              error={state.errors?.transferAmount}
+            >
               <Input
                 id="pos-transfer"
                 name="transferAmount"

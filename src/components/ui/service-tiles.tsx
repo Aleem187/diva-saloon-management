@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 
 import { cn } from "./cn";
 import { Input } from "./field";
@@ -18,7 +18,7 @@ const ALL = "All";
  * `counts` is how many of each service are already in the basket, shown as a
  * badge on the tile.
  */
-export function ServiceTiles({
+function ServiceTilesImpl({
   services,
   currency,
   counts,
@@ -124,3 +124,10 @@ export function ServiceTiles({
     </div>
   );
 }
+
+/**
+ * Memoised: the till re-renders on every keystroke in its discount, loyalty and
+ * payment fields, and the tiles (a menu of dozens) need not follow. It only
+ * redraws when the menu, the basket counts or the add handler really change.
+ */
+export const ServiceTiles = memo(ServiceTilesImpl);

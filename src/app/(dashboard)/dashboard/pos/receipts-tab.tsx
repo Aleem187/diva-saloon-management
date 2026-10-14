@@ -27,7 +27,13 @@ import {
   startOfMonth,
   startOfWeek,
 } from "@/lib/time";
-import type { CustomerRow, ReceiptRow } from "@/lib/types/database";
+import type { ReceiptRow } from "@/lib/types/database";
+
+/** The columns the Receipts list reads. */
+type ListedReceipt = Pick<
+  ReceiptRow,
+  "id" | "receipt_number" | "customer_id" | "created_at" | "payment_method" | "status" | "total"
+>;
 
 type Params = Record<string, string | string[] | undefined>;
 
@@ -81,9 +87,10 @@ export async function ReceiptsTab({ params }: { params: Params }) {
   const rangeStartsAt = salonTimeToInstant(from, "00:00", timeZone).toISOString();
   const rangeEndsAt = salonTimeToInstant(addDays(to, 1), "00:00", timeZone).toISOString();
 
+  // Only what the list shows, not every column of up to 500 receipts.
   let receiptQuery = supabase
     .from("receipts")
-    .select("*")
+    .select("id, receipt_number, customer_id, created_at, payment_method, status, total")
     .gte("created_at", rangeStartsAt)
     .lt("created_at", rangeEndsAt)
     .order("created_at", { ascending: false })
@@ -91,15 +98,31 @@ export async function ReceiptsTab({ params }: { params: Params }) {
 
   if (status !== "all") receiptQuery = receiptQuery.eq("status", status);
 
-  const [{ data: customers }, { data: receipts }] = await Promise.all([
-    supabase.from("customers").select("*").order("full_name").limit(500),
-    receiptQuery,
-  ]);
+  const { data: receipts } = await receiptQuery;
+  const rows = (receipts ?? []) as ListedReceipt[];
 
-  const customerById = new Map<string, CustomerRow>();
-  for (const c of (customers ?? []) as CustomerRow[]) customerById.set(c.id, c);
-
-  const rows = (receipts ?? []) as ReceiptRow[];
+  /*
+   * The names of the customers on THESE receipts, and only those. This used to
+   * read the first 500 customers by name, which both loaded far more than the
+   * page shows and left a receipt without a name whenever its customer fell
+   * outside the first 500. Asked for in small groups: 500 ids in one request
+   * would overrun the URL.
+   */
+  const customerIds = [...new Set(rows.map((r) => r.customer_id))];
+  const nameChunks = await Promise.all(
+    Array.from({ length: Math.ceil(customerIds.length / 80) }, (_, i) =>
+      supabase
+        .from("customers")
+        .select("id, full_name")
+        .in("id", customerIds.slice(i * 80, i * 80 + 80)),
+    ),
+  );
+  const customerName = new Map<string, string>();
+  for (const { data } of nameChunks) {
+    for (const c of (data ?? []) as { id: string; full_name: string }[]) {
+      customerName.set(c.id, c.full_name);
+    }
+  }
   const issued = rows.filter((r) => r.status === "issued");
   const voided = rows.filter((r) => r.status === "voided");
   // Voided money was given back, so it is not takings. Counted separately so
@@ -223,7 +246,7 @@ export async function ReceiptsTab({ params }: { params: Params }) {
                     #{receipt.receipt_number}
                   </Link>
                 </TableCell>
-                <TableCell>{customerById.get(receipt.customer_id)?.full_name ?? "Customer"}</TableCell>
+                <TableCell>{customerName.get(receipt.customer_id) ?? "Customer"}</TableCell>
                 <TableCell className="text-muted">
                   {formatInstantInSalon(receipt.created_at, timeZone)}
                 </TableCell>

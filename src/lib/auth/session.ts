@@ -86,12 +86,24 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
   // No profile, or a deactivated one: no tenant, therefore no access.
   if (!profile || !profile.is_active) return null;
 
-  // Read alongside the salon: whether this is the shared login decides below
-  // whether the session is checked against its device limit.
-  const [{ data: salon }, { data: teamLogin }] = await Promise.all([
-    supabase.from("salons").select("*").eq("id", profile.salon_id).maybeSingle(),
-    supabase.from("team_logins").select("*").eq("profile_id", user.id).maybeSingle(),
-  ]);
+  /*
+   * Everything the profile points at, fetched together. These four depend only
+   * on the profile, not on one another, and this runs on EVERY dashboard
+   * request, so reading them one after another (as this once did) was two extra
+   * database round trips on every click. Whether the login is the shared team
+   * login decides below whether the session is checked against its device limit.
+   */
+  const [{ data: salon }, { data: teamLogin }, { data: role }, { data: grants }] =
+    await Promise.all([
+      supabase.from("salons").select("*").eq("id", profile.salon_id).maybeSingle(),
+      supabase.from("team_logins").select("*").eq("profile_id", user.id).maybeSingle(),
+      profile.role_id
+        ? supabase.from("roles").select("*").eq("id", profile.role_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+      profile.role_id
+        ? supabase.from("role_modules").select("module").eq("role_id", profile.role_id)
+        : Promise.resolve({ data: [] as { module: AppModule }[] }),
+    ]);
 
   if (!salon) return null;
 
@@ -123,14 +135,6 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
    * to draw and which pages to bounce, and the database refuses the rest
    * regardless.
    */
-  const { data: role } = profile.role_id
-    ? await supabase.from("roles").select("*").eq("id", profile.role_id).maybeSingle()
-    : { data: null };
-
-  const { data: grants } = profile.role_id
-    ? await supabase.from("role_modules").select("module").eq("role_id", profile.role_id)
-    : { data: [] as { module: AppModule }[] };
-
   const isOwner = Boolean((role as RoleRow | null)?.is_owner);
   const modules = new Set<AppModule>(
     isOwner ? ALL_MODULES : ((grants ?? []) as { module: AppModule }[]).map((g) => g.module),
