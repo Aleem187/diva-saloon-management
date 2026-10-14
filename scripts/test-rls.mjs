@@ -2912,6 +2912,82 @@ async function main() {
   check("an owner cannot delete their subscription", subStillThere === 1);
 
   /* ---------------------------------------------------------------- */
+  console.log("\nProfiles: nobody promotes themselves\n");
+
+  /*
+   * profiles_update_self lets a person edit their own row, and the guard trigger
+   * decides which columns. role_id (what they may do) and team_member_id (whose
+   * earnings are theirs) used to be missing from it. Migration 20261014000044.
+   */
+  const { data: guardAccountantRole } = await admin
+    .from("roles")
+    .select("id")
+    .eq("salon_id", salonA.salonId)
+    .eq("name", "Accountant")
+    .single();
+  const { data: guardSpareMember } = await admin
+    .from("team_members")
+    .insert({ salon_id: salonA.salonId, full_name: "Unlinked colleague" })
+    .select("id")
+    .single();
+
+  const ownName = await asStaffA
+    .from("profiles")
+    .update({ full_name: "Renamed by themselves" })
+    .eq("id", staffA.userId)
+    .select("full_name");
+  check("staff can change their own name", (ownName.data ?? []).length === 1, ownName.error?.message);
+
+  const ownRole = await asStaffA
+    .from("profiles")
+    .update({ role_id: guardAccountantRole.id })
+    .eq("id", staffA.userId)
+    .select("role_id");
+  const { data: roleAfter } = await admin.from("profiles").select("role_id").eq("id", staffA.userId).single();
+  check(
+    "staff cannot change their own role",
+    (ownRole.data ?? []).length === 0 && roleAfter.role_id !== guardAccountantRole.id,
+    ownRole.error?.message,
+  );
+
+  const ownMember = await asStaffA
+    .from("profiles")
+    .update({ team_member_id: guardSpareMember.id })
+    .eq("id", staffA.userId)
+    .select("team_member_id");
+  const { data: memberAfter } = await admin.from("profiles").select("team_member_id").eq("id", staffA.userId).single();
+  check(
+    "staff cannot take over another team member's roster entry",
+    (ownMember.data ?? []).length === 0 && memberAfter.team_member_id !== guardSpareMember.id,
+    ownMember.error?.message,
+  );
+
+  const ownEmail = await asStaffA
+    .from("profiles")
+    .update({ email: `changed-${randomUUID().slice(0, 6)}@rls-test.local` })
+    .eq("id", staffA.userId)
+    .select("email");
+  check("staff cannot rewrite their own email", (ownEmail.data ?? []).length === 0);
+
+  const ownRoleOwner = await asOwnerA
+    .from("profiles")
+    .update({ role_id: guardAccountantRole.id })
+    .eq("id", salonA.userId)
+    .select("role_id");
+  check("nor can the owner move their own login off the owner role", (ownRoleOwner.data ?? []).length === 0);
+
+  const managed = await asOwnerA
+    .from("profiles")
+    .update({ team_member_id: guardSpareMember.id })
+    .eq("id", receptionistA.userId)
+    .select("team_member_id");
+  check(
+    "but the owner can still link another login to a roster entry",
+    (managed.data ?? []).length === 1,
+    managed.error?.message,
+  );
+
+  /* ---------------------------------------------------------------- */
   console.log("\nTeam login: one shared sign-in, capped at 3 devices\n");
 
   /*

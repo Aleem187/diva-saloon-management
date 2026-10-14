@@ -117,12 +117,24 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
    * hold one is to have signed in through the sign-in form.
    */
   if (teamLogin) {
-    const key = (await cookies()).get(TEAM_SESSION_COOKIE)?.value;
+    /*
+     * The check can fail in ways that are not "this device is refused" -- a
+     * dropped connection, an unreadable cookie store. Those must not become a
+     * crashed page, and must not read as permission either: they end the
+     * session cleanly with their own message. The redirect is made OUTSIDE the
+     * try, because redirect() works by throwing.
+     */
     let outcome: "ok" | TeamEndedReason = "missing";
-    if (key) {
-      const userAgent = (await headers()).get("user-agent") ?? "";
-      const claimed = await claimTeamSession(supabase, key, userAgent);
-      outcome = claimed === "ok" || claimed === "not_team" ? "ok" : claimed;
+    try {
+      const key = (await cookies()).get(TEAM_SESSION_COOKIE)?.value;
+      if (key) {
+        const userAgent = (await headers()).get("user-agent") ?? "";
+        const claimed = await claimTeamSession(supabase, key, userAgent);
+        outcome = claimed === "ok" || claimed === "not_team" ? "ok" : claimed;
+      }
+    } catch (error) {
+      console.error("[team-login] checking the session failed:", error);
+      outcome = "error";
     }
     if (outcome !== "ok") redirect(teamEndedHref(outcome));
   }

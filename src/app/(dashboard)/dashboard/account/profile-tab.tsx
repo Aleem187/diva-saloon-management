@@ -1,4 +1,5 @@
 import { AccountForm } from "./account-form";
+import { PasswordForm } from "./password-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
@@ -26,6 +27,24 @@ export async function ProfileTab() {
             fullName={profile.full_name}
             phone={profile.phone ?? ""}
           />
+        </Card>
+
+        <Card className="mt-4">
+          <CardTitle>Password</CardTitle>
+          {session.teamLogin ? (
+            <p className="text-small text-muted">
+              This is the shared team login, so its password belongs to everyone who uses it. The
+              owner changes it under Team › Team login.
+            </p>
+          ) : (
+            <>
+              <p className="-mt-2 mb-4 text-small text-muted">
+                Change the password you sign in with. Your role and salon are set by the owner and
+                cannot be changed here.
+              </p>
+              <PasswordForm />
+            </>
+          )}
         </Card>
       </SplitMain>
 

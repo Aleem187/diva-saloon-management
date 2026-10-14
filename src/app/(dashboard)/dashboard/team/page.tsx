@@ -2,10 +2,10 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 
 import { AccountsTab } from "./accounts-tab";
+import { AddStaffTab } from "./add-staff-tab";
 import { InvitesTab } from "./invites-tab";
 import { RolesTab } from "./roles-tab";
 import { RosterTab } from "./roster-tab";
-import { TeamLoginTab } from "./team-login-tab";
 import { PageFlash } from "@/components/page-flash";
 import { PageHeader } from "@/components/ui/page-header";
 import { PageTabs } from "@/components/ui/page-tabs";
@@ -18,11 +18,11 @@ export const metadata: Metadata = { title: "Team" };
 
 const TABS: TabDefinition[] = [
   { id: "roster", label: "Roster" },
+  // Creates an account with a password the owner chooses, so it is owner only.
+  { id: "addstaff", label: "Add staff", visibleFor: ownerOnly },
   { id: "invites", label: "Invitations" },
   { id: "roles", label: "Roles & permissions" },
   { id: "accounts", label: "Linked accounts" },
-  // The shared login hands a credential to many people: the owner alone sets it up.
-  { id: "teamlogin", label: "Team login", visibleFor: ownerOnly },
 ];
 
 export default async function TeamPage({ searchParams }: PageProps<"/dashboard/team">) {
@@ -48,10 +48,10 @@ export default async function TeamPage({ searchParams }: PageProps<"/dashboard/t
           <TabPanel id={active}>
             <Suspense key={active} fallback={<TabFallback kpis={4} bodyHeight={320} />}>
               {active === "roster" ? <RosterTab /> : null}
+              {active === "addstaff" ? <AddStaffTab /> : null}
               {active === "invites" ? <InvitesTab /> : null}
               {active === "roles" ? <RolesTab /> : null}
               {active === "accounts" ? <AccountsTab /> : null}
-              {active === "teamlogin" ? <TeamLoginTab /> : null}
             </Suspense>
           </TabPanel>
         </>

@@ -80,9 +80,15 @@ Also, for every page:
 - [ ] Reusing the link, or opening `/reset-password` signed out, shows "This reset link is no longer valid".
 - [ ] Supabase Auth › URL configuration lists `<site>/auth/callback` as an allowed redirect URL.
 
-## 1b. Team login
+## 1c. Add staff and My account
 
-- [ ] Follow the checks in `docs/team-login.md` (three devices in, fourth refused, owner sign-out, password change, no owner-only access).
+- [ ] Owner: Team › Add staff creates an account with a chosen or generated password; the sign-in details show once with a working Copy button; no email is sent. Add another resets the form.
+- [ ] Errors read cleanly: an email already on the team, an email used on another salon, no role chosen, a short password, a roster entry that already has a login.
+- [ ] A non-owner, even with the Team module, does not see the Add staff tab, and a forged post is refused.
+- [ ] The new person signs in with those details, lands with only their role's modules, and appears under Linked accounts. The audit log shows "Staff account created" (Sensitive) with no password in it.
+- [ ] Staff: My account › Personal details changes name and phone; Password asks for the current password, rejects a wrong one, and signs in with the new one afterwards. Role and salon are shown, not editable.
+- [ ] Shared team login: the Password card explains the owner changes it, and the action refuses.
+- [ ] After migration 20261014000044: a staff member cannot change their own role or roster link through the data API (`npm run test:rls`).
 
 ## 2. Role-specific spot checks
 

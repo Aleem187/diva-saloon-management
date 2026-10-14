@@ -27,6 +27,10 @@ export const AUDIT_ACTIONS = {
   BILLING_PROMO_CODE_APPLIED: "billing.promo_code_applied",
 
   STAFF_INVITED: "staff.invited",
+  /** The owner created the account directly, with a password they set. The password is never recorded. */
+  STAFF_CREATED: "staff.created",
+  /** Someone changed their own password. */
+  ACCOUNT_PASSWORD_CHANGED: "account.password_changed",
   STAFF_INVITE_REVOKED: "staff.invite_revoked",
   STAFF_INVITE_ACCEPTED: "staff.invite_accepted",
   STAFF_ROLE_CHANGED: "staff.role_changed",

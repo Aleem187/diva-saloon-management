@@ -131,39 +131,51 @@ export async function signInAction(
    * key cookie be set; every later request just re-checks it. The password was
    * right, so telling this person the limit is reached leaks nothing.
    */
-  if (await isTeamLoginUser(supabase, signedIn.user.id)) {
-    const key = newSessionKey();
-    const userAgent = (await headers()).get("user-agent") ?? "";
-    const outcome = await claimTeamSession(supabase, key, userAgent);
+  try {
+    if (await isTeamLoginUser(supabase, signedIn.user.id)) {
+      const key = newSessionKey();
+      const userAgent = (await headers()).get("user-agent") ?? "";
+      const outcome = await claimTeamSession(supabase, key, userAgent);
 
-    if (outcome !== "ok") {
-      // Leave a trace for the owner, while the refused device still has the
-      // access to write one. (Written as the team login itself: the policy only
-      // lets an actor record entries as themselves.)
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("salon_id, role")
-        .eq("id", signedIn.user.id)
-        .maybeSingle();
-      if (profile) {
-        await supabase.from("audit_logs").insert({
-          salon_id: profile.salon_id,
-          actor_id: signedIn.user.id,
-          actor_email: signedIn.user.email ?? null,
-          actor_role: profile.role,
-          action: AUDIT_ACTIONS.TEAM_LOGIN_LIMIT_REACHED,
-          entity_type: "profile",
-          entity_id: signedIn.user.id,
-          metadata: {},
-        });
+      if (outcome !== "ok") {
+        // Leave a trace for the owner, while the refused device still has the
+        // access to write one. (Written as the team login itself: the policy
+        // only lets an actor record entries as themselves.)
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("salon_id, role")
+          .eq("id", signedIn.user.id)
+          .maybeSingle();
+        if (profile) {
+          await supabase.from("audit_logs").insert({
+            salon_id: profile.salon_id,
+            actor_id: signedIn.user.id,
+            actor_email: signedIn.user.email ?? null,
+            actor_role: profile.role,
+            action: AUDIT_ACTIONS.TEAM_LOGIN_LIMIT_REACHED,
+            entity_type: "profile",
+            entity_id: signedIn.user.id,
+            metadata: {},
+          });
+        }
+        // "local": end only THIS device's session. The default would sign the
+        // login out everywhere, including the devices legitimately using it.
+        await supabase.auth.signOut({ scope: "local" });
+        return { message: TEAM_ENDED_MESSAGES.limit };
       }
-      // "local": end only THIS device's session. The default would sign the
-      // login out everywhere, including the devices legitimately using it.
-      await supabase.auth.signOut({ scope: "local" });
-      return { message: TEAM_ENDED_MESSAGES.limit };
-    }
 
-    (await cookies()).set(TEAM_SESSION_COOKIE, key, TEAM_COOKIE_OPTIONS);
+      (await cookies()).set(TEAM_SESSION_COOKIE, key, TEAM_COOKIE_OPTIONS);
+    }
+  } catch (error) {
+    // Could not tell whether this is the shared login, or take a place on it.
+    // Fail closed: no session, and a message, not a crashed page.
+    console.error("[team-login] sign-in check failed:", error);
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch {
+      /* the session cookie is ours to clear; nothing more to do */
+    }
+    return { message: TEAM_ENDED_MESSAGES.error };
   }
 
   const next = formData.get("next");

@@ -108,6 +108,34 @@ export const teamLoginSchema = z
     path: ["confirmPassword"],
   });
 
+/**
+ * An account the owner creates directly, with a password they choose. The salon
+ * and the role are decided by the server (from the invitation row the action
+ * writes), never by what the form or the Auth metadata says.
+ */
+export const staffAccountSchema = z.object({
+  fullName: z.string().trim().min(2, "Enter their name").max(120),
+  email,
+  roleId: z.string().uuid("Choose a role"),
+  password,
+});
+
+/** Changing your own password: prove you know the current one first. */
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Enter your current password"),
+    password,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  })
+  .refine((data) => data.password !== data.currentPassword, {
+    message: "Choose a password different from the current one",
+    path: ["password"],
+  });
+
 export const forgotPasswordSchema = z.object({ email });
 
 export const resetPasswordSchema = z

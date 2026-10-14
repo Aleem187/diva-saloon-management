@@ -47,7 +47,7 @@ export async function InvitesTab() {
       <Card className="max-w-4xl">
         <CardTitle>Give someone a login</CardTitle>
         <p className="-mt-2 mb-4 text-small text-muted">
-          An account lets them sign in. They receive an email link to set their own password.
+          An account lets them sign in. They receive an email link to set their own password. To create an account yourself, with a password you choose and no email, use Add staff.
         </p>
         <InviteForm roster={unlinked.filter((m) => m.is_active)} roles={assignable} />
       </Card>

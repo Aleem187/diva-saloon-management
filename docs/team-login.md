@@ -1,5 +1,7 @@
 # Team login (shared sign-in, 3 devices)
 
+> **Status: the Team login tab and its actions were removed from the Team page.** Nothing in the app can create or manage a team login now. What remains is dormant: the session check in `getSessionContext`, the sign-in and sign-out handling, `/auth/team-ended`, the audit vocabulary, and the tables and functions from migration 20261014000041. They only act on a login listed in `team_logins`, and none can be added from the app, so they change nothing for anyone today. The notes below describe the feature as it was built.
+
 One shared login per salon, for a front-desk tablet or similar. Set up by the owner under **Team › Team login**.
 
 ## How it works
