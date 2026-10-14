@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 
 import { saveServiceAction, type CatalogueFormState } from "./actions";
+import { CategoryField } from "./category-field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { Flash } from "@/components/ui/flash";
@@ -21,8 +22,11 @@ export function ServiceForm({
   currency,
   service,
   assignedStaffIds = [],
+  categories,
 }: {
   therapists: TeamMemberRow[];
+  /** The salon's existing categories, to pick from or avoid duplicating. */
+  categories: string[];
   templates: ConsentTemplateRow[];
   currency: string;
   service?: ServiceRow;
@@ -52,14 +56,12 @@ export function ServiceForm({
           />
         </Field>
 
-        <Field label="Category" htmlFor={`category-${service?.id ?? "new"}`} error={state.errors?.category}>
-          <Input
-            id={`category-${service?.id ?? "new"}`}
-            name="category"
-            defaultValue={service?.category ?? "General"}
-            placeholder="Nails"
-          />
-        </Field>
+        <CategoryField
+          id={`category-${service?.id ?? "new"}`}
+          categories={categories}
+          defaultValue={service?.category ?? ""}
+          error={state.errors?.category}
+        />
 
         <Field
           label={`Price (${currency})`}

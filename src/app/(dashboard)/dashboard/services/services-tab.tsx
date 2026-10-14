@@ -7,7 +7,7 @@ import { Pill } from "@/components/ui/pill";
 import { StatTile } from "@/components/ui/stat-tile";
 import { requireModule } from "@/lib/auth/session";
 import { formatDuration, formatMoney } from "@/lib/format";
-import { groupByCategory } from "@/lib/services";
+import { distinctCategories, groupByCategory } from "@/lib/services";
 import { createClient } from "@/lib/supabase/server";
 import type {
   ConsentTemplateRow,
@@ -44,6 +44,7 @@ export async function ServicesTab() {
   const activeTemplates = (templates ?? []).filter((t: ConsentTemplateRow) => t.is_active);
   const all = (services ?? []) as ServiceRow[];
   const active = all.filter((s) => s.is_active);
+  const categories = distinctCategories(all.map((s) => s.category));
 
   const staffByService = new Map<string, string[]>();
   for (const link of (serviceStaff ?? []) as ServiceStaffRow[]) {
@@ -107,6 +108,7 @@ export async function ServicesTab() {
                           therapists={therapists}
                           templates={activeTemplates}
                           currency={currency}
+                          categories={categories}
                           service={service}
                           assignedStaffIds={assigned}
                         />

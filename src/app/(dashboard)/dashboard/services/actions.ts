@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { AUDIT_ACTIONS, logAudit } from "@/lib/audit";
 import { assertModule, requireSession } from "@/lib/auth/session";
+import { canonicalCategory, distinctCategories } from "@/lib/services";
 import { createClient } from "@/lib/supabase/server";
 import {
   consentTemplateSchema,
@@ -59,10 +60,21 @@ export async function saveServiceAction(
   const salonId = session.profile.salon_id;
   const supabase = await createClient();
 
+  /*
+   * A category that matches an existing one ignoring case and spacing is saved
+   * under the existing spelling, so "hair" cannot become a second "Hair" group.
+   * Decided here, not in the form: the form's hint is a courtesy, this is the rule.
+   */
+  const { data: categoryRows } = await supabase.from("services").select("category");
+  const category = canonicalCategory(
+    input.category,
+    distinctCategories(((categoryRows ?? []) as { category: string }[]).map((r) => r.category)),
+  );
+
   const row = {
     salon_id: salonId,
     name: input.name,
-    category: input.category,
+    category,
     description: input.description,
     price: input.price,
     duration_minutes: input.durationMinutes,
