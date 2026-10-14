@@ -12,7 +12,7 @@ interface NavItem {
   /**
    * The module this page belongs to, mirroring the guard on the page and the
    * `has_module()` call in its policies. Undefined means everyone: the
-   * overview, their own account, and their own earnings are not delegated
+   * overview and their own account are not delegated
    * powers and are never taken away.
    */
   module?: AppModule;
@@ -47,7 +47,6 @@ const NAV: NavGroup[] = [
   {
     name: "You",
     items: [
-      { href: "/dashboard/earnings", label: "My earnings" },
       { href: "/dashboard/account", label: "My account" },
     ],
   },

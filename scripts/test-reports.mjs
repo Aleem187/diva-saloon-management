@@ -148,6 +148,8 @@ async function seedReceipt({
   redeemed = 0,
   earned = 0,
   status = "issued",
+  // How the bill was settled, when not all in cash: { cash, card, transfer, deposit }.
+  pay = null,
 }) {
   receiptNumber += 1;
   const total = Number((subtotal - discount - redeemed).toFixed(2));
@@ -164,9 +166,11 @@ async function seedReceipt({
     total,
     loyalty_earned: earned,
     loyalty_earn_rate: 0.05,
-    payment_method: "cash",
-    cash_amount: total,
-    card_amount: 0,
+    payment_method: pay ? "split" : "cash",
+    cash_amount: pay ? (pay.cash ?? 0) : total,
+    card_amount: pay ? (pay.card ?? 0) : 0,
+    transfer_amount: pay ? (pay.transfer ?? 0) : 0,
+    deposit_applied: pay ? (pay.deposit ?? 0) : 0,
     status,
     void_reason: status === "voided" ? "test void" : null,
     voided_at: status === "voided" ? at : null,
@@ -394,6 +398,70 @@ async function main() {
     p_granularity: "month",
   });
   eqMoney("a wider window includes the earlier visit", wider?.[0]?.revenue, 515);
+
+  /* ---------------------------------------------------------------- */
+  console.log("\nHow customers paid\n");
+
+  // Seeded in their own days (18-22 March) so the windows above are unaffected.
+  await seedReceipt({
+    salonId, customerId: alia, staffId: therapist1.memberId, serviceName: "Facial",
+    at: instant("2026-03-20", "12:00"), subtotal: 200, earned: 10,
+    pay: { cash: 80, card: 70, transfer: 50 },
+  });
+  await seedReceipt({
+    salonId, customerId: bushra, staffId: therapist2.memberId, serviceName: "Massage",
+    at: instant("2026-03-21", "12:00"), subtotal: 100, earned: 5,
+    pay: { cash: 70, deposit: 30 },
+  });
+  await seedReceipt({
+    salonId, customerId: chand, staffId: therapist2.memberId, serviceName: "Massage",
+    at: instant("2026-03-21", "15:00"), subtotal: 500, earned: 25, status: "voided",
+    pay: { card: 500 },
+  });
+
+  const { data: payRows, error: payError } = await ownerClient.rpc("report_payment_methods", {
+    p_from: "2026-03-18",
+    p_to: "2026-03-22",
+  });
+  check("the owner can run the payment breakdown", !payError, payError?.message);
+  const pay = payRows?.[0];
+  check("two issued receipts (the voided one is excluded)", Number(pay?.receipt_count) === 2, `got ${pay?.receipt_count}`);
+  eqMoney("cash: 80 from the split, 70 from the second sale", pay?.cash_total, 150);
+  eqMoney("card: only the split's 70 (the voided 500 is left out)", pay?.card_total, 70);
+  eqMoney("bank transfer: the split's 50", pay?.transfer_total, 50);
+  eqMoney("paid in advance: the 30 deposit applied", pay?.advance_total, 30);
+  check(
+    "receipt counts per method (a split counts towards each method it used)",
+    Number(pay?.cash_receipts) === 2 && Number(pay?.card_receipts) === 1 && Number(pay?.transfer_receipts) === 1,
+    `cash ${pay?.cash_receipts}, card ${pay?.card_receipts}, transfer ${pay?.transfer_receipts}`,
+  );
+
+  const { data: payRevenue } = await ownerClient.rpc("report_revenue_over_time", {
+    p_from: "2026-03-18",
+    p_to: "2026-03-22",
+    p_granularity: "month",
+  });
+  eqMoney(
+    "the four add up to the period's revenue exactly",
+    Number(pay?.cash_total) + Number(pay?.card_total) + Number(pay?.transfer_total) + Number(pay?.advance_total),
+    Number(payRevenue?.[0]?.revenue),
+  );
+
+  const { data: payNone } = await ownerClient.rpc("report_payment_methods", {
+    p_from: "2026-04-01",
+    p_to: "2026-04-02",
+  });
+  check(
+    "a period with no sales is all zeros, not an error",
+    Number(payNone?.[0]?.receipt_count) === 0 && Number(payNone?.[0]?.cash_total) === 0,
+  );
+
+  for (const [label, client] of [["a receptionist", deskClient], ["a therapist", staffClient]]) {
+    const { error } = await client.rpc("report_payment_methods", { p_from: FROM, p_to: TO });
+    check(`${label} cannot run the payment breakdown`, Boolean(error), error?.message?.slice(0, 60));
+  }
+  const { error: anonPay } = await anonClient().rpc("report_payment_methods", { p_from: FROM, p_to: TO });
+  check("anonymous cannot run it either", Boolean(anonPay));
 
   /* ---------------------------------------------------------------- */
   console.log("\nRevenue by service and by staff member\n");

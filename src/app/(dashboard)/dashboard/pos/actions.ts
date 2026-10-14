@@ -122,6 +122,19 @@ export async function checkoutAction(
   });
 
   if (error) {
+    /*
+     * PGRST202: the database has no create_receipt() that takes the discount
+     * arguments, i.e. the discount migration has not been applied. Say so plainly
+     * rather than showing the raw schema-cache message, and never take the sale
+     * without the discount: that would charge the customer the full price.
+     */
+    if (error.code === "PGRST202" && input.manualDiscountType) {
+      return {
+        message:
+          "Discounts are not switched on in the database yet (migration 20261014000042_receipt_manual_discount has not been applied), so this sale was not taken. Remove the discount to continue, or ask whoever manages the database to apply it.",
+        values,
+      };
+    }
     // The function raises with wording already written for the front desk.
     // The basket comes back with it -- a refused sale should not have to be
     // rung up again from scratch.

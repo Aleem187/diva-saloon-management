@@ -635,6 +635,19 @@ export interface AppointmentStats {
   no_show_rate: number;
 }
 
+/** Money collected by each method over a range (report_payment_methods). */
+export interface PaymentMethodTotals {
+  receipt_count: number;
+  cash_total: number;
+  card_total: number;
+  transfer_total: number;
+  /** Deposits taken earlier and applied to these bills. */
+  advance_total: number;
+  cash_receipts: number;
+  card_receipts: number;
+  transfer_receipts: number;
+}
+
 export interface LoyaltyCost {
   issued: number;
   redeemed: number;
@@ -802,6 +815,10 @@ export type Database = {
       report_appointment_stats: {
         Args: { p_from: string; p_to: string };
         Returns: AppointmentStats[];
+      };
+      report_payment_methods: {
+        Args: { p_from: string; p_to: string };
+        Returns: PaymentMethodTotals[];
       };
       report_loyalty_cost: {
         Args: { p_from: string; p_to: string };

@@ -282,8 +282,6 @@ export function Till({
           </Flash>
         ) : null}
 
-        {state.message ? <Flash tone="error">{state.message}</Flash> : null}
-
         <ServiceTiles services={pickable} currency={currency} counts={counts} onAdd={addOne} />
         {state.errors?.lines ? (
           <p className="text-small font-semibold text-critical-fg">{state.errors.lines}</p>
@@ -507,6 +505,9 @@ export function Till({
               value={`− ${formatMoney(manualDiscount, currency)}`}
             />
           ) : null}
+          {manualDiscount > 0 && discountReason.trim() ? (
+            <p className="text-fine text-muted">Reason: {discountReason.trim()}</p>
+          ) : null}
           {redeemValue > 0 ? (
             <Row label="Loyalty redeemed" value={`− ${formatMoney(redeemValue, currency)}`} />
           ) : null}
@@ -612,6 +613,9 @@ export function Till({
             placeholder="Anything to record on the receipt"
           />
         </Field>
+
+        {/* Next to the button that was pressed, so a refused sale is seen at once. */}
+        {state.message ? <Flash tone="error">{state.message}</Flash> : null}
 
         <SubmitButton className="w-full" pendingLabel="Taking payment...">
           {deposit > 0 ? `Take ${formatMoney(dueNow, currency)}` : "Take payment"}

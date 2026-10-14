@@ -11,6 +11,7 @@ import { Alert, Badge, Card, CardHeader, EmptyState, PageHeader } from "@/compon
 import type {
   AppointmentStats,
   LoyaltyCost,
+  PaymentMethodTotals,
   PeakTime,
   ReportGranularity,
   RetentionSummary,
@@ -20,6 +21,32 @@ import type {
 } from "@/lib/types/database";
 
 export const metadata: Metadata = { title: "Reports" };
+
+/**
+ * A readable account of a failed database call. The old version cut everything up
+ * to the first colon off the message, which turned `invalid input value for enum
+ * payment_method: "Cash"` into just `"Cash"`. The whole message is kept, with its
+ * code, and a network failure (which is not the report's fault) is named as such.
+ */
+function describeRpcError(error: { code?: string; message: string }): string {
+  if (/fetch failed/i.test(error.message)) {
+    return "the database could not be reached (a network problem, not a problem with the report). Refresh to try again.";
+  }
+  return error.code ? `${error.message} (${error.code})` : error.message;
+}
+
+/**
+ * Run a read-only report call, once more if the network dropped it. A report only
+ * reads, so repeating it is safe; anything other than a dropped connection (a real
+ * database error) is returned as it is and not retried.
+ */
+async function withRetry<T extends { error: { message: string } | null }>(
+  run: () => PromiseLike<T>,
+): Promise<T> {
+  const first = await run();
+  if (first.error && /fetch failed/i.test(first.error.message)) return await run();
+  return first;
+}
 
 export default async function ReportsPage({ searchParams }: PageProps<"/dashboard/reports">) {
   const session = await requireModule("reports");
@@ -40,15 +67,18 @@ export default async function ReportsPage({ searchParams }: PageProps<"/dashboar
 
   const args = { p_from: from, p_to: to };
 
-  const [revenue, byService, byStaff, retention, appointments, loyalty, peaks] =
+  const [revenue, byService, byStaff, retention, appointments, loyalty, peaks, payments] =
     await Promise.all([
-      supabase.rpc("report_revenue_over_time", { ...args, p_granularity: granularity }),
-      supabase.rpc("report_revenue_by_service", args),
-      supabase.rpc("report_revenue_by_staff", args),
-      supabase.rpc("report_customer_retention", args),
-      supabase.rpc("report_appointment_stats", args),
-      supabase.rpc("report_loyalty_cost", args),
-      supabase.rpc("report_peak_times", args),
+      withRetry(() =>
+        supabase.rpc("report_revenue_over_time", { ...args, p_granularity: granularity }),
+      ),
+      withRetry(() => supabase.rpc("report_revenue_by_service", args)),
+      withRetry(() => supabase.rpc("report_revenue_by_staff", args)),
+      withRetry(() => supabase.rpc("report_customer_retention", args)),
+      withRetry(() => supabase.rpc("report_appointment_stats", args)),
+      withRetry(() => supabase.rpc("report_loyalty_cost", args)),
+      withRetry(() => supabase.rpc("report_peak_times", args)),
+      withRetry(() => supabase.rpc("report_payment_methods", args)),
     ]);
 
   const buckets = (revenue.data ?? []) as RevenueBucket[];
@@ -58,10 +88,21 @@ export default async function ReportsPage({ searchParams }: PageProps<"/dashboar
   const appointmentRows = (appointments.data ?? []) as AppointmentStats[];
   const loyaltyRow = ((loyalty.data ?? []) as LoyaltyCost[])[0];
   const peakRows = (peaks.data ?? []) as PeakTime[];
+  const paymentRow = ((payments.data ?? []) as PaymentMethodTotals[])[0];
 
   const firstError = [revenue, byService, byStaff, retention, appointments, loyalty, peaks].find(
     (r) => r.error,
   )?.error;
+
+  // The payment breakdown fails on its own (it needs its own migration), so it
+  // is reported where it appears and does not take the whole page down.
+  const paymentsMissing = payments.error?.code === "PGRST202";
+  if (payments.error) {
+    // Whatever the cause, leave the exact error where the developer will see it.
+    console.error(
+      `[reports] report_payment_methods failed: ${payments.error.code} ${payments.error.message}`,
+    );
+  }
 
   const totalRevenue = buckets.reduce((sum, b) => sum + Number(b.revenue), 0);
   const totalReceipts = buckets.reduce((sum, b) => sum + Number(b.receipt_count), 0);
@@ -132,7 +173,7 @@ export default async function ReportsPage({ searchParams }: PageProps<"/dashboar
 
       {firstError ? (
         <Alert tone="error">
-          A report could not be loaded: {firstError.message.replace(/^.*?:\s*/, "")}
+          A report could not be loaded: {describeRpcError(firstError)}
         </Alert>
       ) : null}
 
@@ -142,6 +183,53 @@ export default async function ReportsPage({ searchParams }: PageProps<"/dashboar
         <Stat label="Average sale" value={formatMoney(averageSale, currency)} />
         <Stat label="Discounts given" value={formatMoney(totalDiscounts, currency)} />
       </div>
+
+      {/*
+        How the revenue above was collected. Summed in Postgres from the issued
+        receipts in this range; the four add up to Revenue.
+      */}
+      {payments.error ? (
+        <Alert tone={paymentsMissing ? "info" : "error"}>
+          {paymentsMissing
+            ? "The payment-method breakdown needs a database update: no report_payment_methods(p_from, p_to) exists in the database. Apply migration 20261014000045_report_payment_methods. (If you already ran something under that name, it is a different function; the migration replaces it.)"
+            : `The payment-method breakdown could not be loaded: ${describeRpcError(payments.error)}. If this names a column or value that is not in this project (owner_id, "Cash"), the database holds a different report_payment_methods than migration 20261014000045; applying that migration replaces it.`}
+        </Alert>
+      ) : paymentRow ? (
+        <section aria-labelledby="payment-methods-heading" className="space-y-3">
+          <div>
+            <h2 id="payment-methods-heading" className="text-sm font-semibold text-ink-900">
+              How customers paid
+            </h2>
+            <p className="text-xs text-ink-500">
+              Collected at the till on receipts issued in this period, voided ones excluded. A split
+              sale counts towards each method it used. Paid in advance is deposits taken earlier
+              and applied to these bills. Together they make up Revenue.
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-4">
+            <Stat
+              label="Cash"
+              value={formatMoney(paymentRow.cash_total, currency)}
+              hint={receiptsLabel(paymentRow.cash_receipts)}
+            />
+            <Stat
+              label="Card"
+              value={formatMoney(paymentRow.card_total, currency)}
+              hint={receiptsLabel(paymentRow.card_receipts)}
+            />
+            <Stat
+              label="Bank transfer"
+              value={formatMoney(paymentRow.transfer_total, currency)}
+              hint={receiptsLabel(paymentRow.transfer_receipts)}
+            />
+            <Stat
+              label="Paid in advance"
+              value={formatMoney(paymentRow.advance_total, currency)}
+              hint="Deposits applied"
+            />
+          </div>
+        </section>
+      ) : null}
 
       <Card>
         <CardHeader
@@ -397,11 +485,17 @@ function Preset({
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function receiptsLabel(count: number | string): string {
+  const n = Number(count);
+  return `${n} ${n === 1 ? "receipt" : "receipts"}`;
+}
+
+function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <Card className="px-5 py-4">
       <p className="text-xs font-medium uppercase tracking-wide text-ink-500">{label}</p>
       <p className="mt-1.5 text-2xl font-semibold tabular-nums text-ink-900">{value}</p>
+      {hint ? <p className="mt-1 text-xs text-ink-500">{hint}</p> : null}
     </Card>
   );
 }

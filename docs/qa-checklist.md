@@ -62,6 +62,7 @@ For each row: open the route, switch every tab with the mouse **and** the keyboa
 | `/dashboard/payroll` | (legacy UI, no tabs) | ✅ | 🚫 | 🚫 | **Not redesigned.** Check behaviour only. Paid periods cannot be edited. |
 | `/dashboard/earnings` | (legacy UI) | per module | 🚫 | ✅ own only | **Not redesigned.** A therapist sees only their own commission. |
 | `/dashboard/reports` | (legacy UI) | ✅ | 🚫 | 🚫 | **Not redesigned.** Owner only; buckets by the salon's timezone. |
+| | How customers paid | ✅ | 🚫 | 🚫 | Needs migration 20261014000045. Cash + Card + Bank transfer + Paid in advance equals Revenue for the same dates; voided receipts are excluded; a split counts towards each method used. |
 | `/dashboard/audit` | (legacy UI) | ✅ | 🚫 | 🚫 | **Not redesigned.** Read-only; new billing and appearance actions have labels. |
 | `/dev/ui` | none | 404 in production | 404 | 404 | `npm run build && npm run start`, then open `/dev/ui`. |
 

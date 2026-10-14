@@ -24,7 +24,7 @@ const METHOD_LABEL: Record<string, string> = {
 };
 
 const KIND_LABEL: Record<PaymentKind, string> = {
-  deposit: "Advance",
+  deposit: "Paid in advance",
   settlement: "At checkout",
   refund: "Refund",
 };

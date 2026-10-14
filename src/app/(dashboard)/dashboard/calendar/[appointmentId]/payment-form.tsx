@@ -14,7 +14,9 @@ import { Flash } from "@/components/ui/flash";
 import { formatMoney } from "@/lib/format";
 
 /**
- * Taking an advance, an instalment, or the balance in cash at the desk.
+ * Taking an advance, an instalment, or the balance at the desk, by cash, card or
+ * bank transfer. Money taken before the bill is raised shows afterwards as "Paid in
+ * advance" and is taken off what the till asks for.
  *
  * Nothing here decides how much is owed -- `record_payment()` reads the
  * appointment's own balance and refuses anything that would take the total
@@ -75,7 +77,6 @@ export function RecordPaymentForm({
             <option value="cash">Cash</option>
             <option value="card">Card</option>
             <option value="bank_transfer">Bank transfer</option>
-            <option value="other">Other</option>
           </Select>
         </Field>
 

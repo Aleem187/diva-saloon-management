@@ -411,7 +411,11 @@ export const paymentSchema = z.object({
     .number()
     .positive("Enter an amount")
     .max(99_999_999, "That is larger than this can record"),
-  method: z.enum(["cash", "card", "bank_transfer", "other"]),
+  // The three ways money is taken at the desk. The database still allows "other"
+  // so earlier entries read back, but it is no longer something to choose.
+  method: z.enum(["cash", "card", "bank_transfer"], {
+    message: "Choose cash, card or bank transfer",
+  }),
   /**
    * When the money changed hands, which is not always when it was typed in --
    * a deposit taken on Friday may only be entered on Monday. Blank means now.

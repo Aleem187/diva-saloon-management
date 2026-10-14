@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { PaymentRow, ReceiptRow } from "@/lib/types/database";
 
 const PAYMENT_KIND_LABEL = {
-  deposit: "Advance",
+  deposit: "Paid in advance",
   settlement: "At checkout",
   refund: "Refund",
 } as const;
