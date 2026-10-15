@@ -91,6 +91,12 @@ Also, for every page:
 - [ ] Shared team login: the Password card explains the owner changes it, and the action refuses.
 - [ ] After migration 20261014000044: a staff member cannot change their own role or roster link through the data API (`npm run test:rls`).
 
+## 1d. Switched-off and revoked logins
+
+- [ ] Owner: Team › Linked accounts › deactivate a staff login. Their next click lands on the sign-in page with "This login has been switched off", not an endless redirect. Reactivate and they can sign in again.
+- [ ] Revoke a session in the Supabase dashboard (or sign out everywhere): the next click on the open tab lands on the sign-in page with "Your session has ended".
+- [ ] A healthy signed-in user who opens `/auth/session-ended` is sent back to the dashboard and stays signed in.
+
 ## 2. Role-specific spot checks
 
 **Owner**

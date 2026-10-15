@@ -7,7 +7,7 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { SignaturePad } from "@/components/signature-pad";
 import { Field, FileInput, Select, Textarea } from "@/components/ui/field";
 import { Flash } from "@/components/ui/flash";
-import { ATTACHMENT_MAX_FILES } from "@/lib/validation";
+import { ATTACHMENT_MAX_FILES } from "@/lib/attachments";
 import type {
   ConsentTemplateItemRow,
   ConsentTemplateRow,

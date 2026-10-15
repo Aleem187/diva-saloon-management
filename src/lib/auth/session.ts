@@ -58,7 +58,30 @@ const ALL_MODULES: AppModule[] = [
 ];
 
 /**
- * The signed-in user's profile and salon, or null.
+ * Where a request stands:
+ *   ok          a valid Auth user with an active profile in a salon
+ *   anonymous   no valid Auth user (none, or a token the Auth server refuses)
+ *   inactive    a valid Auth user with nothing to sign in to: no profile or
+ *               salon, or a deactivated profile
+ *
+ * The last two were once both "null", and that conflation is what made a
+ * deactivated login bounce between /dashboard and /login for ever: the proxy
+ * sees a valid session and sends it away from /login, the dashboard sees no
+ * usable account and sends it to /login. Telling them apart lets each be sent
+ * somewhere that actually ends the loop (`/auth/session-ended`).
+ */
+export type SessionState =
+  | { status: "ok"; session: SessionContext }
+  | { status: "anonymous" }
+  | { status: "inactive" };
+
+/** Where to send someone who is signed in to Auth but has no usable session. */
+export function sessionEndedHref(reason: "inactive" | "expired"): string {
+  return `/auth/session-ended?reason=${reason}`;
+}
+
+/**
+ * The signed-in user's profile and salon, with the reason when there is none.
  *
  * Both reads go through the RLS-bound server client, so the salon returned is
  * by construction the caller's own -- there is no code path here that could
@@ -66,7 +89,7 @@ const ALL_MODULES: AppModule[] = [
  *
  * `cache()` de-duplicates this within a single request/render pass.
  */
-export const getSessionContext = cache(async (): Promise<SessionContext | null> => {
+export const loadSessionState = cache(async (): Promise<SessionState> => {
   const supabase = await createClient();
 
   // getUser() revalidates the JWT against Supabase Auth. Never trust
@@ -75,7 +98,7 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) return null;
+  if (!user) return { status: "anonymous" };
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -84,7 +107,7 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
     .maybeSingle();
 
   // No profile, or a deactivated one: no tenant, therefore no access.
-  if (!profile || !profile.is_active) return null;
+  if (!profile || !profile.is_active) return { status: "inactive" };
 
   /*
    * Everything the profile points at, fetched together. These four depend only
@@ -105,7 +128,7 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
         : Promise.resolve({ data: [] as { module: AppModule }[] }),
     ]);
 
-  if (!salon) return null;
+  if (!salon) return { status: "inactive" };
 
   /*
    * The shared team login may be signed in on a limited number of devices at
@@ -153,23 +176,39 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
   );
 
   return {
-    userId: user.id,
-    email: user.email ?? profile.email,
-    profile,
-    salon,
-    teamMemberId: profile.team_member_id,
-    role: (role as RoleRow | null) ?? null,
-    modules,
-    isOwner,
-    teamLogin: (teamLogin as TeamLoginRow | null) ?? null,
+    status: "ok",
+    session: {
+      userId: user.id,
+      email: user.email ?? profile.email,
+      profile,
+      salon,
+      teamMemberId: profile.team_member_id,
+      role: (role as RoleRow | null) ?? null,
+      modules,
+      isOwner,
+      teamLogin: (teamLogin as TeamLoginRow | null) ?? null,
+    },
   };
 });
 
+/** The session, or null. For pages that show something else when there is none. */
+export async function getSessionContext(): Promise<SessionContext | null> {
+  const state = await loadSessionState();
+  return state.status === "ok" ? state.session : null;
+}
+
 /** Require any signed-in, active member of a salon. */
 export async function requireSession(): Promise<SessionContext> {
-  const session = await getSessionContext();
-  if (!session) redirect("/login");
-  return session;
+  const state = await loadSessionState();
+  if (state.status === "ok") return state.session;
+
+  /*
+   * Never straight to /login. The proxy only checks that a token is well-formed
+   * and signed, so anyone who reaches here with no usable session (a switched-off
+   * login, a token the Auth server has since revoked) still looks signed in to
+   * it and would be sent straight back. /auth/session-ended signs them out first.
+   */
+  redirect(sessionEndedHref(state.status === "inactive" ? "inactive" : "expired"));
 }
 
 /**

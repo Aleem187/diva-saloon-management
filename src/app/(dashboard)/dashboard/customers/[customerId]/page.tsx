@@ -46,21 +46,23 @@ export default async function CustomerDetailPage({
   const session = await requireSession();
   const supabase = await createClient();
 
-  // RLS scopes this to the caller's salon, so a foreign id simply is not found.
-  const { data: customer } = await supabase
-    .from("customers")
-    .select("*")
-    .eq("id", customerId)
-    .maybeSingle();
-
-  if (!customer) notFound();
-
   const canManage = isFrontDeskSession(session);
 
-  // Loyalty is front-desk information; a therapist gets none.
-  const { data: loyaltyBalance } = canManage
-    ? await supabase.rpc("customer_loyalty_balance", { p_customer_id: customerId })
-    : { data: null };
+  /*
+   * The customer and their loyalty balance are independent reads, so they are
+   * made together. (They used to be one after the other, which added a database
+   * round trip to every visit to a customer's page.) Loyalty is front-desk
+   * information; a therapist gets none, and the call is not made for them.
+   */
+  const [{ data: customer }, { data: loyaltyBalance }] = await Promise.all([
+    // RLS scopes this to the caller's salon, so a foreign id simply is not found.
+    supabase.from("customers").select("*").eq("id", customerId).maybeSingle(),
+    canManage
+      ? supabase.rpc("customer_loyalty_balance", { p_customer_id: customerId })
+      : Promise.resolve({ data: null }),
+  ]);
+
+  if (!customer) notFound();
 
   const { tabs, active } = resolveTabs(session, TABS, query.tab);
   const currency = session.salon.currency;

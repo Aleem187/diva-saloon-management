@@ -77,10 +77,27 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  // Do not remove: this call is what refreshes the session cookies.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  /*
+   * Who is this? Answered here from the token itself.
+   *
+   * getClaims() refreshes an expired session (that is what writes the rotated
+   * cookies above, and it must run on every request) and then verifies the access
+   * token's signature LOCALLY against the project's published public keys. This
+   * project signs with ES256, so there is no call to the Auth server on the hot
+   * path: the keys are fetched once and cached. (A project still on the older
+   * shared-secret signing would fall back to asking the server, losing the
+   * saving but not the correctness.)
+   *
+   * What a local check cannot know is whether the Auth server has since revoked
+   * the session, or whether the login has been switched off. That is fine here
+   * because this gate is a convenience, not the boundary: every page and Server
+   * Action still calls getUser() in getSessionContext(), which asks the server,
+   * and a request that fails it is sent to /auth/session-ended, which signs it
+   * out. Without that step a revoked-but-unexpired token would bounce between
+   * /login (this file sends signed-in visitors away from it) and /dashboard.
+   */
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims?.sub ? { id: claimsData.claims.sub } : null;
 
   const { pathname } = request.nextUrl;
 
