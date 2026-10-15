@@ -875,9 +875,20 @@ async function main() {
   await signIn(staffSession, staffProfile.email, PASSWORD);
 
   const staffAuditPage = await get(staffSession, "/dashboard/audit");
+  /*
+   * Refused either with an HTTP redirect, or -- since the dashboard has a loading
+   * skeleton, which is sent before the page finishes -- with a 200 whose body
+   * carries the redirect to /dashboard?denied=1. Either way what must be true is
+   * that none of the audit page itself was rendered.
+   */
+  const redirectedByStatus = staffAuditPage.status === 307 || staffAuditPage.status === 302;
+  const redirectedInStream =
+    staffAuditPage.status === 200 &&
+    /denied=1/.test(staffAuditPage.body) &&
+    !/id="audit-action"|Append-only record/.test(staffAuditPage.body.replace(/<script[\s\S]*?<\/script>/g, ""));
   check(
     "a therapist is redirected away from the audit log",
-    staffAuditPage.status === 307 || staffAuditPage.status === 302,
+    redirectedByStatus || redirectedInStream,
     `got ${staffAuditPage.status}`,
   );
 
