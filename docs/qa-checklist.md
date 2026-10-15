@@ -151,6 +151,7 @@ For each of the six schemes, three heading fonts, body fonts and three text size
 - [ ] Saves, and **another user** (Front desk) sees it after a reload without signing out.
 - [ ] Sidebar, buttons, pills and tables remain readable; nothing hard-coded keeps the old colour.
 - [ ] Printed receipt unchanged (black on white).
+- [ ] Reports follows the scheme: the Apply button, the active period badge (e.g. "30 days"), the Revenue over time bars, the ranking bars and the peak-times heat map all change colour with the scheme, and the numbers in the heat map stay readable.
 - [ ] A Front desk user cannot see the tab or save it with a forged form.
 
 ## 6. Stripe (test mode)

@@ -16,6 +16,30 @@ const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
  * Intensity alone is not the only cue: the count is printed in every cell that
  * has one, so the grid is readable without relying on colour.
  */
+/**
+ * A cell's colours for a busyness from 0 to 1, built from the salon's own colour
+ * scheme so the heat map follows Settings > Appearance.
+ *
+ * Two stretches, so the number inside each cell stays readable in EVERY scheme.
+ * A single white-to-accent blend cannot do that: somewhere in the middle neither
+ * white nor dark text reaches 4.5:1, and where that happens depends on the
+ * scheme. So the quieter half is a light tint of the accent (up to 45%) with dark
+ * text (7:1 or better), and the busier half runs from the accent to its darker
+ * shade with white text (the same pair the primary buttons use).
+ */
+function heatStyle(intensity: number): { backgroundColor: string; color: string } {
+  if (intensity <= 0.5) {
+    return {
+      backgroundColor: `color-mix(in oklch, var(--accent) ${(intensity / 0.5) * 45}%, white)`,
+      color: "var(--ink)",
+    };
+  }
+  return {
+    backgroundColor: `color-mix(in oklch, var(--accent-d) ${((intensity - 0.5) / 0.5) * 100}%, var(--accent))`,
+    color: "var(--on-accent)",
+  };
+}
+
 export function PeakHeatmap({ rows }: { rows: PeakTime[] }) {
   const [hovered, setHovered] = useState<string | null>(null);
 
@@ -76,13 +100,11 @@ export function PeakHeatmap({ rows }: { rows: PeakTime[] }) {
                     <td
                       key={hour}
                       className="relative h-7 rounded-[3px] text-center tabular-nums transition-colors"
-                      style={{
-                        backgroundColor:
-                          count === 0
-                            ? "var(--color-ink-100)"
-                            : `color-mix(in oklch, var(--color-brand-500) ${intensity * 100}%, white)`,
-                        color: intensity > 0.6 ? "white" : "var(--color-ink-700)",
-                      }}
+                      style={
+                        count === 0
+                          ? { backgroundColor: "var(--track)", color: "var(--ink)" }
+                          : heatStyle(intensity)
+                      }
                       onMouseEnter={() => setHovered(key)}
                       onMouseLeave={() => setHovered(null)}
                       title={`${day} ${String(hour).padStart(2, "0")}:00 — ${count} appointment${count === 1 ? "" : "s"}`}
@@ -120,9 +142,7 @@ export function PeakHeatmap({ rows }: { rows: PeakTime[] }) {
               key={step}
               aria-hidden
               className="size-3 rounded-[2px]"
-              style={{
-                backgroundColor: `color-mix(in oklch, var(--color-brand-500) ${step * 100}%, white)`,
-              }}
+              style={{ backgroundColor: heatStyle(step).backgroundColor }}
             />
           ))}
           <span>Busier</span>

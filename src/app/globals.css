@@ -3,6 +3,11 @@
 /*
  * LEGACY palette. Used by the pages that have not been moved to the redesign
  * kit yet (`ink-*`, `brand-*`). Deleted when the last of them has moved.
+ *
+ * `ink-*` are fixed neutrals. `brand-*` is NOT a fixed colour any more: it is
+ * mapped onto the salon's chosen colour scheme further down (see the second
+ * @theme inline block), so a page still written in `bg-brand-600` follows
+ * Settings > Appearance like everything else.
  */
 @theme {
   --color-ink-50: oklch(0.985 0.002 280);
@@ -15,13 +20,6 @@
   --color-ink-700: oklch(0.35 0.014 280);
   --color-ink-800: oklch(0.26 0.013 280);
   --color-ink-900: oklch(0.19 0.012 280);
-
-  --color-brand-50: oklch(0.97 0.018 330);
-  --color-brand-100: oklch(0.94 0.035 330);
-  --color-brand-300: oklch(0.8 0.09 330);
-  --color-brand-500: oklch(0.63 0.16 330);
-  --color-brand-600: oklch(0.56 0.17 330);
-  --color-brand-700: oklch(0.47 0.15 330);
 }
 
 /* ========================================================================== */
@@ -230,6 +228,19 @@
 
   --color-skeleton: var(--skeleton);
   --color-skeleton-hi: var(--skeleton-hi);
+
+  /*
+   * The legacy `brand-*` names, on the scheme. `inline` is what makes them follow:
+   * each utility emits var(--accent) itself, so a data-theme on an ancestor
+   * re-colours them. The pairs keep the contrast the schemes were checked for
+   * (accent on white, accent-d on soft, white on accent).
+   */
+  --color-brand-50: var(--soft);
+  --color-brand-100: var(--soft);
+  --color-brand-300: color-mix(in srgb, var(--accent) 40%, white);
+  --color-brand-500: var(--accent);
+  --color-brand-600: var(--accent);
+  --color-brand-700: var(--accent-d);
 
   /*
    * Type scale in em, so changing --base-size (Appearance > Text size)
