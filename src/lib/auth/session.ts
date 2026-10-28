@@ -145,7 +145,9 @@ export const loadSessionState = cache(async (): Promise<SessionState> => {
       profile.role_id
         ? supabase.from("role_modules").select("module").eq("role_id", profile.role_id)
         : Promise.resolve({ data: [] as { module: AppModule }[] }),
-      supabase.from("branches").select("*").order("created_at"),
+      // RLS already limits this to the caller's own salon; the filter says so again, so a
+      // policy gap could never put another salon's branches in the top bar.
+      supabase.from("branches").select("*").eq("salon_id", profile.salon_id).order("created_at"),
     ]);
 
   if (!salon) return { status: "inactive" };

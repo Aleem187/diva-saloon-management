@@ -44,10 +44,11 @@ export function Topbar({
       </p>
       <div className="flex flex-wrap items-center gap-3">
         {/*
-          An owner with more than one branch chooses which to look at. Everyone
-          else works in one branch, so they are told which rather than asked.
+          Every owner gets the branch menu: their own branches, and a way to add
+          another. Everyone else works in one branch, so they are told which
+          rather than asked.
         */}
-        {isOwner && branches.filter((b) => b.is_active).length > 1 ? (
+        {isOwner && branches.length > 0 ? (
           <BranchSwitcher
             branches={branches.filter((b) => b.is_active).map((b) => ({ id: b.id, name: b.name }))}
             activeId={activeBranchId}
