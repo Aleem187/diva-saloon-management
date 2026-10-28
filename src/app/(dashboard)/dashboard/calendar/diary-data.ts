@@ -18,6 +18,10 @@ import type {
   ServiceRow,
   TeamMemberRow,
 } from "@/lib/types/database";
+import { staffInScope } from "@/lib/branches";
+
+/** All the diary needs of a customer: the name on the appointment. */
+type DiaryCustomer = Pick<CustomerRow, "id" | "full_name">;
 
 
 /**
@@ -61,8 +65,8 @@ export async function loadDiary(
     supabase.from("team_members").select("*").eq("is_active", true).order("full_name"),
     supabase.from("services").select("*").eq("is_active", true).order("name"),
     isFrontDesk
-      ? supabase.from("customers").select("*").order("full_name").limit(500)
-      : Promise.resolve({ data: [] as CustomerRow[] }),
+      ? supabase.from("customers").select("id, full_name").order("full_name").limit(500)
+      : Promise.resolve({ data: [] as DiaryCustomer[] }),
     withHours
       ? supabase
           .from("salon_settings")
@@ -112,8 +116,11 @@ export async function loadDiary(
     ]);
   }
 
-  // Everyone on the roster is bookable.
-  const therapists = (team ?? []) as TeamMemberRow[];
+  // Everyone on the roster is bookable, at the branch being looked at (an owner
+  // who has chosen one sees its diary; "All branches" shows every column).
+  const therapists = staffInScope((team ?? []) as TeamMemberRow[], {
+    branchId: session.scopeBranchId,
+  });
 
   // A therapist sees only their own column of the diary -- matched on their
   // roster entry, which is what appointments actually reference.
@@ -134,8 +141,8 @@ export async function loadDiary(
   const serviceById = new Map<string, ServiceRow>();
   for (const s of (services ?? []) as ServiceRow[]) serviceById.set(s.id, s);
 
-  const customerById = new Map<string, CustomerRow>();
-  for (const c of (customers ?? []) as CustomerRow[]) customerById.set(c.id, c);
+  const customerById = new Map<string, DiaryCustomer>();
+  for (const c of (customers ?? []) as DiaryCustomer[]) customerById.set(c.id, c);
 
   const businessHours = (settings?.business_hours ?? null) as BusinessHours | null;
   const timeZone = session.salon.timezone;

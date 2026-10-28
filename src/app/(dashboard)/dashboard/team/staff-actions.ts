@@ -7,6 +7,7 @@ import { assertRole, requireSession } from "@/lib/auth/session";
 import { siteUrl } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { isUuid } from "@/lib/branches";
 import { fieldErrors, staffAccountSchema } from "@/lib/validation";
 import type { UserRole } from "@/lib/types/database";
 
@@ -23,6 +24,7 @@ export interface StaffFormState {
     email: string;
     password: string;
     roleName: string;
+    branchName: string | null;
     loginUrl: string;
   };
 }
@@ -104,21 +106,38 @@ export async function createStaffAction(
       return { errors: { roleId: "The owner role cannot be given to a new account." } };
     }
 
+    /*
+     * Which branch. Someone already on the team keeps theirs (a login and the
+     * person it belongs to are at one branch). Otherwise the owner names one, or
+     * it is the salon's only open branch. The database re-checks all of it.
+     */
+    let branchId = String(formData.get("branchId") ?? "");
+    const openBranches = session.branches.filter((b) => b.is_active);
+
     if (teamMemberId) {
       const { data: member } = await supabase
         .from("team_members")
-        .select("id, is_active")
+        .select("id, is_active, branch_id")
         .eq("id", teamMemberId)
         .maybeSingle();
       if (!member || !member.is_active) {
         return { errors: { teamMemberId: "Choose someone on the active team." } };
       }
+      branchId = member.branch_id;
       const { data: taken } = await supabase
         .from("profiles")
         .select("id")
         .eq("team_member_id", teamMemberId)
         .maybeSingle();
       if (taken) return { errors: { teamMemberId: "That team member already has a login." } };
+    }
+
+    if (!branchId && openBranches.length === 1) branchId = openBranches[0].id;
+    const branch = isUuid(branchId) ? openBranches.find((b) => b.id === branchId) : undefined;
+    // Before the branches migration is applied there are none to choose, and
+    // nothing to record; after it, every login needs one.
+    if (session.branches.length > 0 && !branch) {
+      return { errors: { branchId: "Choose a branch." } };
     }
 
     const { data: existing } = await supabase
@@ -151,6 +170,7 @@ export async function createStaffAction(
         invited_by: session.userId,
         team_member_id: teamMemberId,
         create_roster_entry: createRosterEntry,
+        ...(branch ? { branch_id: branch.id } : {}),
       })
       .select("id")
       .single();
@@ -193,7 +213,13 @@ export async function createStaffAction(
         action: AUDIT_ACTIONS.STAFF_CREATED,
         entityType: "profile",
         entityId: created.user.id,
-        metadata: { email, role: chosenRole.name, role_id: roleId, team_member_id: teamMemberId },
+        metadata: {
+          email,
+          role: chosenRole.name,
+          role_id: roleId,
+          team_member_id: teamMemberId,
+          branch_id: branch?.id ?? null,
+        },
       });
       revalidatePath("/dashboard/team");
     } catch (error) {
@@ -206,6 +232,7 @@ export async function createStaffAction(
         email,
         password,
         roleName: chosenRole.name,
+        branchName: branch?.name ?? null,
         loginUrl: `${siteUrl()}/login`,
       },
     };

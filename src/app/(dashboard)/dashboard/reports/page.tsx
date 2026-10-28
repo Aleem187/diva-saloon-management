@@ -10,6 +10,7 @@ import { addDays, salonToday } from "@/lib/time";
 import { Alert, Badge, Card, CardHeader, EmptyState, PageHeader } from "@/components/ui";
 import type {
   AppointmentStats,
+  BranchOverviewRow,
   LoyaltyCost,
   PaymentMethodTotals,
   PeakTime,
@@ -67,6 +68,19 @@ export default async function ReportsPage({ searchParams }: PageProps<"/dashboar
 
   const args = { p_from: from, p_to: to };
 
+  // The owner's comparison of branches: every branch at once, whichever one is
+  // chosen in the top bar. Only when there is more than one to compare.
+  const compareBranches = session.isOwner && session.branches.length > 1;
+  const branchOverview = compareBranches
+    ? await withRetry(() => supabase.rpc("report_branch_overview", args))
+    : null;
+  const branchRows = ((branchOverview?.data ?? []) as BranchOverviewRow[]);
+  const branchTotal = branchRows.find((row) => row.branch_id === null);
+  const branchLines = branchRows.filter((row) => row.branch_id !== null);
+  const maxBranchRevenue = Math.max(0, ...branchLines.map((row) => Number(row.revenue)));
+  // What the rest of this page is about: one branch, or the salon as a whole.
+  const viewing = session.branch ?? session.activeBranch;
+
   const [revenue, byService, byStaff, retention, appointments, loyalty, peaks, payments] =
     await Promise.all([
       withRetry(() =>
@@ -123,7 +137,9 @@ export default async function ReportsPage({ searchParams }: PageProps<"/dashboar
     <>
       <PageHeader
         title="Reports"
-        description={`${formatDate(from)} to ${formatDate(to)} · counted in ${timeZone}`}
+        description={`${formatDate(from)} to ${formatDate(to)} · counted in ${timeZone}${
+          viewing ? ` · ${viewing.name} only` : session.branches.length > 1 ? " · all branches" : ""
+        }`}
       />
 
       <Card>
@@ -170,6 +186,88 @@ export default async function ReportsPage({ searchParams }: PageProps<"/dashboar
           </div>
         </form>
       </Card>
+
+      {/*
+        All branches side by side. The figures are worked out in Postgres
+        (report_branch_overview): revenue is issued receipts, staff pay is the
+        commission and salary in pay periods that end in this range, and profit is
+        the first less the second -- before any other costs, which this product
+        does not record.
+      */}
+      {compareBranches ? (
+        <Card>
+          <CardHeader
+            title="Branches"
+            description="Every branch side by side for this period, whichever one is chosen in the top bar. Profit here is revenue less staff pay, before rent, stock and other costs, which are not recorded."
+          />
+          {branchOverview?.error ? (
+            <div className="px-5 py-4">
+              <Alert tone={branchOverview.error.code === "PGRST202" ? "info" : "error"}>
+                {branchOverview.error.code === "PGRST202"
+                  ? "The database does not expose the report_branch_overview function: it is missing, or the API's schema cache is stale. Run the end of migration 20261021000046_branches (the function and its grants), then run: notify pgrst, 'reload schema';"
+                  : `The branch comparison could not be loaded: ${describeRpcError(branchOverview.error)}`}
+              </Alert>
+            </div>
+          ) : (
+            <div className="overflow-x-auto px-5 py-4">
+              <table className="w-full min-w-[640px] text-sm">
+                <thead>
+                  <tr className="border-b border-ink-200 text-left text-xs uppercase tracking-wide text-ink-500">
+                    <th className="py-2 pr-3 font-medium">Branch</th>
+                    <th className="py-2 pr-3 text-right font-medium">Receipts</th>
+                    <th className="py-2 pr-3 text-right font-medium">Revenue</th>
+                    <th className="py-2 pr-3 text-right font-medium">Discounts</th>
+                    <th className="py-2 pr-3 text-right font-medium">Staff pay</th>
+                    <th className="py-2 text-right font-medium">Profit</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-ink-100">
+                  {branchLines.map((row) => (
+                    <tr key={row.branch_id}>
+                      <td className="py-2 pr-3 text-ink-800">
+                        <span className="font-medium">{row.branch_name}</span>
+                        {!row.is_active ? <span className="ml-2 text-xs text-ink-500">closed</span> : null}
+                        <span
+                          aria-hidden
+                          className="mt-1 block h-1.5 rounded-full bg-brand-500"
+                          style={{
+                            width: `${maxBranchRevenue > 0 ? Math.max(2, (Number(row.revenue) / maxBranchRevenue) * 100) : 0}%`,
+                          }}
+                        />
+                      </td>
+                      <td className="py-2 pr-3 text-right tabular-nums text-ink-600">{Number(row.receipt_count)}</td>
+                      <td className="py-2 pr-3 text-right tabular-nums text-ink-900">
+                        {formatMoney(row.revenue, currency)}
+                      </td>
+                      <td className="py-2 pr-3 text-right tabular-nums text-ink-600">
+                        {formatMoney(row.discounts, currency)}
+                      </td>
+                      <td className="py-2 pr-3 text-right tabular-nums text-ink-600">
+                        {formatMoney(row.staff_pay, currency)}
+                      </td>
+                      <td className="py-2 text-right font-medium tabular-nums text-ink-900">
+                        {formatMoney(row.profit, currency)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                {branchTotal ? (
+                  <tfoot>
+                    <tr className="border-t border-ink-200 font-semibold">
+                      <td className="py-2 pr-3 text-ink-900">All branches</td>
+                      <td className="py-2 pr-3 text-right tabular-nums">{Number(branchTotal.receipt_count)}</td>
+                      <td className="py-2 pr-3 text-right tabular-nums">{formatMoney(branchTotal.revenue, currency)}</td>
+                      <td className="py-2 pr-3 text-right tabular-nums">{formatMoney(branchTotal.discounts, currency)}</td>
+                      <td className="py-2 pr-3 text-right tabular-nums">{formatMoney(branchTotal.staff_pay, currency)}</td>
+                      <td className="py-2 text-right tabular-nums">{formatMoney(branchTotal.profit, currency)}</td>
+                    </tr>
+                  </tfoot>
+                ) : null}
+              </table>
+            </div>
+          )}
+        </Card>
+      ) : null}
 
       {firstError ? (
         <Alert tone="error">

@@ -216,6 +216,7 @@ try {
   check("and is gone", count === 0, `${count} row(s) left`);
 
   for (const table of [
+    "branches",
     "team_login_sessions",
     "team_logins",
     "team_members",

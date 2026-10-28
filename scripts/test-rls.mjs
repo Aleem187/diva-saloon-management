@@ -2912,6 +2912,134 @@ async function main() {
   check("an owner cannot delete their subscription", subStillThere === 1);
 
   /* ---------------------------------------------------------------- */
+  console.log("\nBranches: a branch-bound login reaches only its own branch\n");
+
+  /*
+   * Needs migration 20261021000046_branches. Salon A gets a second branch with its
+   * own team member, appointment and sale; the Main Branch receptionist and the
+   * therapist must see none of it, an owner can narrow their view to either
+   * branch with the x-branch-id header, and the header can never widen anyone's.
+   * (The exhaustive version runs in a throwaway database: npm run test:branches.)
+   */
+  const { data: br_mainBranch } = await admin
+    .from("branches")
+    .select("id")
+    .eq("salon_id", salonA.salonId)
+    .eq("is_default", true)
+    .single();
+  const { data: br_branch2 } = await admin
+    .from("branches")
+    .insert({ salon_id: salonA.salonId, name: "Branch 2" })
+    .select("id")
+    .single();
+  check("the owner's salon starts with a Main Branch", Boolean(br_mainBranch?.id));
+
+  const { data: br_b2Member } = await admin
+    .from("team_members")
+    .insert({ salon_id: salonA.salonId, full_name: "Branch Two Therapist", branch_id: br_branch2.id })
+    .select("id")
+    .single();
+  const { data: br_b2Customer } = await admin
+    .from("customers")
+    .insert({ salon_id: salonA.salonId, full_name: "Branch Two Customer", phone: `+1666${Date.now() % 10000000}` })
+    .select("id")
+    .single();
+  const { data: br_b2Service } = await admin
+    .from("services")
+    .insert({ salon_id: salonA.salonId, name: `Branch Two Cut ${randomUUID().slice(0, 4)}`, price: 30, duration_minutes: 30 })
+    .select("id")
+    .single();
+  const br_b2Start = new Date(Date.now() + 5 * 86400000);
+  const { data: br_b2Appointment, error: br_b2ApptError } = await admin
+    .from("appointments")
+    .insert({
+      salon_id: salonA.salonId,
+      customer_id: br_b2Customer.id,
+      staff_id: br_b2Member.id,
+      service_id: br_b2Service.id,
+      starts_at: br_b2Start.toISOString(),
+      ends_at: new Date(br_b2Start.getTime() + 1800000).toISOString(),
+      price_at_booking: 30,
+    })
+    .select("id, branch_id")
+    .single();
+  check("an appointment takes the branch of the person it is booked with", br_b2Appointment?.branch_id === br_branch2.id, br_b2ApptError?.message);
+
+  const { data: br_b2Receipt } = await admin
+    .from("receipts")
+    .insert({
+      salon_id: salonA.salonId,
+      receipt_number: 9001,
+      customer_id: br_b2Customer.id,
+      subtotal: 30,
+      total: 30,
+      loyalty_earn_rate: 0.05,
+      payment_method: "cash",
+      cash_amount: 30,
+      appointment_id: br_b2Appointment.id,
+    })
+    .select("id, branch_id")
+    .single();
+  check("a receipt for that visit is in the same branch", br_b2Receipt?.branch_id === br_branch2.id);
+
+  for (const [who, client] of [["the Main Branch receptionist", asReceptionistA], ["the Main Branch therapist", asStaffA]]) {
+    const { data: appts } = await client.from("appointments").select("id").eq("id", br_b2Appointment.id);
+    check(`${who} cannot see Branch 2's appointment`, (appts ?? []).length === 0);
+  }
+  const { data: br_recepReceipts } = await asReceptionistA.from("receipts").select("id").eq("id", br_b2Receipt.id);
+  check("the receptionist cannot see Branch 2's receipt", (br_recepReceipts ?? []).length === 0);
+  const { data: br_recepBranches } = await asReceptionistA.from("branches").select("id");
+  check("and sees only their own branch's row", (br_recepBranches ?? []).length === 1 && br_recepBranches[0].id === br_mainBranch.id);
+
+  const { error: br_recepBranchError } = await asReceptionistA
+    .from("branches")
+    .insert({ salon_id: salonA.salonId, name: "Rogue Branch" });
+  check("a non-owner cannot create a branch", Boolean(br_recepBranchError));
+  const { data: br_ownerBranches } = await asOwnerA.from("branches").select("id");
+  check("the owner sees every branch", (br_ownerBranches ?? []).length >= 2);
+  const { data: br_bSeesA } = await asOwnerB.from("branches").select("id").eq("salon_id", salonA.salonId);
+  check("another salon's owner sees none of them", (br_bSeesA ?? []).length === 0);
+
+  // The owner's view filter, through the real header.
+  const br_withBranch = async (email, branchId) => {
+    const client = createClient(SUPABASE_URL, PUBLISHABLE_KEY, {
+      auth: { autoRefreshToken: false, persistSession: false },
+      global: { headers: { "x-branch-id": branchId } },
+    });
+    const { error } = await client.auth.signInWithPassword({ email, password: PASSWORD });
+    if (error) throw new Error(`Could not sign in as ${email}: ${error.message}`);
+    return client;
+  };
+  const br_ownerAtBranch2 = await br_withBranch(salonA.email, br_branch2.id);
+  const { data: br_n2 } = await br_ownerAtBranch2.from("appointments").select("id, branch_id");
+  check("an owner with Branch 2 chosen sees only Branch 2's appointments", (br_n2 ?? []).length >= 1 && (br_n2 ?? []).every((a) => a.branch_id === br_branch2.id));
+  const br_ownerAtMain = await br_withBranch(salonA.email, br_mainBranch.id);
+  const { data: br_nMain } = await br_ownerAtMain.from("appointments").select("id").eq("id", br_b2Appointment.id);
+  check("with Main chosen, Branch 2's appointment is out of view", (br_nMain ?? []).length === 0);
+  const { data: br_nAll } = await asOwnerA.from("appointments").select("id").eq("id", br_b2Appointment.id);
+  check("and on All branches it is back", (br_nAll ?? []).length === 1);
+
+  const br_recepForged = await br_withBranch(receptionistA.email, br_branch2.id);
+  const { data: br_forged } = await br_recepForged.from("appointments").select("id").eq("id", br_b2Appointment.id);
+  check("a header naming Branch 2 cannot widen a Main Branch login", (br_forged ?? []).length === 0);
+
+  const { error: br_moveError } = await asReceptionistA.rpc("move_team_member_to_branch", {
+    p_member_id: br_b2Member.id,
+    p_branch_id: br_mainBranch.id,
+  });
+  check("a non-owner cannot move people between branches", Boolean(br_moveError));
+  const { error: br_overviewError } = await asReceptionistA.rpc("report_branch_overview", {
+    p_from: "2020-01-01",
+    p_to: "2099-12-31",
+  });
+  check("nor read the branch comparison", Boolean(br_overviewError));
+  const { data: br_overview } = await asOwnerA.rpc("report_branch_overview", { p_from: "2020-01-01", p_to: "2099-12-31" });
+  check(
+    "the owner's comparison lists every branch and a total",
+    (br_overview ?? []).length >= 3 && (br_overview ?? []).some((r) => r.branch_id === null),
+  );
+
+  /* ---------------------------------------------------------------- */
   console.log("\nProfiles: nobody promotes themselves\n");
 
   /*

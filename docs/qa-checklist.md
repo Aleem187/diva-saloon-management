@@ -97,6 +97,17 @@ Also, for every page:
 - [ ] Revoke a session in the Supabase dashboard (or sign out everywhere): the next click on the open tab lands on the sign-in page with "Your session has ended".
 - [ ] A healthy signed-in user who opens `/auth/session-ended` is sent back to the dashboard and stays signed in.
 
+## 1e. Branches (after migration 20261021000046)
+
+- [ ] Existing data: every existing record is in the Main Branch and nothing looks different to a branch-bound login.
+- [ ] Owner: Team › Branches adds, renames, closes and reopens branches. The Main Branch cannot be closed; a branch with people on it cannot be closed.
+- [ ] Owner: the top bar shows a Branch selector once there are two open branches. Choosing one narrows Calendar, POS receipts, Customers' visits and Reports to that branch; "All branches" shows everything. The branch comparison under Reports › Branches always lists every branch.
+- [ ] Add staff and Invitations ask for a branch; someone already on the team keeps theirs. A new person signs in and sees only their branch, with its name in the top bar.
+- [ ] A receptionist or accountant at Branch 2 cannot see, book against or take payment on another branch's visits, even with a forged link.
+- [ ] A walk-in sale by the owner on "All branches" asks to choose a branch first; with one chosen it lands there.
+- [ ] Moving a person to another branch is refused while they have upcoming appointments, and moves their login with them.
+- [ ] `npm run test:branches` passes.
+
 ## 2. Role-specific spot checks
 
 **Owner**

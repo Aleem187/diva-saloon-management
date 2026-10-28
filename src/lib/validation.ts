@@ -136,6 +136,12 @@ export const changePasswordSchema = z
     path: ["password"],
   });
 
+/** A branch: a name (unique within the salon) and, optionally, where it is. */
+export const branchSchema = z.object({
+  name: z.string().trim().min(2, "Give the branch a name").max(80),
+  address: z.string().trim().max(300).default(""),
+});
+
 export const forgotPasswordSchema = z.object({ email });
 
 export const resetPasswordSchema = z

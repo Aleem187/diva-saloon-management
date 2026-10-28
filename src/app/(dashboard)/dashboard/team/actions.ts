@@ -18,6 +18,7 @@ import {
   roleSchema,
   teamMemberSchema,
 } from "@/lib/validation";
+import { isUuid } from "@/lib/branches";
 import type { UserRole } from "@/lib/types/database";
 
 export interface TeamFormState {
@@ -87,6 +88,29 @@ export async function inviteMemberAction(
   }
 
   /*
+   * Which branch the new login belongs to. Someone already on the team keeps the
+   * branch they work at; otherwise the form names one, or it is the only open
+   * branch this person can see (a branch manager sees only their own). The
+   * database re-checks it, and refuses an invitation into a branch the inviter
+   * does not manage.
+   */
+  const openBranches = session.branches.filter((b) => b.is_active);
+  let branchId = String(formData.get("branchId") ?? "");
+  if (teamMemberId) {
+    const { data: member } = await supabase
+      .from("team_members")
+      .select("branch_id")
+      .eq("id", teamMemberId)
+      .maybeSingle();
+    if (member) branchId = member.branch_id;
+  }
+  if (!branchId && openBranches.length === 1) branchId = openBranches[0].id;
+  const branch = isUuid(branchId) ? openBranches.find((b) => b.id === branchId) : undefined;
+  if (session.branches.length > 0 && !branch) {
+    return { errors: { branchId: "Choose a branch." } };
+  }
+
+  /*
    * `invitations.role` is the pre-Phase-7b enum and is still NOT NULL. It is
    * no longer the authority on anything -- role_id is -- so it is filled with
    * the nearest legacy equivalent purely so old rows and new ones keep the
@@ -118,6 +142,7 @@ export async function inviteMemberAction(
       invited_by: session.userId,
       team_member_id: teamMemberId,
       create_roster_entry: createRosterEntry,
+      ...(branch ? { branch_id: branch.id } : {}),
     })
     .select("id")
     .single();
@@ -508,10 +533,15 @@ export async function saveTeamMemberAction(
   const memberId = String(formData.get("memberId") ?? "");
   const supabase = await createClient();
 
+  // A NEW team member goes to the branch named in the form (the database falls
+  // back to the person's own branch, the one chosen in the top bar, or the only
+  // open one). Editing never moves someone: that is its own step, with checks.
+  const wantedBranch = String(formData.get("branchId") ?? "");
   const row = {
     salon_id: session.profile.salon_id,
     full_name: parsed.data.fullName,
     specialty: parsed.data.specialty,
+    ...(!memberId && isUuid(wantedBranch) ? { branch_id: wantedBranch } : {}),
   };
 
   // `.select()` and check the result: a zero-row update is not an error in

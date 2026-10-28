@@ -2,6 +2,7 @@ import { BookingForm } from "./booking-form";
 import { asDate } from "./diary-range";
 import { Card, CardTitle } from "@/components/ui/card";
 import { requireSession } from "@/lib/auth/session";
+import { staffInScope } from "@/lib/branches";
 import { createClient } from "@/lib/supabase/server";
 import { salonToday } from "@/lib/time";
 import type { ServiceRow, TeamMemberRow } from "@/lib/types/database";
@@ -19,7 +20,10 @@ export async function BookingTab({ params }: { params: Params }) {
     supabase.from("services").select("*").eq("is_active", true).order("name"),
   ]);
 
-  const therapists = (team ?? []) as TeamMemberRow[];
+  // Only the people at the branch being served: a booking is at its therapist's branch.
+  const therapists = staffInScope((team ?? []) as TeamMemberRow[], {
+    branchId: session.scopeBranchId,
+  });
   const defaultDate = asDate(params.date, salonToday(session.salon.timezone));
 
   return (

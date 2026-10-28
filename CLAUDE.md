@@ -92,6 +92,21 @@ Build in the phase order the brief lays out.
    estimate and must not reach payroll. Pinned by "Commission follows the
    receipt, not the quote" in `test-money`.
 
+16. **Branches: what happens at a branch carries `branch_id`, and the rule lives in
+   Postgres.** `team_members`, `appointments`, `receipts`, `receipt_line_items`
+   and `payments` have a NOT NULL `branch_id` (composite FK `(branch_id, salon_id)`,
+   NO ACTION), assigned by BEFORE INSERT triggers from where the row belongs (a
+   visit takes its therapist's branch; money follows its receipt or visit), never
+   trusted from the client. Policies add `public.can_access_branch(branch_id)` to
+   whatever they already check; management of people uses
+   `can_manage_branch()`. A login tied to a branch (`profiles.branch_id`, NULL only
+   for the owner) can reach only that branch. The owner's "All branches / Branch N"
+   choice is the `x-branch-id` request header, which can only NARROW an owner's view
+   (`active_branch_filter()`), so a forged header shows less, never more. A new table
+   that records what happens at a location needs the same, and cases in
+   `supabase/tests/branches/` (`npm run test:branches`, which runs in a throwaway
+   Docker Postgres, never against a project).
+
 ## Conventions
 
 - Data access goes through `@/lib/supabase/server`. `@/lib/supabase/admin`

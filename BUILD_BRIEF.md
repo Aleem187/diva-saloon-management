@@ -14,7 +14,7 @@ Build a multi-tenant SaaS platform for salons and aesthetic clinics. Each salon 
 ## Multi-Tenancy Model
 - Shared database, every table scoped by `salon_id`.
 - Enforce isolation via Postgres Row Level Security (RLS) — every query must filter by the authenticated user's `salon_id`.
-- No multi-branch support: if an owner has a second location, they create a fully separate salon account/subscription for it. Do not build any branch-linking logic.
+- **Branches (added after the first version of this brief, which excluded them).** A salon may run several branches under ONE subscription. Customers (with their loyalty balance), the service menu, prices, deals, consent templates, roles and settings are shared across the salon. Team members, appointments, receipts and payments belong to a branch. The owner sees every branch, or one at a time; every other login belongs to exactly one branch and sees only that. Isolation between branches is enforced by Row Level Security exactly as isolation between salons is. A salon that wants fully separate books and a separate subscription still creates a separate salon account. See `docs/branches.md`.
 - No inventory/consumables tracking in this version — skip stock deduction entirely.
 
 ## Roles & Permissions

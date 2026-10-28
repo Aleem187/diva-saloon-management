@@ -37,6 +37,15 @@ export async function PeriodsTab({ periodId }: { periodId: string }) {
     .order("starts_on", { ascending: false });
   const periods = (data ?? []) as PayrollPeriodRow[];
 
+  if (periods.length === 0 && session.branch) {
+    // A login tied to one branch cannot see (or run) whole-salon pay periods.
+    return (
+      <EmptyState title="Pay periods are for the whole salon">
+        The owner generates and pays them. Your branch&rsquo;s pay settings are under Pay settings.
+      </EmptyState>
+    );
+  }
+
   if (periods.length === 0) {
     return (
       <EmptyState

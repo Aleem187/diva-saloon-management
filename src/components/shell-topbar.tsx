@@ -1,6 +1,8 @@
+import { BranchSwitcher } from "@/components/branch-switcher";
 import { ButtonLink } from "@/components/ui/button";
+import { Pill } from "@/components/ui/pill";
 import { formatDayLabel, instantToSalonDate, instantToSalonTime } from "@/lib/time";
-import type { AppModule } from "@/lib/types/database";
+import type { AppModule, BranchRow } from "@/lib/types/database";
 
 /** The salon's own date and clock time right now, via the shared helpers. */
 function nowInSalon(timeZone: string): string {
@@ -17,10 +19,21 @@ export function Topbar({
   timeZone,
   currency,
   modules,
+  branches = [],
+  assignedBranch = null,
+  activeBranchId = null,
+  isOwner = false,
 }: {
   timeZone: string;
   currency: string;
   modules: AppModule[];
+  /** Every branch the viewer can see. */
+  branches?: BranchRow[];
+  /** The branch a non-owner login belongs to. */
+  assignedBranch?: BranchRow | null;
+  /** The branch an owner has chosen, or null for all of them. */
+  activeBranchId?: string | null;
+  isOwner?: boolean;
 }) {
   const held = new Set(modules);
 
@@ -30,6 +43,17 @@ export function Topbar({
         {nowInSalon(timeZone)} · {timeZone} · {currency}
       </p>
       <div className="flex flex-wrap items-center gap-3">
+        {/*
+          An owner with more than one branch chooses which to look at. Everyone
+          else works in one branch, so they are told which rather than asked.
+        */}
+        {isOwner && branches.filter((b) => b.is_active).length > 1 ? (
+          <BranchSwitcher
+            branches={branches.filter((b) => b.is_active).map((b) => ({ id: b.id, name: b.name }))}
+            activeId={activeBranchId}
+          />
+        ) : null}
+        {!isOwner && assignedBranch ? <Pill tone="accent">{assignedBranch.name}</Pill> : null}
         {held.has("pos") ? (
           <ButtonLink href="/dashboard/pos" variant="ghost" size="sm">
             Open till

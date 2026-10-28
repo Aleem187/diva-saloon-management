@@ -33,7 +33,14 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
     <>
       <PageHeader
         title={`Welcome${profile.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}`}
-        subtitle={`${session.role?.name ?? "No role"} at ${salon.name}`}
+        subtitle={`${session.role?.name ?? "No role"} at ${salon.name}${
+          // Which branch their screens are about: their own, or the one an owner chose.
+          (session.branch ?? session.activeBranch) && session.branches.length > 1
+            ? ` · ${(session.branch ?? session.activeBranch)?.name}`
+            : session.isOwner && session.branches.length > 1
+              ? " · all branches"
+              : ""
+        }`}
       />
 
       {params.denied ? (

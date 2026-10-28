@@ -1,12 +1,12 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import { inviteMemberAction, type TeamFormState } from "./actions";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Field, Input, Select } from "@/components/ui/field";
 import { Flash } from "@/components/ui/flash";
-import type { RoleRow, TeamMemberRow } from "@/lib/types/database";
+import type { BranchRow, RoleRow, TeamMemberRow } from "@/lib/types/database";
 
 /**
  * Creating a login.
@@ -19,10 +19,17 @@ import type { RoleRow, TeamMemberRow } from "@/lib/types/database";
 export function InviteForm({
   roster,
   roles,
+  branches,
+  defaultBranchId,
 }: {
   roster: TeamMemberRow[];
   roles: RoleRow[];
+  /** The open branches the inviter may invite into (one for a branch manager). */
+  branches: BranchRow[];
+  defaultBranchId: string | null;
 }) {
+  // Someone already on the team keeps the branch they work at.
+  const [existingMember, setExistingMember] = useState("");
   const [state, formAction] = useActionState<TeamFormState, FormData>(
     inviteMemberAction,
     {},
@@ -73,7 +80,12 @@ export function InviteForm({
         error={state.errors?.teamMemberId}
         hint="Only people without a login are listed."
       >
-        <Select id="invite-member" name="teamMemberId" defaultValue="">
+        <Select
+          id="invite-member"
+          name="teamMemberId"
+          defaultValue=""
+          onChange={(event) => setExistingMember(event.target.value)}
+        >
           <option value="">Someone new — add them to the team</option>
           {roster.map((member) => (
             <option key={member.id} value={member.id}>
@@ -84,6 +96,36 @@ export function InviteForm({
           <option value="none">Nobody — an admin who performs no services</option>
         </Select>
       </Field>
+
+      {branches.length > 1 ? (
+        <Field
+          label="Branch"
+          htmlFor="invite-branch"
+          error={state.errors?.branchId}
+          hint={
+            existingMember && existingMember !== "none"
+              ? "Someone already on the team keeps the branch they work at."
+              : "They will see only this branch."
+          }
+        >
+          <Select
+            id="invite-branch"
+            name="branchId"
+            defaultValue={defaultBranchId ?? ""}
+            disabled={Boolean(existingMember) && existingMember !== "none"}
+            required
+          >
+            <option value="" disabled>
+              Choose a branch
+            </option>
+            {branches.map((branch) => (
+              <option key={branch.id} value={branch.id}>
+                {branch.name}
+              </option>
+            ))}
+          </Select>
+        </Field>
+      ) : null}
 
       <SubmitButton pendingLabel="Sending invitation...">Send invitation</SubmitButton>
     </form>

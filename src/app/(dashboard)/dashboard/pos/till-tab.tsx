@@ -1,4 +1,5 @@
 import { Till, type CheckoutPrefill } from "./till";
+import { staffInScope } from "@/lib/branches";
 import { Flash } from "@/components/ui/flash";
 import { requireModule } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
@@ -39,7 +40,8 @@ export async function TillTab({ params }: { params: Params }) {
       supabase.from("deal_services").select("*"),
     ]);
 
-  const therapists = (team ?? []) as TeamMemberRow[];
+  // Only the people who work at the branch being served (everyone, for an owner on All).
+  const therapists = staffInScope((team ?? []) as TeamMemberRow[], { branchId: session.scopeBranchId });
 
   const servicesByDeal: Record<string, string[]> = {};
   for (const link of (dealServices ?? []) as DealServiceRow[]) {

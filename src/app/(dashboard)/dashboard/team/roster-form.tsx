@@ -4,9 +4,9 @@ import { useActionState } from "react";
 
 import { saveTeamMemberAction, type TeamFormState } from "./actions";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { Field, Input } from "@/components/ui/field";
+import { Field, Input, Select } from "@/components/ui/field";
 import { Flash } from "@/components/ui/flash";
-import type { TeamMemberRow } from "@/lib/types/database";
+import type { BranchRow, TeamMemberRow } from "@/lib/types/database";
 
 /**
  * Adding someone to the roster.
@@ -16,7 +16,16 @@ import type { TeamMemberRow } from "@/lib/types/database";
  * block the owner from recording who works there or fill the auth system with
  * invented accounts. A login is attached separately, and only when wanted.
  */
-export function RosterForm({ member }: { member?: TeamMemberRow }) {
+export function RosterForm({
+  member,
+  branches = [],
+  defaultBranchId = null,
+}: {
+  member?: TeamMemberRow;
+  /** Open branches to choose from when adding someone; empty or one means no choice. */
+  branches?: BranchRow[];
+  defaultBranchId?: string | null;
+}) {
   const [state, formAction] = useActionState<TeamFormState, FormData>(
     saveTeamMemberAction,
     {},
@@ -37,7 +46,13 @@ export function RosterForm({ member }: { member?: TeamMemberRow }) {
         intrinsic widths. `items-start` keeps the button aligned with the
         inputs even when Specialty renders its hint underneath.
       */}
-      <div className="grid items-start gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+      <div
+        className={`grid items-start gap-3 ${
+          !member && branches.length > 1
+            ? "sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]"
+            : "sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
+        }`}
+      >
         <Field label="Name" htmlFor={`member-name-${id}`} error={state.errors?.fullName}>
           <Input
             id={`member-name-${id}`}
@@ -61,6 +76,21 @@ export function RosterForm({ member }: { member?: TeamMemberRow }) {
             placeholder="Hair colour, bridal"
           />
         </Field>
+
+        {!member && branches.length > 1 ? (
+          <Field label="Branch" htmlFor={`member-branch-${id}`} error={state.errors?.branchId}>
+            <Select id={`member-branch-${id}`} name="branchId" defaultValue={defaultBranchId ?? ""} required>
+              <option value="" disabled>
+                Choose
+              </option>
+              {branches.map((branch) => (
+                <option key={branch.id} value={branch.id}>
+                  {branch.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        ) : null}
 
         {/* Nudged down by the height of a field label, so it lines up with
             the inputs rather than with their captions. */}

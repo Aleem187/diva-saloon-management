@@ -7,6 +7,15 @@ import { cn } from "@/components/ui/cn";
 import { Input } from "@/components/ui/field";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { groupByCategory, type PickableService } from "@/lib/services";
+import { useDebouncedValue } from "@/lib/use-debounced-value";
+
+function findMatches(services: PickableService[], query: string): PickableService[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  return services
+    .filter((s) => s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q))
+    .slice(0, 6);
+}
 
 /**
  * Adding services to a booking or a sale.
@@ -32,15 +41,10 @@ export function ServicePicker({
   const [browsing, setBrowsing] = useState(false);
   const [checked, setChecked] = useState<Set<string>>(new Set());
 
-  const matches = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return services
-      .filter(
-        (s) => s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q),
-      )
-      .slice(0, 6);
-  }, [query, services]);
+  const searched = useDebouncedValue(query);
+  // An emptied box clears the list at once rather than after the debounce.
+  const found = useMemo(() => findMatches(services, searched), [searched, services]);
+  const matches = query.trim() ? found : [];
 
   const grouped = useMemo(() => groupByCategory(services), [services]);
 
@@ -76,9 +80,12 @@ export function ServicePicker({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === "Enter" && matches[0]) {
+              // Read the live text, not the debounced list: Enter right after typing
+              // must add what is in the box, not what it matched 300ms ago.
+              const first = findMatches(services, query)[0];
+              if (event.key === "Enter" && first) {
                 event.preventDefault();
-                addOne(matches[0].id);
+                addOne(first.id);
               }
             }}
             placeholder="Search services..."

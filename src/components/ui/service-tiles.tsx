@@ -7,6 +7,7 @@ import { Input } from "./field";
 import { SegmentedControl } from "./segmented-control";
 import { formatDuration, formatMoney } from "@/lib/format";
 import type { PickableService } from "@/lib/services";
+import { useDebouncedValue } from "@/lib/use-debounced-value";
 
 const ALL = "All";
 
@@ -33,6 +34,9 @@ function ServiceTilesImpl({
 }) {
   const [category, setCategory] = useState<string>(ALL);
   const [query, setQuery] = useState("");
+  // The box stays live; the filter follows 300ms after typing pauses.
+  const debounced = useDebouncedValue(query);
+  const searched = query.trim() ? debounced : "";
 
   const categories = useMemo(() => {
     const names = new Set(services.map((s) => s.category?.trim() || "General"));
@@ -40,13 +44,13 @@ function ServiceTilesImpl({
   }, [services]);
 
   const shown = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = searched.trim().toLowerCase();
     return services.filter(
       (s) =>
         (category === ALL || (s.category?.trim() || "General") === category) &&
         (!q || s.name.toLowerCase().includes(q)),
     );
-  }, [services, category, query]);
+  }, [services, category, searched]);
 
   return (
     <div className="space-y-3">

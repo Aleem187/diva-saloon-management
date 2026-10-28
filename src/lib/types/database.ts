@@ -55,6 +55,8 @@ export type SalonRow = {
 };
 
 export type ProfileRow = {
+  /** The one branch this login belongs to; null for an owner (every branch). */
+  branch_id: string | null;
   /** The role this login holds -- the authority on what they may do. */
   role_id: string | null;
   /**
@@ -83,6 +85,8 @@ export type SalonSettingsRow = {
 };
 
 export type InvitationRow = {
+  /** The branch the invited login will belong to. */
+  branch_id: string | null;
   /** The roster entry this login is for, if an existing person. */
   team_member_id: string | null;
   create_roster_entry: boolean;
@@ -234,6 +238,8 @@ export type AppointmentStatus =
   | "no_show";
 
 export type AppointmentRow = {
+  /** The branch of the team member it is booked with. */
+  branch_id: string;
   id: string;
   salon_id: string;
   customer_id: string;
@@ -263,6 +269,8 @@ export type ReceiptStatus = "issued" | "voided";
 export type LoyaltyTransactionType = "earn" | "redeem" | "void_reversal";
 
 export type ReceiptRow = {
+  /** Where the sale was made. */
+  branch_id: string;
   id: string;
   salon_id: string;
   receipt_number: number;
@@ -306,6 +314,7 @@ export type ReceiptRow = {
 };
 
 export type ReceiptLineItemRow = {
+  branch_id: string;
   id: string;
   salon_id: string;
   receipt_id: string;
@@ -388,6 +397,30 @@ export type SubscriptionRow = {
 };
 
 /** Mirror of a Stripe invoice. Amounts are in the currency's minor unit. */
+/** One location inside a salon. The Main Branch is the one that existed before branches did. */
+export type BranchRow = {
+  id: string;
+  salon_id: string;
+  name: string;
+  address: string;
+  is_default: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+/** One line of the owner's branch comparison; the row with a null id is the total. */
+export type BranchOverviewRow = {
+  branch_id: string | null;
+  branch_name: string;
+  is_active: boolean;
+  receipt_count: number;
+  revenue: number;
+  discounts: number;
+  staff_pay: number;
+  profit: number;
+};
+
 /** The salon's one shared login, and the cap on how many devices may use it at once. */
 export type TeamLoginRow = {
   profile_id: string;
@@ -445,6 +478,8 @@ export type PaymentKind = "deposit" | "settlement" | "refund";
 
 /** One event in the payment ledger. Append-only: a correction is a new row. */
 export type PaymentRow = {
+  /** Follows the receipt or appointment it is for. */
+  branch_id: string;
   id: string;
   salon_id: string;
   customer_id: string;
@@ -516,6 +551,8 @@ export type RoleModuleRow = {
 };
 
 export type TeamMemberRow = {
+  /** Where this person works. */
+  branch_id: string;
   id: string;
   salon_id: string;
   full_name: string;
@@ -746,6 +783,7 @@ export type Database = {
       payroll_entries: Table<PayrollEntryRow>;
       subscriptions: Table<SubscriptionRow>;
       invoices: Table<InvoiceRow>;
+      branches: Table<BranchRow>;
       team_logins: Table<TeamLoginRow>;
       team_login_sessions: Table<TeamLoginSessionRow>;
     };
@@ -815,6 +853,18 @@ export type Database = {
       report_appointment_stats: {
         Args: { p_from: string; p_to: string };
         Returns: AppointmentStats[];
+      };
+      move_team_member_to_branch: {
+        Args: { p_member_id: string; p_branch_id: string };
+        Returns: undefined;
+      };
+      move_login_to_branch: {
+        Args: { p_profile_id: string; p_branch_id: string };
+        Returns: undefined;
+      };
+      report_branch_overview: {
+        Args: { p_from: string; p_to: string };
+        Returns: BranchOverviewRow[];
       };
       report_payment_methods: {
         Args: { p_from: string; p_to: string };

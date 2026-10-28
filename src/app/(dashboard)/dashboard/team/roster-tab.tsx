@@ -1,5 +1,6 @@
 import { setTeamMemberActiveAction } from "./actions";
 import { IdDocument } from "./id-document";
+import { MoveBranchForm } from "./move-branch-form";
 import { RosterForm } from "./roster-form";
 import { initialsOf } from "@/components/shell-sidebar-parts";
 import { Button } from "@/components/ui/button";
@@ -76,7 +77,10 @@ export async function RosterTab() {
           A name is enough. No email is needed — someone only needs an account if they want to
           sign in and check their own earnings.
         </p>
-        <RosterForm />
+        <RosterForm
+          branches={session.branches.filter((b) => b.is_active)}
+          defaultBranchId={session.scopeBranchId}
+        />
       </Card>
 
       {team.length === 0 ? (
@@ -104,6 +108,11 @@ export async function RosterTab() {
                         <p className="flex flex-wrap items-center gap-2 font-semibold">
                           <span className="truncate">{member.full_name}</span>
                           {!member.is_active ? <Pill tone="critical">Off the team</Pill> : null}
+                          {session.branches.length > 1 ? (
+                            <Pill tone="neutral">
+                              {session.branches.find((b) => b.id === member.branch_id)?.name ?? "Branch"}
+                            </Pill>
+                          ) : null}
                           {login ? (
                             <Pill tone="accent">Can sign in</Pill>
                           ) : (
@@ -124,6 +133,15 @@ export async function RosterTab() {
                           <EditDisclosure label="Edit">
                             <RosterForm member={member} />
                           </EditDisclosure>
+                          {session.isOwner ? (
+                            <MoveBranchForm
+                              kind="member"
+                              id={member.id}
+                              currentBranchId={member.branch_id}
+                              branches={session.branches}
+                              label={member.full_name}
+                            />
+                          ) : null}
                           {session.isOwner ? (
                             <IdDocument
                               staffId={member.id}

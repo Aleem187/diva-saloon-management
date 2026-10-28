@@ -74,6 +74,11 @@ export const AUDIT_ACTION_LABELS: Record<AuditActionValue, string> = {
   "team_member.reactivated": "Team member reactivated",
   "team_member.login_linked": "Login linked to a team member",
   "team_member.login_unlinked": "Login unlinked",
+  "branch.created": "Branch created",
+  "branch.updated": "Branch details changed",
+  "branch.closed": "Branch closed",
+  "branch.reopened": "Branch reopened",
+  "branch.member_moved": "Moved to another branch",
   "team_login.created": "Team login created",
   "team_login.password_changed": "Team login password changed",
   "team_login.sessions_revoked": "Team login devices signed out",
@@ -122,6 +127,7 @@ const CATEGORY_BY_PREFIX: Record<string, AuditCategoryId> = {
   team_member: "team",
   role: "team",
   team_login: "team",
+  branch: "team",
   account: "team",
   staff_document: "documents",
   salon: "settings",
@@ -172,6 +178,8 @@ export const SENSITIVE_ACTIONS: readonly AuditActionValue[] = [
   // Pay
   "payroll.commission_rate_changed",
   // Access and permissions
+  "branch.closed",
+  "branch.member_moved",
   "team_login.created",
   "team_login.password_changed",
   "team_login.sessions_revoked",

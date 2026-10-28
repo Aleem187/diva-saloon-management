@@ -8,7 +8,7 @@ import type { InvitationRow, ProfileRow, RoleRow, TeamMemberRow } from "@/lib/ty
 
 /** Team › Invitations: give someone a login, and see who has not accepted yet. */
 export async function InvitesTab() {
-  await requireModule("team");
+  const session = await requireModule("team");
   const supabase = await createClient();
 
   const [{ data: roster }, { data: members }, { data: invitations }, { data: roleRows }] =
@@ -49,7 +49,12 @@ export async function InvitesTab() {
         <p className="-mt-2 mb-4 text-small text-muted">
           An account lets them sign in. They receive an email link to set their own password. To create an account yourself, with a password you choose and no email, use Add staff.
         </p>
-        <InviteForm roster={unlinked.filter((m) => m.is_active)} roles={assignable} />
+        <InviteForm
+          roster={unlinked.filter((m) => m.is_active)}
+          roles={assignable}
+          branches={session.branches.filter((b) => b.is_active)}
+          defaultBranchId={session.scopeBranchId}
+        />
       </Card>
 
       {pending.length > 0 ? (

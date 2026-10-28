@@ -89,7 +89,15 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar timeZone={salon.timezone} currency={salon.currency} modules={[...session.modules]} />
+        <Topbar
+          timeZone={salon.timezone}
+          currency={salon.currency}
+          modules={[...session.modules]}
+          branches={session.branches}
+          assignedBranch={session.branch}
+          activeBranchId={session.activeBranch?.id ?? null}
+          isOwner={session.isOwner}
+        />
         {/*
           space-y-6 is what the pages' own sections were spaced by before the
           redesign; they still rely on it until each is rebuilt on the kit.

@@ -4,6 +4,7 @@ import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { BRANCH_COOKIE, isUuid } from "@/lib/branches";
 import {
   claimTeamSession,
   TEAM_SESSION_COOKIE,
@@ -13,6 +14,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import type {
   AppModule,
+  BranchRow,
   ProfileRow,
   RoleRow,
   SalonRow,
@@ -42,6 +44,23 @@ export interface SessionContext {
   isOwner: boolean;
   /** Set when this login is the salon's shared team login (its sessions are capped). */
   teamLogin: TeamLoginRow | null;
+  /**
+   * The branches this login can see: every one for an owner, only its own for
+   * anyone else (Row Level Security decides, not this code).
+   */
+  branches: BranchRow[];
+  /** The branch this login is assigned to; null for an owner (every branch). */
+  branch: BranchRow | null;
+  /**
+   * The branch an owner has chosen in the top bar, or null for "All branches".
+   * Always null for a login assigned to a branch: theirs is fixed.
+   */
+  activeBranch: BranchRow | null;
+  /**
+   * The branch whose data is on screen: the assigned one, else the chosen one,
+   * else null (everything). What staff lists and forms should be narrowed to.
+   */
+  scopeBranchId: string | null;
 }
 
 /** Every module, for the owner -- who holds all of them by definition. */
@@ -116,7 +135,7 @@ export const loadSessionState = cache(async (): Promise<SessionState> => {
    * database round trips on every click. Whether the login is the shared team
    * login decides below whether the session is checked against its device limit.
    */
-  const [{ data: salon }, { data: teamLogin }, { data: role }, { data: grants }] =
+  const [{ data: salon }, { data: teamLogin }, { data: role }, { data: grants }, { data: branchRows }] =
     await Promise.all([
       supabase.from("salons").select("*").eq("id", profile.salon_id).maybeSingle(),
       supabase.from("team_logins").select("*").eq("profile_id", user.id).maybeSingle(),
@@ -126,6 +145,7 @@ export const loadSessionState = cache(async (): Promise<SessionState> => {
       profile.role_id
         ? supabase.from("role_modules").select("module").eq("role_id", profile.role_id)
         : Promise.resolve({ data: [] as { module: AppModule }[] }),
+      supabase.from("branches").select("*").order("created_at"),
     ]);
 
   if (!salon) return { status: "inactive" };
@@ -175,6 +195,15 @@ export const loadSessionState = cache(async (): Promise<SessionState> => {
     isOwner ? ALL_MODULES : ((grants ?? []) as { module: AppModule }[]).map((g) => g.module),
   );
 
+  const branches = (branchRows ?? []) as BranchRow[];
+  const assigned = profile.branch_id ? (branches.find((b) => b.id === profile.branch_id) ?? null) : null;
+  // The owner's choice, honoured only if it names an open branch of this salon.
+  const chosenId = (await cookies()).get(BRANCH_COOKIE)?.value;
+  const activeBranch =
+    !profile.branch_id && isUuid(chosenId)
+      ? (branches.find((b) => b.id === chosenId && b.is_active) ?? null)
+      : null;
+
   return {
     status: "ok",
     session: {
@@ -187,6 +216,10 @@ export const loadSessionState = cache(async (): Promise<SessionState> => {
       modules,
       isOwner,
       teamLogin: (teamLogin as TeamLoginRow | null) ?? null,
+      branches,
+      branch: assigned,
+      activeBranch,
+      scopeBranchId: assigned?.id ?? activeBranch?.id ?? null,
     },
   };
 });

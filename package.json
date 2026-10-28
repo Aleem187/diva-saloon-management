@@ -20,7 +20,8 @@
     "test:audit": "node scripts/test-audit.mjs",
     "test:forms": "node scripts/test-forms.mjs",
     "stripe:setup": "node scripts/stripe-setup.mjs",
-    "stripe:listen": "stripe listen --forward-to localhost:3000/api/stripe/webhook"
+    "stripe:listen": "stripe listen --forward-to localhost:3000/api/stripe/webhook",
+    "test:branches": "bash scripts/test-branches.sh"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^7.0.0",

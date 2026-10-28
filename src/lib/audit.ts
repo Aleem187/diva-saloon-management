@@ -98,6 +98,14 @@ export const AUDIT_ACTIONS = {
   LOGIN_LINKED: "team_member.login_linked",
   LOGIN_UNLINKED: "team_member.login_unlinked",
 
+  // Branches: locations inside one salon.
+  BRANCH_CREATED: "branch.created",
+  BRANCH_UPDATED: "branch.updated",
+  BRANCH_CLOSED: "branch.closed",
+  BRANCH_REOPENED: "branch.reopened",
+  /** A login or a team member was moved to another branch. */
+  BRANCH_MEMBER_MOVED: "branch.member_moved",
+
   // The salon's one shared login. Its password is never recorded, here or anywhere.
   TEAM_LOGIN_CREATED: "team_login.created",
   TEAM_LOGIN_PASSWORD_CHANGED: "team_login.password_changed",

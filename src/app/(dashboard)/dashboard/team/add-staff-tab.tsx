@@ -6,9 +6,9 @@ import type { ProfileRow, RoleRow, TeamMemberRow } from "@/lib/types/database";
 
 /** Team › Add staff: create an account directly, with a password. Owner only. */
 export async function AddStaffTab() {
-  await requireOwner();
   const supabase = await createClient();
 
+  const session = await requireOwner();
   const [{ data: roleRows }, { data: roster }, { data: logins }] = await Promise.all([
     supabase.from("roles").select("*").eq("is_owner", false).order("name"),
     supabase.from("team_members").select("*").eq("is_active", true).order("full_name"),
@@ -30,5 +30,12 @@ export async function AddStaffTab() {
     );
   }
 
-  return <AddStaffCard roles={roles} roster={unlinked} />;
+  return (
+    <AddStaffCard
+      roles={roles}
+      roster={unlinked}
+      branches={session.branches.filter((b) => b.is_active)}
+      defaultBranchId={session.scopeBranchId}
+    />
+  );
 }

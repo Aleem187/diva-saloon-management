@@ -1,4 +1,5 @@
 import { changeRoleAction, linkLoginAction, setActiveAction } from "./actions";
+import { MoveBranchForm } from "./move-branch-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -62,6 +63,13 @@ export async function AccountsTab() {
                     <span className="truncate">{member.full_name || member.email}</span>
                     {isSelf ? <Pill tone="accent">You</Pill> : null}
                     {!member.is_active ? <Pill tone="critical">Deactivated</Pill> : null}
+                    {session.branches.length > 1 ? (
+                      <Pill tone="neutral">
+                        {member.branch_id
+                          ? (session.branches.find((b) => b.id === member.branch_id)?.name ?? "Branch")
+                          : "Every branch"}
+                      </Pill>
+                    ) : null}
                   </p>
                   <p className="truncate text-small text-muted">{member.email}</p>
                   <p className="mt-0.5 text-small text-muted">
@@ -103,7 +111,11 @@ export async function AccountsTab() {
                         .filter(
                           (m) =>
                             m.id === member.team_member_id ||
-                            (!loginByMember.has(m.id) && m.is_active),
+                            // A login and its team member are at one branch, so only
+                            // people of this login's branch are offered.
+                            (!loginByMember.has(m.id) &&
+                              m.is_active &&
+                              (!member.branch_id || m.branch_id === member.branch_id)),
                         )
                         .map((m) => (
                           <option key={m.id} value={m.id}>
@@ -115,6 +127,19 @@ export async function AccountsTab() {
                       Link
                     </Button>
                   </form>
+
+                  {/* Owner only. A login linked to a team member moves with them. */}
+                  {session.isOwner && member.branch_id ? (
+                    <div className="mt-2">
+                      <MoveBranchForm
+                        kind="login"
+                        id={member.id}
+                        currentBranchId={member.branch_id}
+                        branches={session.branches}
+                        label={member.email}
+                      />
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">

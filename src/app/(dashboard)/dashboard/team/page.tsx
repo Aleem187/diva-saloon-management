@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 
 import { AccountsTab } from "./accounts-tab";
 import { AddStaffTab } from "./add-staff-tab";
+import { BranchesTab } from "./branches-tab";
 import { InvitesTab } from "./invites-tab";
 import { RolesTab } from "./roles-tab";
 import { RosterTab } from "./roster-tab";
@@ -23,6 +24,8 @@ const TABS: TabDefinition[] = [
   { id: "invites", label: "Invitations" },
   { id: "roles", label: "Roles & permissions" },
   { id: "accounts", label: "Linked accounts" },
+  // Locations of the salon: creating and closing them is the owner's.
+  { id: "branches", label: "Branches", visibleFor: ownerOnly },
 ];
 
 export default async function TeamPage({ searchParams }: PageProps<"/dashboard/team">) {
@@ -52,6 +55,7 @@ export default async function TeamPage({ searchParams }: PageProps<"/dashboard/t
               {active === "invites" ? <InvitesTab /> : null}
               {active === "roles" ? <RolesTab /> : null}
               {active === "accounts" ? <AccountsTab /> : null}
+              {active === "branches" ? <BranchesTab /> : null}
             </Suspense>
           </TabPanel>
         </>

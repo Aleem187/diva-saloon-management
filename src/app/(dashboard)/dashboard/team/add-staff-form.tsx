@@ -8,7 +8,7 @@ import { Card, CardTitle } from "@/components/ui/card";
 import { Field, Input, Select, TextField } from "@/components/ui/field";
 import { Flash } from "@/components/ui/flash";
 import { SubmitButton } from "@/components/ui/submit-button";
-import type { RoleRow, TeamMemberRow } from "@/lib/types/database";
+import type { BranchRow, RoleRow, TeamMemberRow } from "@/lib/types/database";
 
 /** A readable 12-character password from the browser's own random source. */
 function generatePassword(): string {
@@ -26,26 +26,45 @@ function generatePassword(): string {
 export function AddStaffForm({
   roles,
   roster,
+  branches,
+  defaultBranchId,
 }: {
   roles: RoleRow[];
   roster: TeamMemberRow[];
+  branches: BranchRow[];
+  defaultBranchId: string | null;
 }) {
   // Remounting on "Add another" is the simplest way to clear the action's state.
   const [round, setRound] = useState(0);
-  return <AddStaffRound key={round} roles={roles} roster={roster} onAnother={() => setRound(round + 1)} />;
+  return (
+    <AddStaffRound
+      key={round}
+      roles={roles}
+      roster={roster}
+      branches={branches}
+      defaultBranchId={defaultBranchId}
+      onAnother={() => setRound(round + 1)}
+    />
+  );
 }
 
 function AddStaffRound({
   roles,
   roster,
+  branches,
+  defaultBranchId,
   onAnother,
 }: {
   roles: RoleRow[];
   roster: TeamMemberRow[];
+  branches: BranchRow[];
+  defaultBranchId: string | null;
   onAnother: () => void;
 }) {
   const [state, formAction] = useActionState<StaffFormState, FormData>(createStaffAction, {});
   const [password, setPassword] = useState("");
+  // Someone already on the team keeps the branch they work at.
+  const [existingMember, setExistingMember] = useState("");
   const [copied, setCopied] = useState(false);
 
   if (state.created) {
@@ -65,7 +84,8 @@ function AddStaffRound({
       <div className="space-y-4">
         <Flash tone="success">
           <p className="font-semibold">
-            {c.fullName}&rsquo;s account is ready ({c.roleName}).
+            {c.fullName}&rsquo;s account is ready ({c.roleName}
+            {c.branchName ? `, ${c.branchName}` : ""}).
           </p>
           <p className="mt-1">
             Give them these details now. For their security the password is not shown again, and
@@ -176,7 +196,12 @@ function AddStaffRound({
         error={state.errors?.teamMemberId}
         hint="Someone who performs services needs to be on the team list for bookings, receipts and commission."
       >
-        <Select id="staff-member" name="teamMemberId" defaultValue="">
+        <Select
+          id="staff-member"
+          name="teamMemberId"
+          defaultValue=""
+          onChange={(event) => setExistingMember(event.target.value)}
+        >
           <option value="">Someone new: add them to the team</option>
           {roster.map((member) => (
             <option key={member.id} value={member.id}>
@@ -187,12 +212,52 @@ function AddStaffRound({
         </Select>
       </Field>
 
+      {branches.length > 1 ? (
+        <Field
+          label="Branch"
+          htmlFor="staff-branch"
+          error={state.errors?.branchId}
+          hint={
+            existingMember && existingMember !== "none"
+              ? "Someone already on the team keeps the branch they work at."
+              : "They will see only this branch."
+          }
+        >
+          <Select
+            id="staff-branch"
+            name="branchId"
+            defaultValue={defaultBranchId ?? ""}
+            disabled={Boolean(existingMember) && existingMember !== "none"}
+            required
+          >
+            <option value="" disabled>
+              Choose a branch
+            </option>
+            {branches.map((branch) => (
+              <option key={branch.id} value={branch.id}>
+                {branch.name}
+              </option>
+            ))}
+          </Select>
+        </Field>
+      ) : null}
+
       <SubmitButton pendingLabel="Creating...">Create account</SubmitButton>
     </form>
   );
 }
 
-export function AddStaffCard({ roles, roster }: { roles: RoleRow[]; roster: TeamMemberRow[] }) {
+export function AddStaffCard({
+  roles,
+  roster,
+  branches,
+  defaultBranchId,
+}: {
+  roles: RoleRow[];
+  roster: TeamMemberRow[];
+  branches: BranchRow[];
+  defaultBranchId: string | null;
+}) {
   return (
     <Card className="max-w-4xl">
       <CardTitle>Add a staff member</CardTitle>
@@ -201,7 +266,12 @@ export function AddStaffCard({ roles, roster }: { roles: RoleRow[]; roster: Team
         Nothing is emailed, so there is no invitation to expire or bounce. They can change their
         password and name under My account, but not their role.
       </p>
-      <AddStaffForm roles={roles} roster={roster} />
+      <AddStaffForm
+        roles={roles}
+        roster={roster}
+        branches={branches}
+        defaultBranchId={defaultBranchId}
+      />
     </Card>
   );
 }
