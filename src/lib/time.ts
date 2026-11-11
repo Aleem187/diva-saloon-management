@@ -183,3 +183,12 @@ export function daysInRange(from: string, to: string): number {
 export function formatInstantInSalon(instant: Date | string, timeZone: string): string {
   return `${formatDayLabel(instantToSalonDate(instant, timeZone))}, ${instantToSalonTime(instant, timeZone)}`;
 }
+
+/**
+ * The same moment as a printed document shows it: "Wed, Nov 11 \u2022 18:34", in the
+ * salon's own clock, with no zone name. A customer reads a receipt as a time, not as
+ * a timezone, and the salon's clock is what the time means.
+ */
+export function formatStampInSalon(instant: Date | string, timeZone: string): string {
+  return `${formatDayLabel(instantToSalonDate(instant, timeZone))} \u2022 ${instantToSalonTime(instant, timeZone)}`;
+}

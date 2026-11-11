@@ -16,6 +16,7 @@ import {
   refundPaymentSchema,
   rescheduleSchema,
   resolveAppointmentSchema,
+  supportSchema,
 } from "@/lib/validation";
 
 export interface BookingFormState {
@@ -65,6 +66,8 @@ export async function createBookingAction(
   }
 
   const values = submittedValues(formData);
+  // The support boxes share one name, so the echo above keeps only the last; keep all.
+  values.supportStaffId = JSON.stringify(formData.getAll("supportStaffId").map(String));
 
   let lines: unknown = [];
   try {
@@ -81,6 +84,7 @@ export async function createBookingAction(
     newCustomerPhone: formData.get("newCustomerPhone") ?? "",
     isNewCustomer: wantsNewCustomer,
     staffId: formData.get("staffId"),
+    supportStaffIds: formData.getAll("supportStaffId").map(String),
     date: formData.get("date"),
     time: formData.get("time"),
     notes: formData.get("notes") ?? "",
@@ -96,7 +100,10 @@ export async function createBookingAction(
   const supabase = await createClient();
   const startsAt = salonTimeToInstant(input.date, input.time, session.salon.timezone);
 
-  const { error } = await supabase.rpc("create_appointment", {
+  // Only the LEAD is checked for availability: create_appointment() and the
+  // exclusion constraint see the lead alone. Support staff are added after, and
+  // are never a conflict.
+  const { data: appointmentId, error } = await supabase.rpc("create_appointment", {
     p_customer_id: input.customerId ?? null,
     p_new_customer_name: input.isNewCustomer ? input.newCustomerName : null,
     p_new_customer_phone: input.isNewCustomer ? input.newCustomerPhone : null,
@@ -122,8 +129,63 @@ export async function createBookingAction(
     return { message: friendly, values };
   }
 
+  if (input.supportStaffIds.length > 0 && appointmentId) {
+    const { error: supportError } = await supabase.rpc("set_appointment_support", {
+      p_appointment_id: appointmentId,
+      p_support_ids: input.supportStaffIds,
+    });
+    if (supportError) {
+      // The booking itself stands; say so, rather than let it look like nothing happened.
+      revalidatePath("/dashboard/calendar");
+      return {
+        message: `Booked with the lead, but the support team was not saved: ${friendlyBookingError(supportError)} Add them from the appointment.`,
+        values,
+      };
+    }
+  }
+
   revalidatePath("/dashboard/calendar");
   return { success: "Appointment booked." };
+}
+
+/**
+ * Set the support / assistant staff of an existing appointment. The lead is
+ * changed by rescheduling; support staff are never a conflict. Refused by the
+ * database once the visit has an issued receipt, because payroll reads the team.
+ */
+export async function updateSupportAction(
+  _prevState: BookingFormState,
+  formData: FormData,
+): Promise<BookingFormState> {
+  const session = await requireSession();
+  try {
+    assertModule(session, "calendar");
+  } catch (error) {
+    return { message: (error as Error).message };
+  }
+
+  const parsed = supportSchema.safeParse({
+    appointmentId: formData.get("appointmentId"),
+    supportStaffIds: formData.getAll("supportStaffId").map(String),
+  });
+  if (!parsed.success) return { errors: fieldErrors(parsed.error) };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_appointment_support", {
+    p_appointment_id: parsed.data.appointmentId,
+    p_support_ids: parsed.data.supportStaffIds,
+  });
+  if (error) return { message: friendlyBookingError(error) };
+
+  await logAudit(session, {
+    action: AUDIT_ACTIONS.APPOINTMENT_TEAM_CHANGED,
+    entityType: "appointment",
+    entityId: parsed.data.appointmentId,
+    metadata: { support_staff_ids: parsed.data.supportStaffIds },
+  });
+
+  revalidatePath("/dashboard/calendar");
+  return { success: "Team updated." };
 }
 
 /**

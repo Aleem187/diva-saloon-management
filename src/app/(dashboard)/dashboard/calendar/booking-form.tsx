@@ -5,6 +5,7 @@ import { useActionState, useMemo, useState } from "react";
 import { createBookingAction, type BookingFormState } from "./actions";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { CustomerPicker } from "@/components/customer-picker";
+import { SupportSelects } from "./support-select";
 import { ServicePicker } from "@/components/service-picker";
 import { toPickable } from "@/lib/services";
 import { Button } from "@/components/ui/button";
@@ -30,10 +31,7 @@ export function BookingForm({
   defaultDate: string;
   currency: string;
 }) {
-  const [state, formAction] = useActionState<BookingFormState, FormData>(
-    createBookingAction,
-    {},
-  );
+  const [state, formAction] = useActionState<BookingFormState, FormData>(createBookingAction, {});
 
   // React clears an uncontrolled form once its action resolves, so a rejected
   // booking is re-seeded from what was entered rather than coming back blank.
@@ -50,6 +48,16 @@ export function BookingForm({
       return [];
     }
   });
+  const [leadId, setLeadId] = useState(was("staffId"));
+  const restoredSupport = useMemo((): string[] => {
+    try {
+      const ids = JSON.parse(was("supportStaffId", "[]"));
+      return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === "string") : [];
+    } catch {
+      return [];
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [discount, setDiscount] = useState(was("discount", "0"));
   const [quotedTotal, setQuotedTotal] = useState(was("quotedTotal"));
 
@@ -68,7 +76,9 @@ export function BookingForm({
 
   function setQuantity(key: string, quantity: number) {
     setLines((current) =>
-      current.map((l) => (l.key === key ? { ...l, quantity: Math.max(1, Math.min(20, quantity)) } : l)),
+      current.map((l) =>
+        l.key === key ? { ...l, quantity: Math.max(1, Math.min(20, quantity)) } : l,
+      ),
     );
   }
 
@@ -112,16 +122,37 @@ export function BookingForm({
         defaultPhone={was("newCustomerPhone")}
       />
 
-      <Field label="Team member" htmlFor="booking-staff" error={state.errors?.staffId}>
-        <Select id="booking-staff" name="staffId" required defaultValue={was("staffId")}>
-          <option value="">Choose a team member</option>
-          {therapists.map((therapist) => (
-            <option key={therapist.id} value={therapist.id}>
-              {therapist.name}
-            </option>
-          ))}
-        </Select>
-      </Field>
+      <fieldset className="space-y-3 rounded-xl border border-line p-4">
+        <legend className="px-1 text-small font-semibold text-ink">Team</legend>
+        <Field
+          label="Primary lead"
+          htmlFor="booking-staff"
+          error={state.errors?.staffId}
+          hint="The lead's time is the slot: they cannot be double-booked."
+        >
+          <Select
+            id="booking-staff"
+            name="staffId"
+            required
+            value={leadId}
+            onChange={(event) => setLeadId(event.target.value)}
+          >
+            <option value="">Choose a team member</option>
+            {therapists.map((therapist) => (
+              <option key={therapist.id} value={therapist.id}>
+                {therapist.name}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <SupportSelects
+          idPrefix="booking"
+          people={therapists}
+          leadId={leadId}
+          defaultIds={restoredSupport}
+          error={state.errors?.supportStaffIds}
+        />
+      </fieldset>
 
       <div>
         <ServicePicker
@@ -159,7 +190,12 @@ export function BookingForm({
                   <span className="w-24 text-right text-small tabular-nums text-ink">
                     {formatMoney(service ? service.price * line.quantity : 0, currency)}
                   </span>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => removeLine(line.key)}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeLine(line.key)}
+                  >
                     Remove
                   </Button>
                 </li>
@@ -282,8 +318,8 @@ export function BookingForm({
         <span>
           Walk-in
           <span className="block text-fine text-muted">
-            Books into the slot even if the therapist is already busy, rather than
-            being refused for a clash.
+            Books into the slot even if the therapist is already busy, rather than being refused for
+            a clash.
           </span>
         </span>
       </label>

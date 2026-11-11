@@ -13,6 +13,7 @@ import type {
   AppointmentRow,
   AppointmentServiceRow,
   BusinessHours,
+  AppointmentStaffRow,
   CustomerRow,
   ProfileRow,
   ServiceRow,
@@ -108,6 +109,21 @@ export async function loadDiary(
     balanceByAppointment.set(row.appointment_id, row);
   }
 
+  // Support / assistants per appointment, for display. (The lead is staff_id.)
+  const { data: supportRows } = appointmentIds.length
+    ? await supabase
+        .from("appointment_staff")
+        .select("appointment_id, staff_id, sort_order")
+        .in("appointment_id", appointmentIds)
+        .order("sort_order")
+    : { data: [] as Pick<AppointmentStaffRow, "appointment_id" | "staff_id" | "sort_order">[] };
+  const supportByAppointment = new Map<string, string[]>();
+  for (const row of (supportRows ?? []) as Pick<AppointmentStaffRow, "appointment_id" | "staff_id">[]) {
+    const list = supportByAppointment.get(row.appointment_id) ?? [];
+    list.push(row.staff_id);
+    supportByAppointment.set(row.appointment_id, list);
+  }
+
   const linesByAppointment = new Map<string, AppointmentServiceRow[]>();
   for (const line of (bookedServices ?? []) as AppointmentServiceRow[]) {
     linesByAppointment.set(line.appointment_id, [
@@ -169,6 +185,9 @@ export async function loadDiary(
           : (lines[0]?.service_name ?? serviceById.get(appointment.service_id)?.name ?? "Service"),
       customerName: customerById.get(appointment.customer_id)?.full_name ?? "Customer",
       staffName: nameById.get(appointment.staff_id) ?? "Team member",
+      supportNames: (supportByAppointment.get(appointment.id) ?? []).map(
+        (id) => nameById.get(id) ?? "A colleague",
+      ),
       balance: balanceByAppointment.get(appointment.id) ?? null,
     };
   });

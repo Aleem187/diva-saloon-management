@@ -107,6 +107,22 @@ Build in the phase order the brief lays out.
    `supabase/tests/branches/` (`npm run test:branches`, which runs in a throwaway
    Docker Postgres, never against a project).
 
+17. **One lead, up to two support staff, and only the lead can conflict.**
+   `appointments.staff_id` is the Primary Lead and stays in the exclusion constraint;
+   support / assistants live in `appointment_staff` (written only by
+   `set_appointment_support()`) and are never part of an overlap check. Payroll
+   (`generate_payroll_period`) pays a support person commission on the receipt lines
+   of the visits they assisted, at their own rate, on top of the lead, and does NOT
+   count that as revenue. The team is locked once a visit has an issued receipt.
+
+18. **Retail products are receipt lines with no team member.** `products` (managed by the
+   Services module, sold by POS) feeds `create_receipt()` as `{product_id, quantity}`
+   lines; price and stock are the database's, never the client's. A product line has
+   `item_type = 'product'` and no `staff_id`, so payroll pays no commission on it, and
+   any report that means "services" must filter `item_type = 'service'` (by-service and
+   by-staff do). `void_receipt()` returns the stock. Sales are reported by
+   `report_sales_split()`; stock is one pool per salon, shared across branches.
+
 ## Conventions
 
 - Data access goes through `@/lib/supabase/server`. `@/lib/supabase/admin`

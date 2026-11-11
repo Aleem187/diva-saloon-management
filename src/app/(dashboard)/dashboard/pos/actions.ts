@@ -49,6 +49,13 @@ export async function checkoutAction(
   // the same transaction as the sale -- so a refused sale leaves no profile
   // behind. The name and phone travel with the checkout rather than being
   // written first.
+  let products: unknown = [];
+  try {
+    products = JSON.parse(String(formData.get("products") ?? "[]"));
+  } catch {
+    return { message: "The products could not be read. Please try again.", values };
+  }
+
   const wantsNewCustomer = String(formData.get("customerMode") ?? "existing") === "new";
   const newCustomerName = String(formData.get("newCustomerName") ?? "").trim();
   const newCustomerPhone = String(formData.get("newCustomerPhone") ?? "").trim();
@@ -76,6 +83,7 @@ export async function checkoutAction(
     notes: formData.get("notes") ?? "",
     appointmentId: formData.get("appointmentId") || null,
     lines,
+    products,
   });
 
   if (!parsed.success) return { errors: fieldErrors(parsed.error), values };
@@ -92,14 +100,21 @@ export async function checkoutAction(
     p_loyalty_redeem: input.loyaltyRedeem,
     p_deal_id: input.dealId || null,
     p_notes: input.notes,
-    p_lines: input.lines.map(
-      (line): CheckoutLine => ({
-        service_id: line.serviceId,
-        staff_id: line.staffId,
-        quantity: line.quantity,
-        appointment_id: line.appointmentId || null,
-      }),
-    ),
+    // Services say who performed them; products say only what and how many. The
+    // price of either is the catalogue's, and stock is taken in the database.
+    p_lines: [
+      ...input.lines.map(
+        (line): CheckoutLine => ({
+          service_id: line.serviceId,
+          staff_id: line.staffId,
+          quantity: line.quantity,
+          appointment_id: line.appointmentId || null,
+        }),
+      ),
+      ...input.products.map(
+        (line): CheckoutLine => ({ product_id: line.productId, quantity: line.quantity }),
+      ),
+    ],
     p_new_customer_name: wantsNewCustomer ? newCustomerName : null,
     p_new_customer_phone: wantsNewCustomer ? newCustomerPhone : null,
     // Linking the sale to the visit is what nets off any deposit already taken

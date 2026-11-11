@@ -14,11 +14,13 @@ import type {
   LoyaltyCost,
   PaymentMethodTotals,
   PeakTime,
+  ProductSalesRow,
   ReportGranularity,
   RetentionSummary,
   RevenueBucket,
   RevenueByService,
   RevenueByStaff,
+  SalesSplitRow,
 } from "@/lib/types/database";
 
 export const metadata: Metadata = { title: "Reports" };
@@ -81,8 +83,18 @@ export default async function ReportsPage({ searchParams }: PageProps<"/dashboar
   // What the rest of this page is about: one branch, or the salon as a whole.
   const viewing = session.branch ?? session.activeBranch;
 
-  const [revenue, byService, byStaff, retention, appointments, loyalty, peaks, payments] =
-    await Promise.all([
+  const [
+    revenue,
+    byService,
+    byStaff,
+    retention,
+    appointments,
+    loyalty,
+    peaks,
+    payments,
+    salesSplit,
+    byProduct,
+  ] = await Promise.all([
       withRetry(() =>
         supabase.rpc("report_revenue_over_time", { ...args, p_granularity: granularity }),
       ),
@@ -93,6 +105,8 @@ export default async function ReportsPage({ searchParams }: PageProps<"/dashboar
       withRetry(() => supabase.rpc("report_loyalty_cost", args)),
       withRetry(() => supabase.rpc("report_peak_times", args)),
       withRetry(() => supabase.rpc("report_payment_methods", args)),
+      withRetry(() => supabase.rpc("report_sales_split", args)),
+      withRetry(() => supabase.rpc("report_revenue_by_product", args)),
     ]);
 
   const buckets = (revenue.data ?? []) as RevenueBucket[];
@@ -103,6 +117,9 @@ export default async function ReportsPage({ searchParams }: PageProps<"/dashboar
   const loyaltyRow = ((loyalty.data ?? []) as LoyaltyCost[])[0];
   const peakRows = (peaks.data ?? []) as PeakTime[];
   const paymentRow = ((payments.data ?? []) as PaymentMethodTotals[])[0];
+  const splitRows = (salesSplit.data ?? []) as SalesSplitRow[];
+  const productRows = (byProduct.data ?? []) as ProductSalesRow[];
+  const splitMissing = salesSplit.error?.code === "PGRST202";
 
   const firstError = [revenue, byService, byStaff, retention, appointments, loyalty, peaks].find(
     (r) => r.error,
@@ -281,6 +298,109 @@ export default async function ReportsPage({ searchParams }: PageProps<"/dashboar
         <Stat label="Average sale" value={formatMoney(averageSale, currency)} />
         <Stat label="Discounts given" value={formatMoney(totalDiscounts, currency)} />
       </div>
+
+      {/*
+        Services and products, each on its own and then together. Summed in Postgres
+        from the issued receipts' lines in this range: after discounts, before any
+        loyalty redeemed (which is how a sale was paid for, not what was sold).
+      */}
+      {salesSplit.error ? (
+        <Alert tone={splitMissing ? "info" : "error"}>
+          {splitMissing
+            ? "The product / service sales split needs a database update (migration 20261112000048_products) that has not been applied yet."
+            : `The sales split could not be loaded: ${describeRpcError(salesSplit.error)}`}
+        </Alert>
+      ) : (
+        <Card>
+          <CardHeader
+            title="Sales: services and products"
+            description="Service sales and product sales on their own, and the two together. After discounts, before loyalty redeemed."
+          />
+          <div className="overflow-x-auto px-5 py-4">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-ink-200 text-left text-xs uppercase tracking-wide text-ink-500">
+                  <th className="py-2 pr-3 font-medium">Sales</th>
+                  <th className="py-2 pr-3 text-right font-medium">Receipts</th>
+                  <th className="py-2 pr-3 text-right font-medium">Items sold</th>
+                  <th className="py-2 pr-3 text-right font-medium">Discounts</th>
+                  <th className="py-2 text-right font-medium">Sales</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-ink-100">
+                {splitRows
+                  .filter((row) => row.kind !== "combined")
+                  .map((row) => (
+                    <tr key={row.kind}>
+                      <td className="py-2 pr-3 font-medium text-ink-800">
+                        {row.kind === "service" ? "Service sales" : "Product sales"}
+                      </td>
+                      <td className="py-2 pr-3 text-right tabular-nums text-ink-600">
+                        {Number(row.receipts)}
+                      </td>
+                      <td className="py-2 pr-3 text-right tabular-nums text-ink-600">
+                        {Number(row.quantity)}
+                      </td>
+                      <td className="py-2 pr-3 text-right tabular-nums text-ink-600">
+                        {formatMoney(row.discounts, currency)}
+                      </td>
+                      <td className="py-2 text-right tabular-nums text-ink-900">
+                        {formatMoney(row.revenue, currency)}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+              {splitRows.find((row) => row.kind === "combined") ? (
+                <tfoot>
+                  {splitRows
+                    .filter((row) => row.kind === "combined")
+                    .map((row) => (
+                      <tr key={row.kind} className="border-t border-ink-200 font-semibold">
+                        <td className="py-2 pr-3 text-ink-900">Combined total</td>
+                        <td className="py-2 pr-3 text-right tabular-nums">{Number(row.receipts)}</td>
+                        <td className="py-2 pr-3 text-right tabular-nums">{Number(row.quantity)}</td>
+                        <td className="py-2 pr-3 text-right tabular-nums">
+                          {formatMoney(row.discounts, currency)}
+                        </td>
+                        <td className="py-2 text-right tabular-nums">
+                          {formatMoney(row.revenue, currency)}
+                        </td>
+                      </tr>
+                    ))}
+                </tfoot>
+              ) : null}
+            </table>
+          </div>
+
+          {productRows.length > 0 ? (
+            <div className="overflow-x-auto border-t border-ink-100 px-5 py-4">
+              <h3 className="mb-2 text-sm font-semibold text-ink-900">Products sold</h3>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-ink-200 text-left text-xs uppercase tracking-wide text-ink-500">
+                    <th className="py-2 pr-3 font-medium">Product</th>
+                    <th className="py-2 pr-3 text-right font-medium">Qty</th>
+                    <th className="py-2 text-right font-medium">Sales</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-ink-100">
+                  {productRows.map((row) => (
+                    <tr key={row.product_name}>
+                      <td className="py-2 pr-3 text-ink-800">{row.product_name}</td>
+                      <td className="py-2 pr-3 text-right tabular-nums text-ink-600">
+                        {Number(row.quantity)}
+                      </td>
+                      <td className="py-2 text-right tabular-nums text-ink-900">
+                        {formatMoney(row.revenue, currency)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+        </Card>
+      )}
 
       {/*
         How the revenue above was collected. Summed in Postgres from the issued

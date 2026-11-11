@@ -54,8 +54,23 @@ if psql_admin -Atc "select count(*) from qa.snap_before b join qa.snap_after a u
   echo "FAIL: existing data changed"; exit 1
 fi
 
+echo; echo "Applying the migrations after branches..."
+after=0
+for f in $(ls supabase/migrations/*.sql | sort); do
+  name="$(basename "$f")"
+  if [[ "$name" == "$BRANCH_MIGRATION" ]]; then after=1; continue; fi
+  [[ "$after" == "1" ]] || continue
+  if ! out=$(psql_admin -v ON_ERROR_STOP=1 -q -f - < "$f" 2>&1); then
+    echo "FAILED: $name"; echo "$out" | head -8; exit 1
+  fi
+done
+
 echo; echo "Access-control tests..."
 psql_admin -v ON_ERROR_STOP=1 -q -f - < "$TESTS/03-access-tests.sql" | grep -E "FAIL|passed|ERROR" || true
+echo; echo "Support / assistant staff tests..."
+psql_admin -v ON_ERROR_STOP=1 -q -f - < "$TESTS/04-support-staff.sql" | grep -E "FAIL|ERROR" || true
+echo; echo "Retail products tests..."
+psql_admin -v ON_ERROR_STOP=1 -q -f - < "$TESTS/05-products.sql" | grep -E "FAIL|ERROR" || true
 read -r passed failed < <(psql_admin -Atc "select count(*) filter (where ok), count(*) filter (where not ok) from qa.res" | tr '|' ' ')
 echo "${passed} passed, ${failed} failed"
 [[ "$failed" == "0" ]]

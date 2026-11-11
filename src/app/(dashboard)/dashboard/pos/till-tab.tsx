@@ -1,4 +1,5 @@
 import { Till, type CheckoutPrefill } from "./till";
+import type { SellableProduct } from "@/components/ui/product-tiles";
 import { staffInScope } from "@/lib/branches";
 import { Flash } from "@/components/ui/flash";
 import { requireModule } from "@/lib/auth/session";
@@ -24,24 +25,41 @@ export async function TillTab({ params }: { params: Params }) {
   const currency = session.salon.currency;
   const today = salonToday(session.salon.timezone);
 
-  const [{ data: services }, { data: team }, { data: deals }, { data: dealServices }] =
-    await Promise.all([
-      supabase.from("services").select("*").eq("is_active", true).order("category").order("name"),
-      // The roster: who may be named against a line as having performed it.
-      supabase.from("team_members").select("*").eq("is_active", true).order("full_name"),
-      // Only deals actually running today can be applied.
-      supabase
-        .from("deals")
-        .select("*")
-        .eq("is_active", true)
-        .lte("starts_on", today)
-        .gte("ends_on", today)
-        .order("name"),
-      supabase.from("deal_services").select("*"),
-    ]);
+  const [
+    { data: services },
+    { data: team },
+    { data: deals },
+    { data: dealServices },
+    { data: products },
+  ] = await Promise.all([
+    supabase.from("services").select("*").eq("is_active", true).order("category").order("name"),
+    // The roster: who may be named against a line as having performed it.
+    supabase.from("team_members").select("*").eq("is_active", true).order("full_name"),
+    // Only deals actually running today can be applied.
+    supabase
+      .from("deals")
+      .select("*")
+      .eq("is_active", true)
+      .lte("starts_on", today)
+      .gte("ends_on", today)
+      .order("name"),
+    supabase.from("deal_services").select("*"),
+    // Only what the till needs: no stock threshold, no dates. In-stock first is the
+    // tiles' business; here, just the live catalogue.
+    supabase
+      .from("products")
+      .select("id, name, sku, category, price, stock_quantity")
+      .eq("is_active", true)
+      .order("category")
+      .order("name"),
+  ]);
 
   // Only the people who work at the branch being served (everyone, for an owner on All).
-  const therapists = staffInScope((team ?? []) as TeamMemberRow[], { branchId: session.scopeBranchId });
+  const therapists = staffInScope((team ?? []) as TeamMemberRow[], {
+    branchId: session.scopeBranchId,
+  });
+
+  const nameOf = new Map(((team ?? []) as TeamMemberRow[]).map((t) => [t.id, t.full_name]));
 
   const servicesByDeal: Record<string, string[]> = {};
   for (const link of (dealServices ?? []) as DealServiceRow[]) {
@@ -64,16 +82,25 @@ export async function TillTab({ params }: { params: Params }) {
   let prefillProblem: string | null = null;
 
   if (wantedAppointment) {
-    const [{ data: appointment }, { data: bookedLines }, { data: balanceRows }] =
-      await Promise.all([
-        supabase.from("appointments").select("*").eq("id", wantedAppointment).maybeSingle(),
-        supabase
-          .from("appointment_services")
-          .select("*")
-          .eq("appointment_id", wantedAppointment)
-          .order("sort_order"),
-        supabase.rpc("appointment_balance", { p_appointment_id: wantedAppointment }),
-      ]);
+    const [
+      { data: appointment },
+      { data: bookedLines },
+      { data: balanceRows },
+      { data: supportRows },
+    ] = await Promise.all([
+      supabase.from("appointments").select("*").eq("id", wantedAppointment).maybeSingle(),
+      supabase
+        .from("appointment_services")
+        .select("*")
+        .eq("appointment_id", wantedAppointment)
+        .order("sort_order"),
+      supabase.rpc("appointment_balance", { p_appointment_id: wantedAppointment }),
+      supabase
+        .from("appointment_staff")
+        .select("staff_id, sort_order")
+        .eq("appointment_id", wantedAppointment)
+        .order("sort_order"),
+    ]);
 
     const appt = appointment as AppointmentRow | null;
     const balance = ((balanceRows ?? []) as AppointmentBalance[])[0];
@@ -104,6 +131,10 @@ export async function TillTab({ params }: { params: Params }) {
           ? `${visitor.full_name}${visitor.phone ? ` — ${visitor.phone}` : ""}`
           : "Customer on this booking",
         deposit: Number(balance?.amount_paid ?? 0),
+        leadName: nameOf.get(appt.staff_id) ?? "Team member",
+        supportNames: ((supportRows ?? []) as { staff_id: string }[]).map(
+          (row) => nameOf.get(row.staff_id) ?? "A colleague",
+        ),
         lines: ((bookedLines ?? []) as AppointmentServiceRow[]).map((line) => ({
           serviceId: line.service_id,
           staffId: appt.staff_id,
@@ -120,6 +151,7 @@ export async function TillTab({ params }: { params: Params }) {
       <Till
         key={prefill?.appointmentId ?? "walk-in"}
         services={(services ?? []) as ServiceRow[]}
+        products={(products ?? []) as SellableProduct[]}
         therapists={therapists.map((t) => ({ id: t.id, name: t.full_name }))}
         deals={(deals ?? []) as DealRow[]}
         servicesByDeal={servicesByDeal}

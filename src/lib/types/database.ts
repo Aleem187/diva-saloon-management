@@ -313,12 +313,55 @@ export type ReceiptRow = {
   created_at: string;
 };
 
+/** One row of report_sales_split(): services, products, then the two combined. */
+export type SalesSplitRow = {
+  kind: "service" | "product" | "combined";
+  receipts: number;
+  quantity: number;
+  gross: number;
+  discounts: number;
+  revenue: number;
+};
+
+export type ProductSalesRow = {
+  product_name: string;
+  quantity: number;
+  revenue: number;
+  discounts: number;
+};
+
+export type ReceiptItemType = "service" | "product";
+
+/** A retail product. Stock moves only through checkout, a void, or the owner editing it. */
+export type ProductRow = {
+  id: string;
+  salon_id: string;
+  name: string;
+  sku: string;
+  category: string;
+  price: number;
+  stock_quantity: number;
+  low_stock_threshold: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+/** Out of stock, or at or under its threshold. */
+export function isLowStock(product: Pick<ProductRow, "stock_quantity" | "low_stock_threshold">): boolean {
+  return product.stock_quantity <= product.low_stock_threshold;
+}
+
 export type ReceiptLineItemRow = {
   branch_id: string;
   id: string;
   salon_id: string;
   receipt_id: string;
+  /** 'service' lines have a team member; 'product' lines are retail and have none. */
+  item_type: ReceiptItemType;
+  product_id: string | null;
   service_id: string | null;
+  /** The item's name as sold, whichever kind it is. */
   service_name: string;
   staff_id: string | null;
   appointment_id: string | null;
@@ -342,12 +385,20 @@ export type LoyaltyTransactionRow = {
 };
 
 /** One line as the checkout function expects it: what was done, never what it costs. */
-export interface CheckoutLine {
+export interface CheckoutServiceLine {
   service_id: string;
   staff_id: string;
   quantity: number;
   appointment_id?: string | null;
 }
+
+/** A retail product: what and how many; the price is the catalogue's. */
+export interface CheckoutProductLine {
+  product_id: string;
+  quantity: number;
+}
+
+export type CheckoutLine = CheckoutServiceLine | CheckoutProductLine;
 
 /**
  * How someone earns commission. Three states, not two, and the difference
@@ -728,6 +779,24 @@ export type AppointmentServiceRow = {
   created_at: string;
 };
 
+/**
+ * A support / assistant person on an appointment. The lead is
+ * `appointments.staff_id`; support staff never conflict with other bookings and
+ * earn commission on the receipt lines of the visits they assist.
+ */
+export type AppointmentStaffRow = {
+  id: string;
+  salon_id: string;
+  branch_id: string;
+  appointment_id: string;
+  staff_id: string;
+  sort_order: number;
+  created_at: string;
+};
+
+/** The most support staff one appointment can have besides its lead. */
+export const MAX_SUPPORT_STAFF = 2;
+
 /** One service line as create_appointment() expects it. */
 export interface BookingLine {
   service_id: string;
@@ -770,6 +839,8 @@ export type Database = {
       consent_form_attachments: Table<ConsentFormAttachmentRow>;
       appointments: Table<AppointmentRow>;
       appointment_services: Table<AppointmentServiceRow>;
+      appointment_staff: Table<AppointmentStaffRow>;
+      products: Table<ProductRow>;
       receipts: Table<ReceiptRow>;
       receipt_line_items: Table<ReceiptLineItemRow>;
       loyalty_transactions: Table<LoyaltyTransactionRow>;
@@ -881,6 +952,15 @@ export type Database = {
       search_customers: {
         Args: { p_query: string; p_limit: number };
         Returns: { id: string; full_name: string; phone: string }[];
+      };
+      report_sales_split: { Args: { p_from: string; p_to: string }; Returns: SalesSplitRow[] };
+      report_revenue_by_product: {
+        Args: { p_from: string; p_to: string };
+        Returns: ProductSalesRow[];
+      };
+      set_appointment_support: {
+        Args: { p_appointment_id: string; p_support_ids: string[] };
+        Returns: undefined;
       };
       create_appointment: {
         Args: {

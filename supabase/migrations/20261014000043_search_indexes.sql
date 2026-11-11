@@ -17,8 +17,22 @@
 
 create extension if not exists pg_trgm with schema extensions;
 
-create index if not exists customers_full_name_trgm_idx
-  on public.customers using gin (full_name extensions.gin_trgm_ops);
+-- The operator class lives wherever pg_trgm was installed: `extensions` on a project
+-- made from these migrations, `public` on one where the extension was added by hand.
+-- Look it up rather than assume.
+do $$
+declare
+  v_schema text;
+begin
+  select n.nspname into v_schema
+  from pg_extension e join pg_namespace n on n.oid = e.extnamespace
+  where e.extname = 'pg_trgm';
 
-create index if not exists customers_phone_trgm_idx
-  on public.customers using gin (phone_normalized extensions.gin_trgm_ops);
+  execute format(
+    'create index if not exists customers_full_name_trgm_idx on public.customers using gin (full_name %I.gin_trgm_ops)',
+    v_schema);
+  execute format(
+    'create index if not exists customers_phone_trgm_idx on public.customers using gin (phone_normalized %I.gin_trgm_ops)',
+    v_schema);
+end;
+$$;

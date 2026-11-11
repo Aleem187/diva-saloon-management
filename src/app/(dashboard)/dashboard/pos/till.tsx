@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Field, Input, Select } from "@/components/ui/field";
 import { Flash } from "@/components/ui/flash";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { ProductTiles, type SellableProduct } from "@/components/ui/product-tiles";
 import { ServiceTiles } from "@/components/ui/service-tiles";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { CustomerPicker } from "@/components/customer-picker";
@@ -32,6 +33,12 @@ const PAY_METHODS: { value: PayMethod; label: string }[] = [
   { value: "bank_transfer", label: "Bank transfer" },
   { value: "split", label: "Split" },
 ];
+
+interface BasketProduct {
+  key: string;
+  productId: string;
+  quantity: number;
+}
 
 interface BasketLine {
   key: string;
@@ -63,11 +70,15 @@ export interface CheckoutPrefill {
   /** "Name — phone", as the picker shows a chosen customer. */
   customerLabel: string;
   deposit: number;
+  /** Who performs it: the Primary Lead, and any support / assistants. */
+  leadName: string;
+  supportNames: string[];
   lines: { serviceId: string; staffId: string; quantity: number }[];
 }
 
 export function Till({
   services,
+  products,
   therapists,
   deals,
   servicesByDeal,
@@ -75,6 +86,7 @@ export function Till({
   prefill,
 }: {
   services: ServiceRow[];
+  products: SellableProduct[];
   therapists: { id: string; name: string }[];
   deals: DealRow[];
   servicesByDeal: Record<string, string[]>;
@@ -109,6 +121,15 @@ export function Till({
       key: `booked-${index}`,
     }));
   });
+  // Retail products are a basket of their own: no team member, no deal, no commission.
+  const [productLines, setProductLines] = useState<BasketProduct[]>(() => {
+    try {
+      const restored = JSON.parse(was("products", "[]")) as Omit<BasketProduct, "key">[];
+      return restored.map((line, index) => ({ ...line, key: `restored-product-${index}` }));
+    } catch {
+      return [];
+    }
+  });
   const [dealId, setDealId] = useState(was("dealId"));
   const [discountKind, setDiscountKind] = useState<DiscountKind>(
     (DISCOUNT_KINDS.find((k) => k.value === was("manualDiscountType"))?.value ??
@@ -125,6 +146,7 @@ export function Till({
   const [transfer, setTransfer] = useState(was("transferAmount", "0"));
 
   const serviceById = useMemo(() => new Map(services.map((s) => [s.id, s])), [services]);
+  const productById = useMemo(() => new Map(products.map((p) => [p.id, p])), [products]);
 
   // Fetch the balance when the customer changes. Server-side, through RLS.
   // Clearing on deselect happens in the change handler, not here, so this
@@ -176,6 +198,39 @@ export function Till({
   // A stable handler, so the memoised menu is not redrawn on every keystroke.
   const addOne = useCallback((id: string) => addServices([id]), [addServices]);
 
+  // A product at its stock limit cannot be added again (the database refuses an
+  // oversell anyway; this says so before the sale is rung up).
+  const addProduct = useCallback(
+    (productId: string) => {
+      const product = productById.get(productId);
+      if (!product) return;
+      setProductLines((current) => {
+        const existing = current.find((l) => l.productId === productId);
+        if (existing) {
+          if (existing.quantity >= product.stock_quantity) return current;
+          return current.map((l) => (l === existing ? { ...l, quantity: l.quantity + 1 } : l));
+        }
+        if (product.stock_quantity < 1) return current;
+        return [...current, { key: `${productId}-${Date.now()}`, productId, quantity: 1 }];
+      });
+    },
+    [productById],
+  );
+
+  function updateProduct(key: string, quantity: number) {
+    setProductLines((current) =>
+      current.map((l) => {
+        if (l.key !== key) return l;
+        const cap = Math.max(1, productById.get(l.productId)?.stock_quantity ?? 1);
+        return { ...l, quantity: Math.min(cap, Math.max(1, quantity)) };
+      }),
+    );
+  }
+
+  function removeProduct(key: string) {
+    setProductLines((current) => current.filter((l) => l.key !== key));
+  }
+
   function updateLine(key: string, patch: Partial<BasketLine>) {
     setLines((current) => current.map((l) => (l.key === key ? { ...l, ...patch } : l)));
   }
@@ -185,10 +240,15 @@ export function Till({
   }
 
   /* ---- estimate only; the server recomputes all of this ---- */
-  const gross = lines.reduce((sum, line) => {
+  const servicesGross = lines.reduce((sum, line) => {
     const service = serviceById.get(line.serviceId);
     return sum + (service ? Number(service.price) * line.quantity : 0);
   }, 0);
+  const productsGross = productLines.reduce((sum, line) => {
+    const product = productById.get(line.productId);
+    return sum + (product ? Number(product.price) * line.quantity : 0);
+  }, 0);
+  const gross = servicesGross + productsGross;
 
   const deal = deals.find((d) => d.id === dealId);
   const eligibleGross = deal
@@ -242,6 +302,16 @@ export function Till({
       })),
   );
 
+  const productsJson = JSON.stringify(
+    productLines.map((l) => ({ productId: l.productId, quantity: l.quantity })),
+  );
+
+  const productCounts = useMemo(() => {
+    const byProduct: Record<string, number> = {};
+    for (const line of productLines) byProduct[line.productId] = line.quantity;
+    return byProduct;
+  }, [productLines]);
+
   const splitTotal =
     Math.round(((Number(cash) || 0) + (Number(card) || 0) + (Number(transfer) || 0)) * 100) / 100;
   const splitMismatch = paymentMethod === "split" && splitTotal !== dueNow;
@@ -259,6 +329,7 @@ export function Till({
   return (
     <form action={formAction} className="flex flex-wrap items-start gap-4">
       <input type="hidden" name="lines" value={linesJson} />
+      <input type="hidden" name="products" value={productsJson} />
       <input type="hidden" name="loyaltyRedeem" value={redeemValue} />
       <input type="hidden" name="paymentMethod" value={paymentMethod} />
       <input type="hidden" name="manualDiscountType" value={discountKind} />
@@ -279,10 +350,31 @@ export function Till({
           <Flash tone="info">
             Checking out {prefill.customerName}&rsquo;s booking. The services and the customer are
             filled in from the diary, and anything already paid is taken off what the till asks for.
+            <span className="mt-1 block">
+              <strong>Lead:</strong> {prefill.leadName}
+              {prefill.supportNames.length > 0 ? (
+                <>
+                  {" "}
+                  &middot; <strong>Support:</strong> {prefill.supportNames.join(", ")}. Support staff
+                  earn commission on this sale automatically.
+                </>
+              ) : null}
+            </span>
           </Flash>
         ) : null}
 
-        <ServiceTiles services={pickable} currency={currency} counts={counts} onAdd={addOne} />
+        <section aria-labelledby="pos-services-heading" className="space-y-3">
+          <h2 id="pos-services-heading" className="font-heading text-section font-semibold">
+            Services
+          </h2>
+          <ServiceTiles services={pickable} currency={currency} counts={counts} onAdd={addOne} />
+        </section>
+        <ProductTiles
+          products={products}
+          currency={currency}
+          counts={productCounts}
+          onAdd={addProduct}
+        />
         {state.errors?.lines ? (
           <p className="text-small font-semibold text-critical-fg">{state.errors.lines}</p>
         ) : null}
@@ -333,7 +425,11 @@ export function Till({
             Each line records who performed it — that is what payroll reads.
           </p>
           {lines.length === 0 ? (
-            <p className="py-4 text-center text-muted">Tap a service to add it to the sale.</p>
+            <p className="py-4 text-center text-muted">
+              {productLines.length === 0
+                ? "Tap a service or a product to add it to the sale."
+                : "No services on this sale."}
+            </p>
           ) : (
             <ul className="divide-y divide-line-soft">
               {lines.map((line) => {
@@ -396,6 +492,53 @@ export function Till({
             </ul>
           )}
         </div>
+
+        {productLines.length > 0 ? (
+          <div>
+            <p className="mb-2 text-small font-semibold">Products</p>
+            <ul className="divide-y divide-line-soft">
+              {productLines.map((line) => {
+                const product = productById.get(line.productId);
+                return (
+                  <li key={line.key} className="space-y-2 py-3 first:pt-0">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-semibold">{product?.name ?? "Product"}</p>
+                        <p className="text-fine text-muted">
+                          {product?.category}
+                          {product?.sku ? <> &middot; {product.sku}</> : null}
+                        </p>
+                      </div>
+                      <p className="font-semibold tabular-nums">
+                        {formatMoney(product ? Number(product.price) * line.quantity : 0, currency)}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-end gap-2">
+                      <Field
+                        label="Qty"
+                        htmlFor={`product-qty-${line.key}`}
+                        hint={product ? `${product.stock_quantity} in stock` : undefined}
+                      >
+                        <Input
+                          id={`product-qty-${line.key}`}
+                          type="number"
+                          min={1}
+                          max={Math.max(1, product?.stock_quantity ?? 1)}
+                          value={line.quantity}
+                          onChange={(event) => updateProduct(line.key, Number(event.target.value) || 1)}
+                          className="w-20"
+                        />
+                      </Field>
+                      <Button type="button" variant="ghost" onClick={() => removeProduct(line.key)}>
+                        Remove
+                      </Button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ) : null}
 
         <Field label="Deal" htmlFor="pos-deal" error={state.errors?.dealId}>
           <Select
@@ -495,6 +638,12 @@ export function Till({
         </Field>
 
         <dl className="space-y-1.5 border-t border-dashed border-field pt-4 text-small">
+          {servicesGross > 0 && productsGross > 0 ? (
+            <>
+              <Row label="Services" value={formatMoney(servicesGross, currency)} />
+              <Row label="Products" value={formatMoney(productsGross, currency)} />
+            </>
+          ) : null}
           <Row label="Subtotal" value={formatMoney(gross, currency)} />
           {discount > 0 ? (
             <Row label={`Deal (${deal?.name})`} value={`− ${formatMoney(discount, currency)}`} />

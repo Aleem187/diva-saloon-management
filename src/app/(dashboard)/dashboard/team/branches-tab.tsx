@@ -29,13 +29,19 @@ export async function BranchesTab() {
 
   const branches = session.branches;
 
-  // Every salon has at least its Main Branch once the migration is applied, so
-  // none at all means it has not been.
+  // Every salon has at least its Main Branch, so none at all is not "the feature is
+  // off": either the table is not there, or this salon's Main Branch row is missing.
+  // Ask the database which, instead of guessing.
   if (branches.length === 0) {
+    const { error } = await supabase.from("branches").select("id", { head: true, count: "exact" });
+    const tableMissing = error?.code === "42P01" || error?.code === "PGRST205";
     return (
       <Flash tone="warning">
-        Branches are not available yet: the database update (migration 20261021000046_branches) has
-        not been applied.
+        {tableMissing
+          ? "The branches table is not in this database: migration 20261021000046_branches has not been applied."
+          : error
+            ? `Branches could not be loaded: ${error.message}${error.code ? ` (${error.code})` : ""}`
+            : "This salon has no Main Branch row yet. Run the Main Branch backfill from migration 20261021000046_branches (the insert into public.branches ... select from public.salons), then refresh."}
       </Flash>
     );
   }

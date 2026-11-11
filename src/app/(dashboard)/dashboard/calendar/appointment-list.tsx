@@ -67,6 +67,9 @@ function AppointmentDetail({
           {appointment.customerName}
         </Link>{" "}
         &middot; {appointment.staffName}
+        {appointment.supportNames.length > 0 ? (
+          <span className="text-muted"> + {appointment.supportNames.join(", ")}</span>
+        ) : null}
       </p>
 
       {/* Every line, with what each one costs. */}

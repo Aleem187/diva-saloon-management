@@ -3,7 +3,8 @@ import { Card } from "@/components/ui/card";
 import { Flash } from "@/components/ui/flash";
 import { Pill } from "@/components/ui/pill";
 import { requireModule } from "@/lib/auth/session";
-import { formatDateTime, formatMoney } from "@/lib/format";
+import { formatMoney as formatAmount } from "@/lib/format";
+import { formatStampInSalon } from "@/lib/time";
 import { createClient } from "@/lib/supabase/server";
 import type {
   CustomerRow,
@@ -34,14 +35,26 @@ export async function ReceiptTab({ receipt: r }: { receipt: ReceiptRow }) {
   const session = await requireModule("pos");
   const supabase = await createClient();
   const currency = session.salon.currency;
+  const timeZone = session.salon.timezone;
+  // The printed receipt names its currency (PKR 1,250.00) rather than using a symbol.
+  const money = (amount: number | string, code: string) => formatAmount(amount, code, "code");
 
-  const [{ data: lines }, { data: customer }, { data: team }, { data: roster }] = await Promise.all([
+  const [{ data: lines }, { data: customer }, { data: team }, { data: roster }, { data: support }] =
+    await Promise.all([
     supabase.from("receipt_line_items").select("*").eq("receipt_id", r.id).order("sort_order"),
     supabase.from("customers").select("*").eq("id", r.customer_id).maybeSingle(),
     supabase.from("profiles").select("id, full_name, email"),
     // Line attribution is to the roster, which is not the same set of ids as
     // the logins above.
     supabase.from("team_members").select("id, full_name"),
+    // Support / assistants on the visit this receipt settles (none for a walk-in sale).
+    r.appointment_id
+      ? supabase
+          .from("appointment_staff")
+          .select("staff_id, sort_order")
+          .eq("appointment_id", r.appointment_id)
+          .order("sort_order")
+      : Promise.resolve({ data: [] as { staff_id: string }[] }),
   ]);
 
   // Logins: who issued or voided the receipt.
@@ -56,6 +69,17 @@ export async function ReceiptTab({ receipt: r }: { receipt: ReceiptRow }) {
     performerName.set(m.id, m.full_name);
   }
 
+  // Group the lines by what they are; a kind with no lines gets no section at all.
+  const items = (lines ?? []) as ReceiptLineItemRow[];
+  const sections = (["service", "product"] as const)
+    .map((kind) => ({ kind, items: items.filter((item) => (item.item_type ?? "service") === kind) }))
+    .filter((section) => section.items.length > 0);
+
+  // Support / assistants who helped the lead on this visit.
+  const supportNames = ((support ?? []) as { staff_id: string }[]).map(
+    (row) => performerName.get(row.staff_id) ?? "A colleague",
+  );
+
   const person = customer as CustomerRow | null;
 
   return (
@@ -65,7 +89,7 @@ export async function ReceiptTab({ receipt: r }: { receipt: ReceiptRow }) {
           <Flash tone="error">
             <p className="font-semibold">This receipt was voided</p>
             <p className="mt-1">
-              {formatDateTime(r.voided_at)}
+              {r.voided_at ? formatStampInSalon(r.voided_at, timeZone) : "—"}
               {r.voided_by ? ` by ${nameById.get(r.voided_by) ?? "an owner"}` : ""} — {r.void_reason}
             </p>
             <p className="mt-1">
@@ -87,12 +111,12 @@ export async function ReceiptTab({ receipt: r }: { receipt: ReceiptRow }) {
             <div>
               <h2 className="font-heading text-section font-semibold">{session.salon.name}</h2>
               <p className="text-fine text-muted">
-                {session.salon.country} &middot; {session.salon.timezone}
+                {session.salon.country}
               </p>
             </div>
             <div className="text-right">
               <p className="font-semibold tabular-nums">Receipt #{r.receipt_number}</p>
-              <p className="text-fine text-muted">{formatDateTime(r.created_at)}</p>
+              <p className="text-fine text-muted">{formatStampInSalon(r.created_at, timeZone)}</p>
               {r.status === "voided" ? (
                 <p className="mt-1">
                   <Pill tone="critical">VOIDED</Pill>
@@ -117,46 +141,91 @@ export async function ReceiptTab({ receipt: r }: { receipt: ReceiptRow }) {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-small">
-              <thead>
-                <tr className="border-b border-line text-left text-fine tracking-[0.05em] text-muted uppercase">
-                  <th className="py-2 font-semibold">Service</th>
-                  <th className="py-2 font-semibold">Performed by</th>
-                  <th className="py-2 text-right font-semibold">Qty</th>
-                  <th className="py-2 text-right font-semibold">Price</th>
-                  <th className="py-2 text-right font-semibold">Total</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line-soft">
-                {((lines ?? []) as ReceiptLineItemRow[]).map((item) => (
-                  <tr key={item.id}>
-                    <td className="py-2">{item.service_name}</td>
-                    <td className="py-2 text-muted">
-                      {item.staff_id ? (performerName.get(item.staff_id) ?? "—") : "—"}
-                    </td>
-                    <td className="py-2 text-right tabular-nums text-muted">{item.quantity}</td>
-                    <td className="py-2 text-right tabular-nums text-muted">
-                      {formatMoney(item.unit_price, currency)}
-                    </td>
-                    <td className="py-2 text-right tabular-nums">
-                      {formatMoney(item.line_total, currency)}
-                      {Number(item.discount_amount) > 0 ? (
-                        <span className="block text-fine text-good-fg">
-                          −{formatMoney(item.discount_amount, currency)}
-                        </span>
-                      ) : null}
-                    </td>
+          {supportNames.length > 0 ? (
+            <p className="text-small">
+              <span className="text-fine font-semibold tracking-[0.05em] text-muted uppercase">
+                Team{" "}
+              </span>
+              Support / assistants: {supportNames.join(", ")}
+            </p>
+          ) : null}
+
+          {/*
+            Services and products are listed under their own headings when the
+            sale has both, and a sale with only one shows just that table, with no
+            heading and no empty section for the other.
+          */}
+          {sections.map((section) => (
+            <div key={section.kind} className="overflow-x-auto">
+              {sections.length > 1 ? (
+                <h3 className="mb-1 text-fine font-semibold tracking-[0.05em] text-muted uppercase">
+                  {section.kind === "service" ? "Services" : "Products"}
+                </h3>
+              ) : null}
+              <table className="w-full text-small">
+                <thead>
+                  <tr className="border-b border-line text-left text-fine tracking-[0.05em] text-muted uppercase">
+                    <th className="py-2 font-semibold">
+                      {section.kind === "service" ? "Service" : "Product"}
+                    </th>
+                    {section.kind === "service" ? (
+                      <th className="py-2 font-semibold">Performed by</th>
+                    ) : null}
+                    <th className="py-2 text-right font-semibold">Qty</th>
+                    <th className="py-2 text-right font-semibold">Price</th>
+                    <th className="py-2 text-right font-semibold">Total</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-line-soft">
+                  {section.items.map((item) => (
+                    <tr key={item.id}>
+                      <td className="py-2">{item.service_name}</td>
+                      {section.kind === "service" ? (
+                        <td className="py-2 text-muted">
+                          {item.staff_id ? (performerName.get(item.staff_id) ?? "—") : "—"}
+                        </td>
+                      ) : null}
+                      <td className="py-2 text-right tabular-nums text-muted">{item.quantity}</td>
+                      <td className="py-2 text-right tabular-nums text-muted">
+                        {money(item.unit_price, currency)}
+                      </td>
+                      <td className="py-2 text-right tabular-nums">
+                        {money(item.line_total, currency)}
+                        {Number(item.discount_amount) > 0 ? (
+                          <span className="block text-fine text-good-fg">
+                            −{money(item.discount_amount, currency)}
+                          </span>
+                        ) : null}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                {sections.length > 1 ? (
+                  <tfoot>
+                    <tr className="border-t border-line text-muted">
+                      <td
+                        className="py-1.5 font-semibold"
+                        colSpan={section.kind === "service" ? 4 : 3}
+                      >
+                        {section.kind === "service" ? "Services" : "Products"} subtotal
+                      </td>
+                      <td className="py-1.5 text-right tabular-nums">
+                        {money(
+                          section.items.reduce((sum, item) => sum + Number(item.line_total), 0),
+                          currency,
+                        )}
+                      </td>
+                    </tr>
+                  </tfoot>
+                ) : null}
+              </table>
+            </div>
+          ))}
 
           <dl className="ml-auto w-full max-w-xs space-y-1.5 border-t border-line pt-3 text-small">
-            <Row label="Subtotal" value={formatMoney(r.subtotal, currency)} />
+            <Row label="Subtotal" value={money(r.subtotal, currency)} />
             {Number(r.discount_total) > 0 ? (
-              <Row label="Discount" value={`− ${formatMoney(r.discount_total, currency)}`} />
+              <Row label="Discount" value={`− ${money(r.discount_total, currency)}`} />
             ) : null}
             {/*
               A discretionary discount is already inside the figure above; this
@@ -169,16 +238,16 @@ export async function ReceiptTab({ receipt: r }: { receipt: ReceiptRow }) {
                 {r.manual_discount_type === "percentage"
                   ? `a ${Number(r.manual_discount_value)}% discount`
                   : "a fixed discount"}{" "}
-                ({`− ${formatMoney(r.manual_discount_amount, currency)}`})
+                ({`− ${money(r.manual_discount_amount, currency)}`})
                 <span className="print:hidden"> · {r.manual_discount_reason}</span>
               </p>
             ) : null}
             {Number(r.loyalty_redeemed) > 0 ? (
-              <Row label="Loyalty redeemed" value={`− ${formatMoney(r.loyalty_redeemed, currency)}`} />
+              <Row label="Loyalty redeemed" value={`− ${money(r.loyalty_redeemed, currency)}`} />
             ) : null}
             <div className="flex items-center justify-between border-t border-line pt-2 font-semibold text-ink">
               <dt>Total</dt>
-              <dd className="font-heading text-section tabular-nums">{formatMoney(r.total, currency)}</dd>
+              <dd className="font-heading text-section tabular-nums">{money(r.total, currency)}</dd>
             </div>
             {/*
               How the bill was settled. An advance taken before today is its
@@ -189,7 +258,7 @@ export async function ReceiptTab({ receipt: r }: { receipt: ReceiptRow }) {
             {Number(r.deposit_applied) > 0 ? (
               <Row
                 label="Paid in advance"
-                value={`− ${formatMoney(r.deposit_applied, currency)}`}
+                value={`− ${money(r.deposit_applied, currency)}`}
               />
             ) : null}
             <Row
@@ -207,10 +276,10 @@ export async function ReceiptTab({ receipt: r }: { receipt: ReceiptRow }) {
                         [Number(r.transfer_amount), "transfer"] as const,
                       ]
                         .filter(([amount]) => amount > 0)
-                        .map(([amount, label]) => `${formatMoney(amount, currency)} ${label}`)
-                        .join(" + ") || formatMoney(0, currency)
+                        .map(([amount, label]) => `${money(amount, currency)} ${label}`)
+                        .join(" + ") || money(0, currency)
                     )
-                  : formatMoney(
+                  : money(
                       Number(r.cash_amount) + Number(r.card_amount) + Number(r.transfer_amount),
                       currency,
                     )
@@ -223,11 +292,11 @@ export async function ReceiptTab({ receipt: r }: { receipt: ReceiptRow }) {
             <div className="mt-1 space-y-0.5">
               <p>
                 Redeemed this visit:{" "}
-                <span className="tabular-nums">{formatMoney(r.loyalty_redeemed, currency)}</span>
+                <span className="tabular-nums">{money(r.loyalty_redeemed, currency)}</span>
               </p>
               <p>
                 Earned this visit:{" "}
-                <span className="tabular-nums">{formatMoney(r.loyalty_earned, currency)}</span>{" "}
+                <span className="tabular-nums">{money(r.loyalty_earned, currency)}</span>{" "}
                 <span className="text-fine text-muted">
                   ({(Number(r.loyalty_earn_rate) * 100).toFixed(2)}% of the amount paid)
                 </span>

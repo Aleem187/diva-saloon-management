@@ -42,6 +42,10 @@ export const AUDIT_ACTIONS = {
   SERVICE_UPDATED: "service.updated",
   SERVICE_ARCHIVED: "service.archived",
   SERVICE_RESTORED: "service.restored",
+  PRODUCT_CREATED: "product.created",
+  PRODUCT_UPDATED: "product.updated",
+  PRODUCT_ARCHIVED: "product.archived",
+  PRODUCT_RESTORED: "product.restored",
   DEAL_CREATED: "deal.created",
   DEAL_UPDATED: "deal.updated",
   DEAL_ARCHIVED: "deal.archived",
@@ -56,6 +60,8 @@ export const AUDIT_ACTIONS = {
   // Phase 3 -- booking
   APPOINTMENT_BOOKED: "appointment.booked",
   APPOINTMENT_RESCHEDULED: "appointment.rescheduled",
+  /** The support / assistant staff on an appointment were changed. */
+  APPOINTMENT_TEAM_CHANGED: "appointment.team_changed",
   /** Written by update_appointment_services() in Postgres. */
   APPOINTMENT_UPDATED: "appointment.updated",
   APPOINTMENT_CONFIRMED: "appointment.confirmed",

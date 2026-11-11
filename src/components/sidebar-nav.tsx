@@ -37,6 +37,7 @@ const NAV: NavGroup[] = [
     name: "Business",
     items: [
       { href: "/dashboard/services", label: "Services & pricing", module: "services" },
+      { href: "/dashboard/products", label: "Products", module: "services" },
       { href: "/dashboard/payroll", label: "Payroll", module: "payroll" },
       { href: "/dashboard/reports", label: "Reports", module: "reports" },
       { href: "/dashboard/team", label: "Team", module: "team" },

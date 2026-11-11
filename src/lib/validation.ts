@@ -246,6 +246,26 @@ export const serviceSchema = z.object({
 });
 export type ServiceInput = z.infer<typeof serviceSchema>;
 
+/** A retail product. Stock is a whole number; SKU is optional but unique when given. */
+export const productSchema = z.object({
+  name: z.string().trim().min(2, "Product name is required").max(160),
+  sku: z.string().trim().max(64, "Keep the SKU under 64 characters").default(""),
+  category: z.string().trim().min(1, "Category is required").max(80).default("General"),
+  price: money,
+  stockQuantity: z.coerce
+    .number({ message: "Enter the stock on hand" })
+    .int("Use a whole number")
+    .min(0, "Cannot be negative")
+    .max(1_000_000),
+  lowStockThreshold: z.coerce
+    .number({ message: "Enter a threshold" })
+    .int("Use a whole number")
+    .min(0, "Cannot be negative")
+    .max(1_000_000)
+    .default(5),
+});
+export type ProductInput = z.infer<typeof productSchema>;
+
 export const dealSchema = z
   .object({
     name: z.string().trim().min(2, "Deal name is required").max(160),
@@ -346,13 +366,33 @@ export type ConsentFormInput = z.infer<typeof consentFormSchema>;
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Pick a date");
 const clockTime = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Pick a time");
 
+/** Up to two support people: blanks dropped, repeats refused. */
+export const supportStaffIds = z
+  .array(z.string())
+  .transform((ids) => ids.filter((id) => id !== ""))
+  .pipe(
+    z
+      .array(z.string().uuid("Choose a team member"))
+      .max(2, "At most 2 support staff besides the lead")
+      .refine((ids) => new Set(ids).size === ids.length, "Choose each person once"),
+  )
+  .default([]);
+
+export const supportSchema = z.object({
+  appointmentId: z.string().uuid(),
+  supportStaffIds,
+});
+
 export const bookingSchema = z
   .object({
     customerId: z.string().uuid().nullish(),
     newCustomerName: z.string().trim().max(160).default(""),
     newCustomerPhone: z.string().trim().max(32).default(""),
     isNewCustomer: z.boolean().default(false),
+    /** The Primary Lead. The only person whose availability can refuse the booking. */
     staffId: z.string().uuid("Choose a team member"),
+    /** Support / assistants: never a conflict, at most two, never the lead. */
+    supportStaffIds: supportStaffIds,
     /** Wall-clock in the salon's own timezone; converted server-side. */
     date: isoDate,
     time: clockTime,
@@ -375,6 +415,10 @@ export const bookingSchema = z
         }),
       )
       .min(1, "Add at least one service"),
+  })
+  .refine((d) => !d.supportStaffIds.includes(d.staffId), {
+    message: "The lead cannot also be support",
+    path: ["supportStaffIds"],
   })
   .refine((d) => d.isNewCustomer || Boolean(d.customerId), {
     message: "Search for and choose a customer",
@@ -490,8 +534,21 @@ export const checkoutSchema = z.object({
         appointmentId: z.string().uuid().nullish().or(z.literal("")),
       }),
     )
-    .min(1, "Add at least one service"),
+    .default([]),
+  /** Retail products: what and how many. The price and the stock are the database's. */
+  products: z
+    .array(
+      z.object({
+        productId: z.string().uuid(),
+        quantity: z.coerce.number().int().min(1).max(99).default(1),
+      }),
+    )
+    .default([]),
 })
+  .refine((d) => d.lines.length + d.products.length > 0, {
+    message: "Add at least one service or product",
+    path: ["lines"],
+  })
   // The database enforces all of this too; these give the till a message next to
   // the field instead of a sentence at the top.
   .superRefine((d, ctx) => {

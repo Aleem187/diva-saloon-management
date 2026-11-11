@@ -4,7 +4,15 @@
  * database values, per the brief.
  */
 
-export function formatMoney(amount: number | string, currency: string): string {
+/**
+ * `display` "code" writes the ISO code (PKR 1,250.00) instead of a symbol: a printed
+ * receipt names the currency outright.
+ */
+export function formatMoney(
+  amount: number | string,
+  currency: string,
+  display: "narrowSymbol" | "code" = "narrowSymbol",
+): string {
   const value = typeof amount === "string" ? Number(amount) : amount;
   if (!Number.isFinite(value)) return `${currency} 0.00`;
 
@@ -12,7 +20,7 @@ export function formatMoney(amount: number | string, currency: string): string {
     return new Intl.NumberFormat(undefined, {
       style: "currency",
       currency,
-      currencyDisplay: "narrowSymbol",
+      currencyDisplay: display,
     }).format(value);
   } catch {
     // An unrecognised currency code should not blank the page.

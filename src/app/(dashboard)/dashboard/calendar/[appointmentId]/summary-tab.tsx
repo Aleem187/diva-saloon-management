@@ -7,7 +7,14 @@ import { requireSession } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { formatInstantInSalon, formatLongDayLabel } from "@/lib/time";
 import { STATUS_LABEL, STATUS_TONE } from "@/lib/appointment-status";
-import type { AppointmentRow, CustomerRow, ProfileRow } from "@/lib/types/database";
+import { SupportForm } from "./support-form";
+import type {
+  AppointmentRow,
+  AppointmentStaffRow,
+  CustomerRow,
+  ProfileRow,
+  TeamMemberRow,
+} from "@/lib/types/database";
 
 function Fact({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -32,12 +39,28 @@ export async function SummaryTab({
   const supabase = await createClient();
   const timeZone = session.salon.timezone;
 
-  const [{ data: customer }, { data: logins }] = await Promise.all([
-    supabase.from("customers").select("*").eq("id", appt.customer_id).maybeSingle(),
-    // Who DID things, as opposed to who performs services: the person who took
-    // the booking. A login, and a different set of ids from the roster.
-    supabase.from("profiles").select("id, full_name, email"),
-  ]);
+  const canEditTeam =
+    session.modules.has("calendar") && ["booked", "confirmed", "completed"].includes(appt.status);
+
+  const [{ data: customer }, { data: logins }, { data: supportRows }, { data: roster }] =
+    await Promise.all([
+      supabase.from("customers").select("*").eq("id", appt.customer_id).maybeSingle(),
+      // Who DID things, as opposed to who performs services: the person who took
+      // the booking. A login, and a different set of ids from the roster.
+      supabase.from("profiles").select("id, full_name, email"),
+      supabase
+        .from("appointment_staff")
+        .select("staff_id, sort_order")
+        .eq("appointment_id", appt.id)
+        .order("sort_order"),
+      // Who can assist: active people at this appointment's own branch.
+      supabase
+        .from("team_members")
+        .select("id, full_name, branch_id")
+        .eq("is_active", true)
+        .eq("branch_id", appt.branch_id)
+        .order("full_name"),
+    ]);
 
   const actorName = new Map<string, string>();
   for (const p of (logins ?? []) as Pick<ProfileRow, "id" | "full_name" | "email">[]) {
@@ -45,6 +68,15 @@ export async function SummaryTab({
   }
 
   const person = customer as CustomerRow | null;
+
+  const people = ((roster ?? []) as Pick<TeamMemberRow, "id" | "full_name">[]).map((m) => ({
+    id: m.id,
+    name: m.full_name,
+  }));
+  const nameOf = new Map(people.map((p) => [p.id, p.name]));
+  const supportIds = ((supportRows ?? []) as Pick<AppointmentStaffRow, "staff_id">[]).map(
+    (row) => row.staff_id,
+  );
 
   return (
     <div className="space-y-4">
@@ -69,7 +101,12 @@ export async function SummaryTab({
             <Fact label="Service date">
               {formatLongDayLabel(when.localDate)} · {when.localStart} – {when.localEnd}
             </Fact>
-            <Fact label="Team member">{staffName}</Fact>
+            <Fact label="Primary lead">{staffName}</Fact>
+            {supportIds.length > 0 ? (
+              <Fact label="Support / assistants">
+                {supportIds.map((id) => nameOf.get(id) ?? "A colleague").join(", ")}
+              </Fact>
+            ) : null}
             <Fact label="Status">
               <Pill tone={STATUS_TONE[appt.status]}>{STATUS_LABEL[appt.status]}</Pill>
             </Fact>
@@ -79,6 +116,22 @@ export async function SummaryTab({
             ) : null}
           </dl>
         </Card>
+
+        {canEditTeam ? (
+          <Card>
+            <CardTitle>Support team</CardTitle>
+            <p className="-mt-2 mb-3 text-small text-muted">
+              Add up to 2 people to help the lead. They never block the booking, and earn commission
+              on the receipt alongside the lead. Locked once the visit is invoiced.
+            </p>
+            <SupportForm
+              appointmentId={appt.id}
+              leadId={appt.staff_id}
+              people={people}
+              currentIds={supportIds}
+            />
+          </Card>
+        ) : null}
 
         <Card>
           <CardTitle>Notes</CardTitle>
