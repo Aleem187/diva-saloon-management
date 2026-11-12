@@ -12,6 +12,7 @@ import { ProductTiles, type SellableProduct } from "@/components/ui/product-tile
 import { ServiceTiles } from "@/components/ui/service-tiles";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { CustomerPicker } from "@/components/customer-picker";
+import type { DirectoryCustomer } from "@/lib/customer-directory";
 import { toPickable } from "@/lib/services";
 import { formatMoney } from "@/lib/format";
 import type { DealRow, ServiceRow } from "@/lib/types/database";
@@ -84,6 +85,7 @@ export function Till({
   servicesByDeal,
   currency,
   prefill,
+  customerDirectory,
 }: {
   services: ServiceRow[];
   products: SellableProduct[];
@@ -92,6 +94,8 @@ export function Till({
   servicesByDeal: Record<string, string[]>;
   currency: string;
   prefill?: CheckoutPrefill;
+  /** Every customer, when the salon is small enough to search them in the browser. */
+  customerDirectory?: DirectoryCustomer[];
 }) {
   const [state, formAction] = useActionState<PosFormState, FormData>(checkoutAction, {});
 
@@ -406,6 +410,7 @@ export function Till({
             defaultName={was("newCustomerName")}
             defaultPhone={was("newCustomerPhone")}
             onCustomerChange={chooseCustomer}
+            directory={customerDirectory}
           />
 
           {customerId ? (

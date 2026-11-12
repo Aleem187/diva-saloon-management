@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import { searchCustomersAction, type CustomerMatch } from "@/app/(dashboard)/dashboard/customers/actions";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 import { Field, Input } from "@/components/ui/field";
 import { Flash } from "@/components/ui/flash";
+import { searchDirectory, type DirectoryCustomer } from "@/lib/customer-directory";
 
 /**
  * Choosing who a booking or a sale is for.
@@ -31,6 +32,7 @@ export function CustomerPicker({
   defaultName = "",
   defaultPhone = "",
   onCustomerChange,
+  directory,
 }: {
   idPrefix: string;
   errors?: Record<string, string | undefined>;
@@ -40,10 +42,16 @@ export function CustomerPicker({
   defaultName?: string;
   defaultPhone?: string;
   onCustomerChange?: (customerId: string) => void;
+  /**
+   * The salon's whole customer list, when the page could afford to send it: matching
+   * then happens here, instantly, with no round trip. Omitted, the box searches on
+   * the server as it always has.
+   */
+  directory?: DirectoryCustomer[];
 }) {
   const [mode, setMode] = useState<"existing" | "new">(defaultMode);
   const [query, setQuery] = useState("");
-  const [matches, setMatches] = useState<CustomerMatch[]>([]);
+  const [remoteMatches, setMatches] = useState<CustomerMatch[]>([]);
   const [chosen, setChosen] = useState<{ id: string; label: string } | null>(
     defaultCustomerId ? { id: defaultCustomerId, label: defaultCustomerLabel || "Selected customer" } : null,
   );
@@ -57,7 +65,7 @@ export function CustomerPicker({
   // here, so this effect only ever reacts to a search completing.
   useEffect(() => {
     const trimmed = query.trim();
-    if (mode !== "existing" || trimmed.length < 2) return;
+    if (directory || mode !== "existing" || trimmed.length < 2) return;
 
     const ticket = ++latest.current;
     const timer = setTimeout(() => {
@@ -68,7 +76,13 @@ export function CustomerPicker({
     }, 180);
 
     return () => clearTimeout(timer);
-  }, [query, mode]);
+  }, [query, mode, directory]);
+
+  const localMatches = useMemo(
+    () => (directory && query.trim().length >= 2 ? searchDirectory(directory, query, 3) : []),
+    [directory, query],
+  );
+  const matches = directory ? localMatches : remoteMatches;
 
   function onQueryChange(next: string) {
     setQuery(next);

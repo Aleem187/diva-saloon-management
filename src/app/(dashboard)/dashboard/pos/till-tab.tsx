@@ -1,5 +1,6 @@
 import { Till, type CheckoutPrefill } from "./till";
 import type { SellableProduct } from "@/components/ui/product-tiles";
+import { DIRECTORY_MAX, type DirectoryCustomer } from "@/lib/customer-directory";
 import { staffInScope } from "@/lib/branches";
 import { Flash } from "@/components/ui/flash";
 import { requireModule } from "@/lib/auth/session";
@@ -60,6 +61,24 @@ export async function TillTab({ params }: { params: Params }) {
   });
 
   const nameOf = new Map(((team ?? []) as TeamMemberRow[]).map((t) => [t.id, t.full_name]));
+
+  /*
+   * Hand the till the whole customer list when it is small enough, so the customer box
+   * filters in the browser at once. One more than the cap is read to learn whether
+   * there are more; if there are, the box keeps searching on the server. Only for
+   * those who may search customers (the Server Action refuses everyone else).
+   */
+  let customerDirectory: DirectoryCustomer[] | undefined;
+  if (session.modules.has("customers")) {
+    const { data: customerRows } = await supabase
+      .from("customers")
+      .select("id, full_name, phone, phone_normalized")
+      .order("full_name")
+      .limit(DIRECTORY_MAX + 1);
+    if (customerRows && customerRows.length <= DIRECTORY_MAX) {
+      customerDirectory = customerRows as DirectoryCustomer[];
+    }
+  }
 
   const servicesByDeal: Record<string, string[]> = {};
   for (const link of (dealServices ?? []) as DealServiceRow[]) {
@@ -152,6 +171,7 @@ export async function TillTab({ params }: { params: Params }) {
         key={prefill?.appointmentId ?? "walk-in"}
         services={(services ?? []) as ServiceRow[]}
         products={(products ?? []) as SellableProduct[]}
+        customerDirectory={customerDirectory}
         therapists={therapists.map((t) => ({ id: t.id, name: t.full_name }))}
         deals={(deals ?? []) as DealRow[]}
         servicesByDeal={servicesByDeal}
