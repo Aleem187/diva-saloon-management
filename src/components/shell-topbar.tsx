@@ -40,7 +40,7 @@ export function Topbar({
   return (
     <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface px-4 py-3.5 sm:px-8 print:hidden">
       <p className="text-small text-muted">
-        {nowInSalon(timeZone)} · {timeZone} · {currency}
+        {nowInSalon(timeZone)} · {currency}
       </p>
       <div className="flex flex-wrap items-center gap-3">
         {/*
