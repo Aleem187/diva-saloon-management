@@ -5,7 +5,8 @@ do $$
 declare
   owner_a uuid; sa uuid; br1 uuid; cust uuid; svc uuid;
   m1 uuid; m2 uuid; m3 uuid; m4 uuid;
-  ap1 uuid; ap2 uuid; ap3 uuid; err text; rid uuid; period uuid;
+  ap1 uuid; ap2 uuid; ap3 uuid; ap4 uuid; err text; rid uuid; period uuid;
+  pay_support_2 numeric; pay_lead_2 numeric;
   t0 timestamptz := date_trunc('day', now()) + interval '9 days' + interval '9 hours';
   lines jsonb;
   pay_lead numeric; pay_support numeric; rev numeric; n int;
@@ -63,7 +64,22 @@ begin
   perform qa.act(owner_a);
   ap3 := create_appointment(cust, null, null, m2, t0 + interval '1 day', '', false, 0, null, lines);
   perform set_appointment_support(ap3, array[m4]);
-  rid := create_receipt(cust, 'cash', 0, 0, 0, null, '', jsonb_build_array(jsonb_build_object('service_id', svc, 'staff_id', m2, 'quantity', 1)), null, null, ap3);
+  rid := create_receipt_with_support(cust, 'cash', 0, 0, 0, null, '',
+    jsonb_build_array(jsonb_build_object(
+      'service_id', svc, 'staff_id', m2, 'quantity', 1,
+      'support_staff_1_id', m4, 'support_staff_2_id', m3
+    )), null, null, ap3);
+  perform qa.t('POS support: each receipt-line assignment takes its lead''s branch',
+    (select count(*) from receipt_line_support_staff where receipt_line_item_id in (select id from receipt_line_items where receipt_id=rid) and branch_id=br1 and support_staff_1_id=m4 and support_staff_2_id=m3) = 1);
+  ap4 := create_appointment(cust, null, null, m1, t0 + interval '2 days', '', false, 0, null, lines);
+  perform set_appointment_support(ap4, array[m4]);
+  perform create_receipt_with_support(cust, 'cash', 0, 0, 0, null, '',
+    jsonb_build_array(jsonb_build_object('service_id', svc, 'staff_id', m1, 'quantity', 1)), null, null, ap4);
+  perform qa.t('POS support: an empty saved selection overrides appointment support',
+    (select count(*) from receipt_line_support_staff rls
+     join receipt_line_items li on li.id = rls.receipt_line_item_id
+     where li.receipt_id = (select id from receipts where appointment_id = ap4)
+       and rls.support_staff_1_id is null and rls.support_staff_2_id is null) = 1);
   -- 7. the team is locked once invoiced
   err := qa.attempt(format($f$select set_appointment_support(%L, array[%L]::uuid[])$f$, ap3, m3));
   perform qa.t('support: the team is locked once the visit is invoiced', err ilike '%invoiced%', coalesce(err,'no error'));
@@ -71,8 +87,12 @@ begin
   perform qa.admin();
   select commission_amount, revenue into pay_lead, rev from payroll_entries where period_id = period and staff_id = m2;
   select commission_amount into pay_support from payroll_entries where period_id = period and staff_id = m4;
+  select commission_amount into pay_support_2 from payroll_entries where period_id = period and staff_id = m3;
+  select commission_amount into pay_lead_2 from payroll_entries where period_id = period and staff_id = m1;
   perform qa.t('payroll: the lead earns commission as before', pay_lead > 0, 'lead: '||coalesce(pay_lead::text,'none'));
   perform qa.t('payroll: the support person earns the same commission on top', pay_support = pay_lead, 'support: '||coalesce(pay_support::text,'none')||' lead: '||pay_lead);
+  perform qa.t('payroll: the second POS assistant earns the same commission too', pay_support_2 = pay_lead, 'support 2: '||coalesce(pay_support_2::text,'none')||' lead: '||pay_lead);
+  perform qa.t('payroll: cleared appointment support is not restored', pay_support = pay_lead_2 and pay_lead_2 = pay_lead, 'support: '||coalesce(pay_support::text,'none')||' leads: '||pay_lead||', '||coalesce(pay_lead_2::text,'none'));
   perform qa.t('payroll: support revenue is not double counted', (select revenue from payroll_entries where period_id = period and staff_id = m4) = 0 and rev > 0, 'rev '||rev);
   perform qa.t('payroll: the support person''s services are counted', (select services_performed from payroll_entries where period_id = period and staff_id = m4) = 1);
 

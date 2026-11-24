@@ -530,6 +530,8 @@ export const checkoutSchema = z.object({
       z.object({
         serviceId: z.string().uuid(),
         staffId: z.string().uuid("Say who performed this service"),
+        supportStaff1Id: z.string().uuid().nullish().or(z.literal("")),
+        supportStaff2Id: z.string().uuid().nullish().or(z.literal("")),
         quantity: z.coerce.number().int().min(1).max(99).default(1),
         appointmentId: z.string().uuid().nullish().or(z.literal("")),
       }),
@@ -552,6 +554,31 @@ export const checkoutSchema = z.object({
   // The database enforces all of this too; these give the till a message next to
   // the field instead of a sentence at the top.
   .superRefine((d, ctx) => {
+    d.lines.forEach((line, index) => {
+      const supportIds: string[] = [];
+      for (const [field, id] of [
+        ["supportStaff1Id", line.supportStaff1Id],
+        ["supportStaff2Id", line.supportStaff2Id],
+      ] as const) {
+        if (!id) continue;
+        supportIds.push(id);
+        if (id === line.staffId) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["lines", index, field],
+            message: "The lead cannot also be support",
+          });
+        }
+      }
+      if (new Set(supportIds).size !== supportIds.length) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["lines", index, "supportStaff2Id"],
+          message: "Choose each support person once",
+        });
+      }
+    });
+
     if (d.manualDiscountType === "") return;
     if (!(d.manualDiscountValue > 0)) {
       ctx.addIssue({

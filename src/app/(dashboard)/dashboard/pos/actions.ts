@@ -91,7 +91,7 @@ export async function checkoutAction(
   const input = parsed.data;
   const supabase = await createClient();
 
-  const { data: receiptId, error } = await supabase.rpc("create_receipt", {
+  const { data: receiptId, error } = await supabase.rpc("create_receipt_with_support", {
     p_customer_id: input.customerId ?? null,
     p_payment_method: input.paymentMethod,
     p_cash_amount: input.cashAmount,
@@ -107,6 +107,8 @@ export async function checkoutAction(
         (line): CheckoutLine => ({
           service_id: line.serviceId,
           staff_id: line.staffId,
+          support_staff_1_id: line.supportStaff1Id || null,
+          support_staff_2_id: line.supportStaff2Id || null,
           quantity: line.quantity,
           appointment_id: line.appointmentId || null,
         }),

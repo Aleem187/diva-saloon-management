@@ -298,6 +298,14 @@ async function main() {
   });
   check("a receipt line cannot be inserted directly", Boolean(forgedLine));
 
+  const { error: forgedSupport } = await desk.from("receipt_line_support_staff").insert({
+    salon_id: s.salonId,
+    branch_id: r1.lines[0].branch_id,
+    receipt_line_item_id: r1.lines[0].id,
+    support_staff_1_id: s.receptionist.memberId,
+  });
+  check("receipt-line support cannot be inserted directly", Boolean(forgedSupport));
+
   const { error: forgedLoyalty } = await desk.from("loyalty_transactions").insert({
     salon_id: s.salonId,
     customer_id: s.customerId,
@@ -1275,6 +1283,7 @@ async function main() {
   // One on each commission shape.
   const therapist2 = await makeUser(s.salonId, "staff", "therapist2");
   const therapist3 = await makeUser(s.salonId, "staff", "therapist3");
+  const therapist4 = await makeUser(s.salonId, "staff", "therapist4");
   const staff2Client = await clientFor(therapist2.email);
   const staff3Client = await clientFor(therapist3.email);
 
@@ -1296,6 +1305,14 @@ async function main() {
       commission_basis: "fixed_per_service",
       commission_rate: null,
       fixed_amount: 7.5,
+      salary_amount: 0,
+    },
+    {
+      salon_id: s.salonId,
+      staff_id: therapist4.memberId,
+      commission_basis: "percentage",
+      commission_rate: 0.1,
+      fixed_amount: null,
       salary_amount: 0,
     },
   ]);
@@ -1328,8 +1345,28 @@ async function main() {
     return data;
   }
 
+  async function sellWithSupport(staffId, serviceId, supportStaffId) {
+    const { data, error } = await desk.rpc("create_receipt_with_support", {
+      p_customer_id: payrollCustomer.id,
+      p_payment_method: "cash",
+      p_cash_amount: 0,
+      p_card_amount: 0,
+      p_loyalty_redeem: 0,
+      p_deal_id: null,
+      p_notes: "",
+      p_lines: [{
+        service_id: serviceId,
+        staff_id: staffId,
+        support_staff_1_id: supportStaffId,
+        quantity: 1,
+      }],
+    });
+    if (error) throw new Error(`supported payroll sale: ${error.message}`);
+    return data;
+  }
+
   // Therapist 2: a 40 cut and a 60 colour = 100 revenue, 2 services.
-  await sell(therapist2.memberId, s.cut);
+  const supportedSale = await sellWithSupport(therapist2.memberId, s.cut, therapist4.memberId);
   await sell(therapist2.memberId, s.colour);
   // Therapist 3: three cuts on one line = 120 revenue, 3 services.
   await sell(therapist3.memberId, s.cut, 3);
@@ -1369,9 +1406,10 @@ async function main() {
 
   const e2 = (entries ?? []).find((e) => e.staff_id === therapist2.memberId);
   const e3 = (entries ?? []).find((e) => e.staff_id === therapist3.memberId);
+  const e4 = (entries ?? []).find((e) => e.staff_id === therapist4.memberId);
 
   // Therapist 1 appears too, carrying everything the earlier sections sold.
-  check("an entry for every therapist who worked", (entries ?? []).length === 3);
+  check("an entry for every therapist who worked", (entries ?? []).length === 4);
 
   eqMoney("percentage therapist: revenue excludes the voided sale", e2?.revenue, 100);
   check(
@@ -1380,6 +1418,22 @@ async function main() {
     `got ${e2?.services_performed}`,
   );
   eqMoney("percentage therapist: commission is 30% of revenue", e2?.commission_amount, 30);
+  eqMoney("support commission uses the assigned member's own rate", e4?.commission_amount, 4);
+  check(
+    "support work is counted but does not add revenue",
+    e4?.services_performed === 1 && Number(e4?.revenue) === 0,
+  );
+  const supportedReceipt = await readReceipt(supportedSale);
+  const { data: lineSupport } = await admin
+    .from("receipt_line_support_staff")
+    .select("support_staff_1_id, support_staff_2_id")
+    .eq("receipt_line_item_id", supportedReceipt.lines[0].id)
+  check(
+    "both receipt line and support assignment are retained for payroll",
+    lineSupport?.length === 1 &&
+      lineSupport[0].support_staff_1_id === therapist4.memberId &&
+      lineSupport[0].support_staff_2_id === null,
+  );
 
   eqMoney("per-service therapist: revenue counts quantity", e3?.revenue, 120);
   check(
@@ -1411,7 +1465,7 @@ async function main() {
   );
   eqMoney("period revenue is the sum of its entries", period.total_revenue, entriesRevenue);
   eqMoney("period commission likewise", period.total_commission, entriesCommission);
-  eqMoney("and only configured rates produce commission", period.total_commission, 52.5);
+  eqMoney("and only configured rates produce commission", period.total_commission, 56.5);
   check("a fresh period is a draft", period.status === "draft");
 
   /* ---------------------------------------------------------------- */

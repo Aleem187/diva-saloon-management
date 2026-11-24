@@ -1497,7 +1497,7 @@ async function main() {
   // What matters here is that none of it leaks between salons.
   const posLine = (serviceId, staffId) => [{ service_id: serviceId, staff_id: staffId, quantity: 1 }];
 
-  const { data: receiptA, error: receiptAError } = await asReceptionistA.rpc("create_receipt", {
+  const { data: receiptA, error: receiptAError } = await asReceptionistA.rpc("create_receipt_with_support", {
     p_customer_id: fixturesA.customerId,
     p_payment_method: "cash",
     p_cash_amount: 0,
@@ -1505,11 +1505,14 @@ async function main() {
     p_loyalty_redeem: 0,
     p_deal_id: null,
     p_notes: "",
-    p_lines: posLine(fixturesA.serviceId, staffA.memberId),
+    p_lines: [{
+      ...posLine(fixturesA.serviceId, staffA.memberId)[0],
+      support_staff_1_id: salonA.memberId,
+    }],
   });
   check("receptionist A can take payment in their own salon", !receiptAError, receiptAError?.message);
 
-  const { data: receiptB } = await asOwnerB.rpc("create_receipt", {
+  const { data: receiptB } = await asOwnerB.rpc("create_receipt_with_support", {
     p_customer_id: fixturesB.customerId,
     p_payment_method: "cash",
     p_cash_amount: 0,
@@ -1517,7 +1520,10 @@ async function main() {
     p_loyalty_redeem: 0,
     p_deal_id: null,
     p_notes: "",
-    p_lines: posLine(fixturesB.serviceId, staffB.memberId),
+    p_lines: [{
+      ...posLine(fixturesB.serviceId, staffB.memberId)[0],
+      support_staff_1_id: salonB.memberId,
+    }],
   });
   check("owner B can take payment in theirs", Boolean(receiptB));
 
@@ -1550,6 +1556,22 @@ async function main() {
     .select("id")
     .eq("receipt_id", receiptB);
   check("owner A cannot read Salon B's receipt lines", (bLines ?? []).length === 0);
+
+  const { data: aSupportRows } = await asReceptionistA
+    .from("receipt_line_support_staff")
+    .select("salon_id, support_staff_1_id, support_staff_2_id")
+    .eq("salon_id", salonA.salonId);
+  check(
+    "checkout records support staff within the receipt line's salon",
+    (aSupportRows ?? []).length === 1 &&
+      aSupportRows[0].support_staff_1_id === salonA.memberId &&
+      aSupportRows[0].support_staff_2_id === null,
+  );
+  const { data: bSupportRows } = await asOwnerA
+    .from("receipt_line_support_staff")
+    .select("id")
+    .eq("salon_id", salonB.salonId);
+  check("owner A cannot read Salon B's receipt support staff", (bSupportRows ?? []).length === 0);
 
   // Checking out another salon's customer must fail inside the function, which
   // resolves the tenant from the caller's own session rather than the argument.
@@ -3249,7 +3271,7 @@ async function main() {
     "services", "service_staff", "deals", "deal_services",
     "consent_templates", "consent_template_items",
     "customers", "consent_forms", "consent_form_responses", "appointments",
-    "receipts", "receipt_line_items", "loyalty_transactions",
+    "receipts", "receipt_line_items", "receipt_line_support_staff", "loyalty_transactions",
     "staff_compensation", "payroll_periods", "payroll_entries",
     "consent_form_attachments", "appointment_services", "staff_documents",
     "payments", "subscriptions", "invoices",

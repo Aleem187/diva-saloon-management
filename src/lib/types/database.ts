@@ -373,6 +373,16 @@ export type ReceiptLineItemRow = {
   sort_order: number;
 };
 
+export type ReceiptLineSupportStaffRow = {
+  id: string;
+  salon_id: string;
+  branch_id: string;
+  receipt_line_item_id: string;
+  support_staff_1_id: string | null;
+  support_staff_2_id: string | null;
+  created_at: string;
+};
+
 export type LoyaltyTransactionRow = {
   id: string;
   salon_id: string;
@@ -388,6 +398,8 @@ export type LoyaltyTransactionRow = {
 export interface CheckoutServiceLine {
   service_id: string;
   staff_id: string;
+  support_staff_1_id?: string | null;
+  support_staff_2_id?: string | null;
   quantity: number;
   appointment_id?: string | null;
 }
@@ -843,6 +855,7 @@ export type Database = {
       products: Table<ProductRow>;
       receipts: Table<ReceiptRow>;
       receipt_line_items: Table<ReceiptLineItemRow>;
+      receipt_line_support_staff: Table<ReceiptLineSupportStaffRow>;
       loyalty_transactions: Table<LoyaltyTransactionRow>;
       staff_compensation: Table<StaffCompensationRow>;
       roles: Table<RoleRow>;
@@ -978,6 +991,26 @@ export type Database = {
         Returns: string;
       };
       create_receipt: {
+        Args: {
+          p_customer_id: string | null;
+          p_payment_method: PaymentMethod;
+          p_cash_amount: number;
+          p_card_amount: number;
+          p_loyalty_redeem: number;
+          p_deal_id: string | null;
+          p_notes: string;
+          p_lines: CheckoutLine[];
+          p_new_customer_name?: string | null;
+          p_new_customer_phone?: string | null;
+          p_appointment_id?: string | null;
+          p_transfer_amount?: number;
+          p_manual_discount_type?: "percentage" | "fixed_amount" | null;
+          p_manual_discount_value?: number | null;
+          p_manual_discount_reason?: string | null;
+        };
+        Returns: string;
+      };
+      create_receipt_with_support: {
         Args: {
           p_customer_id: string | null;
           p_payment_method: PaymentMethod;

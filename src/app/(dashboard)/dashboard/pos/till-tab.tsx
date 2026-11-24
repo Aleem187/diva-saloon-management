@@ -123,6 +123,9 @@ export async function TillTab({ params }: { params: Params }) {
 
     const appt = appointment as AppointmentRow | null;
     const balance = ((balanceRows ?? []) as AppointmentBalance[])[0];
+    const supportStaffIds = ((supportRows ?? []) as { staff_id: string }[]).map(
+      (row) => row.staff_id,
+    );
 
     /*
      * Fetched by id, NOT read out of a capped customer list. In a salon with
@@ -151,12 +154,12 @@ export async function TillTab({ params }: { params: Params }) {
           : "Customer on this booking",
         deposit: Number(balance?.amount_paid ?? 0),
         leadName: nameOf.get(appt.staff_id) ?? "Team member",
-        supportNames: ((supportRows ?? []) as { staff_id: string }[]).map(
-          (row) => nameOf.get(row.staff_id) ?? "A colleague",
-        ),
+        supportNames: supportStaffIds.map((id) => nameOf.get(id) ?? "A colleague"),
         lines: ((bookedLines ?? []) as AppointmentServiceRow[]).map((line) => ({
           serviceId: line.service_id,
           staffId: appt.staff_id,
+          supportStaff1Id: supportStaffIds[0] ?? "",
+          supportStaff2Id: supportStaffIds[1] ?? "",
           quantity: line.quantity,
         })),
       };

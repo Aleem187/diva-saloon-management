@@ -45,6 +45,8 @@ interface BasketLine {
   key: string;
   serviceId: string;
   staffId: string;
+  supportStaff1Id: string;
+  supportStaff2Id: string;
   quantity: number;
 }
 
@@ -74,7 +76,13 @@ export interface CheckoutPrefill {
   /** Who performs it: the Primary Lead, and any support / assistants. */
   leadName: string;
   supportNames: string[];
-  lines: { serviceId: string; staffId: string; quantity: number }[];
+  lines: {
+    serviceId: string;
+    staffId: string;
+    supportStaff1Id: string;
+    supportStaff2Id: string;
+    quantity: number;
+  }[];
 }
 
 export function Till({
@@ -114,6 +122,8 @@ export function Till({
       if (restored.length > 0) {
         return restored.map((line, index) => ({
           ...line,
+          supportStaff1Id: line.supportStaff1Id ?? "",
+          supportStaff2Id: line.supportStaff2Id ?? "",
           key: `restored-${index}`,
         }));
       }
@@ -190,6 +200,8 @@ export function Till({
               key: `${id}-${Date.now()}-${next.length}`,
               serviceId: id,
               staffId: therapists[0]?.id ?? "",
+              supportStaff1Id: "",
+              supportStaff2Id: "",
               quantity: 1,
             });
         }
@@ -236,7 +248,19 @@ export function Till({
   }
 
   function updateLine(key: string, patch: Partial<BasketLine>) {
-    setLines((current) => current.map((l) => (l.key === key ? { ...l, ...patch } : l)));
+    setLines((current) =>
+      current.map((line) => {
+        if (line.key !== key) return line;
+        const next = { ...line, ...patch };
+        if (next.supportStaff1Id === next.staffId) next.supportStaff1Id = "";
+        if (next.supportStaff2Id === next.staffId) next.supportStaff2Id = "";
+        if (next.supportStaff1Id && next.supportStaff1Id === next.supportStaff2Id) {
+          if (patch.supportStaff1Id !== undefined) next.supportStaff2Id = "";
+          else next.supportStaff1Id = "";
+        }
+        return next;
+      }),
+    );
   }
 
   function removeLine(key: string) {
@@ -302,6 +326,8 @@ export function Till({
       .map((l) => ({
         serviceId: l.serviceId,
         staffId: l.staffId,
+        supportStaff1Id: l.supportStaff1Id || null,
+        supportStaff2Id: l.supportStaff2Id || null,
         quantity: l.quantity,
       })),
   );
@@ -427,7 +453,7 @@ export function Till({
 
         <div>
           <p className="mb-2 text-small text-muted">
-            Each line records who performed it — that is what payroll reads.
+            Each service line records its Primary Lead and optional support staff for payroll.
           </p>
           {lines.length === 0 ? (
             <p className="py-4 text-center text-muted">
@@ -437,7 +463,7 @@ export function Till({
             </p>
           ) : (
             <ul className="divide-y divide-line-soft">
-              {lines.map((line) => {
+              {lines.map((line, index) => {
                 const service = serviceById.get(line.serviceId);
                 return (
                   <li key={line.key} className="space-y-2 py-3 first:pt-0">
@@ -452,9 +478,10 @@ export function Till({
                     </div>
                     <div className="flex flex-wrap items-end gap-2">
                       <Field
-                        label="Performed by"
+                        label="Primary lead"
                         htmlFor={`staff-${line.key}`}
                         className="min-w-36 flex-1"
+                        error={state.errors?.[`lines.${index}.staffId`]}
                       >
                         <Select
                           id={`staff-${line.key}`}
@@ -472,6 +499,35 @@ export function Till({
                           ))}
                         </Select>
                       </Field>
+                      {[1, 2].map((number) => {
+                        const field = number === 1 ? "supportStaff1Id" : "supportStaff2Id";
+                        const otherValue = number === 1 ? line.supportStaff2Id : line.supportStaff1Id;
+                        const value = line[field];
+                        return (
+                          <Field
+                            key={field}
+                            label={`Support / assistant ${number}`}
+                            htmlFor={`support-${number}-${line.key}`}
+                            className="min-w-36 flex-1"
+                            error={state.errors?.[`lines.${index}.${field}`]}
+                          >
+                            <Select
+                              id={`support-${number}-${line.key}`}
+                              value={value}
+                              onChange={(event) => updateLine(line.key, { [field]: event.target.value })}
+                            >
+                              <option value="">None</option>
+                              {therapists
+                                .filter((therapist) => therapist.id !== line.staffId && therapist.id !== otherValue)
+                                .map((therapist) => (
+                                  <option key={therapist.id} value={therapist.id}>
+                                    {therapist.name}
+                                  </option>
+                                ))}
+                            </Select>
+                          </Field>
+                        );
+                      })}
                       <Field label="Qty" htmlFor={`qty-${line.key}`}>
                         <Input
                           id={`qty-${line.key}`}
